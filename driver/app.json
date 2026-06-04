@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "Kari Driver",
+    "slug": "kari-driver",
+    "scheme": "karidriver",
+    "version": "0.1.0",
+    "icon": "./assets/icon.png",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "backgroundColor": "#070707",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "backgroundColor": "#070707",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.kari.driver",
+      "infoPlist": {
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "android": {
+      "package": "com.kari.driver",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#070707"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Kari uses your location to find ride requests near you.",
+          "locationAlwaysAndWhenInUsePermission": "Kari shares your location with riders while you're online and on a trip.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Kari uses your camera to verify your identity (selfie + documents)."
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:3000",
+      "socketUrl": "http://localhost:3000"
+    }
+  }
+}

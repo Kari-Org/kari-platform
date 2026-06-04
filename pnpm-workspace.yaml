@@ -1,0 +1,17 @@
+packages:
+  - 'backend'
+  - 'web'
+  - 'admin'
+  - 'driver'
+  - 'rider'
+  - 'packages/*'
+
+# Flat node_modules so Expo/React Native + NativeWind resolve a single instance.
+nodeLinker: hoisted
+
+# Dependency install-script decisions (all non-essential, safe to skip).
+allowBuilds:
+  '@nestjs/core': false
+  '@scarf/scarf': false
+  msgpackr-extract: false
+  sharp: false

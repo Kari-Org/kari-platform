@@ -1,0 +1,30 @@
+# Local dependencies for the backend. `docker compose up -d` then run the app.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kari
+      POSTGRES_PASSWORD: kari
+      POSTGRES_DB: kari
+    ports:
+      - '5432:5432'
+    volumes:
+      - kari_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U kari']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  kari_pg:
