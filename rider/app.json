@@ -8,10 +8,10 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "backgroundColor": "#070707",
+    "backgroundColor": "#000D26",
     "splash": {
       "image": "./assets/splash-icon.png",
-      "backgroundColor": "#070707",
+      "backgroundColor": "#000D26",
       "resizeMode": "contain"
     },
     "ios": {
@@ -22,7 +22,7 @@
       "package": "com.kari.rider",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#070707"
+        "backgroundColor": "#000D26"
       }
     },
     "plugins": [

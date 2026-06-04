@@ -226,9 +226,12 @@ importers:
 
   driver:
     dependencies:
-      '@expo-google-fonts/poppins':
-        specifier: ^0.2.3
-        version: 0.2.3
+      '@expo-google-fonts/geist-mono':
+        specifier: ^0.4.2
+        version: 0.4.2
+      '@expo-google-fonts/hanken-grotesk':
+        specifier: ^0.4.3
+        version: 0.4.3
       '@gorhom/bottom-sheet':
         specifier: ^5.1.1
         version: 5.2.14(@types/react@19.1.17)(react-native-gesture-handler@2.28.0(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.1.7(react-native-worklets@0.8.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -366,9 +369,12 @@ importers:
 
   rider:
     dependencies:
-      '@expo-google-fonts/poppins':
-        specifier: ^0.2.3
-        version: 0.2.3
+      '@expo-google-fonts/geist-mono':
+        specifier: ^0.4.2
+        version: 0.4.2
+      '@expo-google-fonts/hanken-grotesk':
+        specifier: ^0.4.3
+        version: 0.4.3
       '@gorhom/bottom-sheet':
         specifier: ^5.1.1
         version: 5.2.14(@types/react@19.1.17)(react-native-gesture-handler@2.28.0(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.1.7(react-native-worklets@0.8.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -468,6 +474,43 @@ importers:
         version: 19.1.17
       typescript:
         specifier: ~5.9.3
+        version: 5.9.3
+
+  web:
+    dependencies:
+      '@kari/types':
+        specifier: workspace:*
+        version: link:../packages/types
+      next:
+        specifier: ^15.1.6
+        version: 15.5.19(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: 19.1.0
+        version: 19.1.0(react@19.1.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.19.19
+      '@types/react':
+        specifier: ^19.0.7
+        version: 19.1.17
+      '@types/react-dom':
+        specifier: ^19.0.3
+        version: 19.2.3(@types/react@19.1.17)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.5.0(postcss@8.5.15)
+      postcss:
+        specifier: ^8.5.1
+        version: 8.5.15
+      tailwindcss:
+        specifier: ^3.4.17
+        version: 3.4.19(yaml@2.9.0)
+      typescript:
+        specifier: ^5.7.3
         version: 5.9.3
 
 packages:
@@ -1064,8 +1107,11 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@expo-google-fonts/poppins@0.2.3':
-    resolution: {integrity: sha512-PXkur1ZY/puy1PwVFYPJx8qiI3dtBzC2ig1bo53swCt7/sI7krCGYRO6hLBNp15M0kcNh2J4cCR9ZQyFxsving==}
+  '@expo-google-fonts/geist-mono@0.4.2':
+    resolution: {integrity: sha512-Ei2dBHXBgCL0pNi1RSuWIroOsvaNBeyT+2oE/q9vQBzZyqWuKYZ5yrybTeIeDl7MEWTgxBVUjyrws3JVbVac8Q==}
+
+  '@expo-google-fonts/hanken-grotesk@0.4.3':
+    resolution: {integrity: sha512-TZn/Ux+nCxEjG/zAenCFbEhOAPxSXN3lo2YU2jHcPsNBPFeicm8feQStL81igJuAwJLCn62VvEOdTtmVEBDl0g==}
 
   '@expo/cli@54.0.25':
     resolution: {integrity: sha512-WnUqIb8oMBhtwSfIqdCHCzcaDIpLNXItRVd5miuvWi4GO0SGo89PSsAkbVJ+LJgcaY+v5rbgMELJS9I/CqOulA==}
@@ -7517,7 +7563,9 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@expo-google-fonts/poppins@0.2.3': {}
+  '@expo-google-fonts/geist-mono@0.4.2': {}
+
+  '@expo-google-fonts/hanken-grotesk@0.4.3': {}
 
   '@expo/cli@54.0.25(expo-router@6.0.24)(expo@54.0.35)(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(typescript@5.9.3)':
     dependencies:

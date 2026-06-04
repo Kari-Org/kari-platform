@@ -14,8 +14,10 @@ export const colors = {
 } as const;
 
 export const fonts = {
-  regular: 'Poppins_400Regular',
-  medium: 'Poppins_500Medium',
-  semibold: 'Poppins_600SemiBold',
-  bold: 'Poppins_700Bold',
+  regular: 'HankenGrotesk_400Regular',
+  medium: 'HankenGrotesk_500Medium',
+  semibold: 'HankenGrotesk_600SemiBold',
+  bold: 'HankenGrotesk_700Bold',
+  wordmark: 'ArchivoExpanded',
+  mono: 'GeistMono_400Regular',
 } as const;

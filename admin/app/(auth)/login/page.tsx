@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { KariMark } from '@/components/KariMark';
 import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
@@ -42,8 +43,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/kari-logo.png" alt="Kari" className="mx-auto mb-3 h-16 w-16 object-contain" />
+          <KariMark size={56} className="mx-auto mb-3 block text-brand" />
           <h1 className="text-xl font-semibold text-white">Kari Admin</h1>
           <p className="mt-1 text-sm text-subtle">Sign in to the operations console</p>
         </div>

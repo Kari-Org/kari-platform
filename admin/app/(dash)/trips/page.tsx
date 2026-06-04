@@ -46,7 +46,11 @@ export default function TripsPage() {
       ),
     },
     { key: 'cat', header: 'Class', render: (r) => r.carCategory },
-    { key: 'fare', header: 'Fare', render: (r) => naira(r.agreedPrice ?? r.quotedPrice) },
+    {
+      key: 'fare',
+      header: 'Fare',
+      render: (r) => <span className="font-mono">{naira(r.agreedPrice ?? r.quotedPrice)}</span>,
+    },
     { key: 'type', header: 'Type', render: (r) => r.priceType },
     {
       key: 'status',

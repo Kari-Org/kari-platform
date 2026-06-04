@@ -21,10 +21,14 @@ module.exports = {
       },
       // Distinct keys so they don't collide with Tailwind's font-weight utilities.
       fontFamily: {
-        sans: ['Poppins_400Regular'],
-        pmedium: ['Poppins_500Medium'],
-        psemibold: ['Poppins_600SemiBold'],
-        pbold: ['Poppins_700Bold'],
+        // Workhorse = Hanken Grotesk (keys unchanged so existing className usage
+        // keeps working — only the family behind them changed from Poppins).
+        sans: ['HankenGrotesk_400Regular'],
+        pmedium: ['HankenGrotesk_500Medium'],
+        psemibold: ['HankenGrotesk_600SemiBold'],
+        pbold: ['HankenGrotesk_700Bold'],
+        wordmark: ['ArchivoExpanded'], // the "Kari" wordmark only (Archivo @125% width)
+        mono: ['GeistMono_400Regular'], // IDs / OTPs / raw ₦ figures
       },
       borderRadius: {
         card: '12px',

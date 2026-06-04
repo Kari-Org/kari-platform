@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { hasPermission } from '@kari/types';
+import { KariMark } from '@/components/KariMark';
 import { useSession } from '@/components/session-provider';
 import { NAV } from '@/lib/nav';
 import { cn } from '@/lib/utils';
@@ -22,8 +23,7 @@ export function Sidebar() {
       )}
     >
       <div className="flex h-14 items-center gap-2 px-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/kari-logo.png" alt="Kari" className="h-9 w-9 shrink-0 object-contain" />
+        <KariMark size={32} className="shrink-0 text-brand" />
         {!collapsed && <span className="font-semibold text-white">Kari Admin</span>}
       </div>
 

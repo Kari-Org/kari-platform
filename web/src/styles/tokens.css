@@ -1,0 +1,110 @@
+/* ============================================================================
+   KARI WEB — design tokens
+   Drop this into web/src/styles/ (or import from app/globals.css). Self-hosted
+   fonts + CSS custom properties for the marketing website. Light theme.
+   These mirror the platform design system (colors_and_type.css). The website is
+   the LIGHT surface: white paper washed with a warm white→yellow gradient.
+
+   ⚠️  Do NOT pull tokens from @kari/mobile-core — that package is React-Native
+   only (NativeWind + Poppins, near-black app canvas). The website uses Hanken
+   Grotesk on a light canvas. See README.md → "Token sources & the divergence".
+   ============================================================================ */
+
+/* ----- Fonts: self-hosted OFL variable fonts (see /fonts) ------------------ */
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('/fonts/HankenGrotesk-Variable.ttf') format('truetype-variations');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('/fonts/HankenGrotesk-Italic-Variable.ttf') format('truetype-variations');
+  font-weight: 300 800;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Archivo Expanded';
+  src: url('/fonts/Archivo-Variable.ttf') format('truetype-variations');
+  font-weight: 500 900;
+  font-stretch: 125%;            /* pin width axis → expanded (the wordmark)   */
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/GeistMono-Variable.ttf') format('truetype-variations');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ===== BRAND ========================================================== */
+  --kari-yellow:      #FFFF00;   /* primary — CTAs, accents, active nav       */
+  --kari-yellow-ink:  #1A1A00;   /* text/icons sitting ON yellow              */
+  --kari-gold:        #FFD700;   /* pressed / hover-darken of yellow          */
+  --kari-amber:       #FFBB00;   /* gradient start, warm highlights           */
+  --kari-glow:        #FFF049;   /* gradient end / radial glow                */
+
+  /* ===== INK / NEUTRALS (light surface) ================================= */
+  --ink:        #000D26;   /* deep navy — primary text + logo road           */
+  --night:      #0A0A0A;   /* near-black — dark cards on the light page       */
+  --surface-1:  #121212;   /* dark chips/cards used as contrast on light      */
+  --paper:      #FFFFFF;
+  --paper-2:    #FAFAFA;
+  --paper-3:    #F4F4F4;
+  --line:       #E6E6E6;
+  --line-2:     #DBDBDB;
+  --on-light:   #121212;
+  --on-light-2: #5C5C5C;
+  --on-light-3: #8A8A8A;
+
+  /* ===== SEMANTIC ======================================================= */
+  --success:    #1F9D55;  --success-bg: #E6F6EC;
+  --info:       #0095FF;
+  --warning:    #F5852C;
+  --danger:     #E5484D;
+  --rating:     #FFC700;
+
+  /* ===== SIGNATURE GRADIENTS ============================================ */
+  /* The page wash — white → warm cream → soft yellow, top to bottom.       */
+  --grad-page: linear-gradient(180deg, #FFFFFF 0%, #FFFEED 50%, #FFF8A7 100%);
+  --grad-amber: linear-gradient(180deg, #FFBB00 0%, #FFF049 100%);
+
+  /* ===== TYPE FAMILIES ================================================== */
+  --font-ui:      'Hanken Grotesk', system-ui, sans-serif;
+  --font-display: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, monospace;
+  --font-wordmark:'Archivo Expanded', 'Hanken Grotesk', sans-serif;  /* "Kari" */
+
+  /* ===== RADIUS ========================================================= */
+  --r-sm: 10px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px; --r-2xl: 32px;
+  --r-pill: 999px;
+
+  /* ===== SPACING (4pt grid) ============================================= */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+
+  /* ===== ELEVATION ====================================================== */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.08);
+  --shadow-md: 0 6px 20px rgba(0,0,0,.10);
+  --shadow-lg: 0 18px 50px rgba(0,0,0,.16);
+  --shadow-yellow: 0 12px 30px rgba(255,221,0,.35);
+
+  /* ===== LAYOUT ========================================================= */
+  --container: 1200px;   /* max content width; 1440 design, 40px gutters     */
+  --gutter: 40px;
+}
+
+/* ----- Semantic web type scale (size+weight carry hierarchy) -------------- */
+.kari-hero  { font-family: var(--font-display); font-weight: 700; font-size: clamp(48px, 6.4vw, 92px); line-height: .98; letter-spacing: -3px; }
+.kari-h1    { font-family: var(--font-display); font-weight: 700; font-size: clamp(40px, 5vw, 72px);  line-height: 1.02; letter-spacing: -2px; }
+.kari-h2    { font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 3vw, 44px);  line-height: 1.05; letter-spacing: -1px; }
+.kari-h3    { font-family: var(--font-ui);      font-weight: 700; font-size: 24px; line-height: 1.15; letter-spacing: -.3px; }
+.kari-body  { font-family: var(--font-ui);      font-weight: 400; font-size: 17px; line-height: 1.6; }
+.kari-body-sm { font-family: var(--font-ui);    font-weight: 400; font-size: 14px; line-height: 1.5; }
+.kari-label { font-family: var(--font-ui);      font-weight: 500; font-size: 12px; line-height: 1; }
+.kari-wordmark { font-family: var(--font-wordmark); font-weight: 700; letter-spacing: -.5px; }
+.kari-price { font-family: var(--font-ui); font-weight: 600; font-variant-numeric: tabular-nums; }

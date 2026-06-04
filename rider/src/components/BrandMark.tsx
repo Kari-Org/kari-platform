@@ -10,7 +10,7 @@ export function BrandMark({ size = 40, showWordmark = true }: { size?: number; s
         resizeMode="contain"
       />
       {showWordmark ? (
-        <Text className="mt-1 font-pbold text-lg text-white">
+        <Text className="mt-1 font-wordmark text-lg text-white">
           Kari<Text className="font-pmedium text-xs text-subtle"> Rider</Text>
         </Text>
       ) : null}

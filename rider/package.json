@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@expo-google-fonts/poppins": "^0.2.3",
+    "@expo-google-fonts/geist-mono": "^0.4.2",
+    "@expo-google-fonts/hanken-grotesk": "^0.4.3",
     "@gorhom/bottom-sheet": "^5.1.1",
     "@kari/mobile-core": "workspace:*",
     "@kari/types": "workspace:*",

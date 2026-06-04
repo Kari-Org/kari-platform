@@ -1,12 +1,13 @@
 import '../global.css';
 import 'react-native-gesture-handler';
+import { GeistMono_400Regular } from '@expo-google-fonts/geist-mono';
 import {
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
-  useFonts,
-} from '@expo-google-fonts/poppins';
+  HankenGrotesk_400Regular,
+  HankenGrotesk_500Medium,
+  HankenGrotesk_600SemiBold,
+  HankenGrotesk_700Bold,
+} from '@expo-google-fonts/hanken-grotesk';
+import { useFonts } from 'expo-font';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -26,10 +27,12 @@ export default function RootLayout() {
   const segments = useSegments();
   const router = useRouter();
   const [fontsLoaded] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
+    HankenGrotesk_400Regular,
+    HankenGrotesk_500Medium,
+    HankenGrotesk_600SemiBold,
+    HankenGrotesk_700Bold,
+    GeistMono_400Regular,
+    ArchivoExpanded: require('../assets/fonts/ArchivoExpanded.ttf'),
   });
 
   useEffect(() => {

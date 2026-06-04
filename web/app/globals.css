@@ -1,0 +1,26 @@
+/* web/app/globals.css — Kari marketing website
+   Tailwind v3/v4 layers + base. Imports the design tokens (fonts + CSS vars).
+   Adjust the @import path to wherever you place tokens.css. */
+
+@import '../src/styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    margin: 0;
+    font-family: var(--font-ui);
+    color: var(--ink);
+    /* Signature warm page wash — white → cream → soft yellow */
+    background: var(--grad-page);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  /* Sections that need a clean break sit on solid white (see README §4). */
+  .section-paper { background: #fff; }
+  a { color: inherit; }
+  ::selection { background: var(--kari-yellow); color: var(--ink); }
+}
