@@ -2,17 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Share, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Share, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { PriceType, RideStatus } from '@kari/types';
-import { ridesApi } from '@/api/endpoints';
+import { commsApi, ridesApi, safetyApi } from '@/api/endpoints';
 import type { Ride } from '@/api/types';
 import { InputField } from '@/components/InputField';
 import { KariButton } from '@/components/KariButton';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { env } from '@/lib/env';
 import { errorMessage } from '@/lib/error';
 import { useRideChannel } from '@/realtime/useRideChannel';
+import { useLocationStore } from '@/stores/location.store';
 import { colors } from '@/theme/tokens';
 
 const TERMINAL: RideStatus[] = [RideStatus.COMPLETED, RideStatus.CANCELLED];
@@ -50,6 +52,7 @@ export default function RideScreen() {
   const rideId = String(id);
   const router = useRouter();
   const qc = useQueryClient();
+  const current = useLocationStore((s) => s.current);
   const [offers, setOffers] = useState<{ offerId: string; amount: number }[]>([]);
   const [stars, setStars] = useState(5);
   const [busy, setBusy] = useState(false);
@@ -136,14 +139,55 @@ export default function RideScreen() {
     }
   };
 
-  const shareRide = () => {
-    if (!ride) return;
-    void Share.share({
-      message: `I'm on a Kari ride to ${ride.dropoffAddress ?? 'my destination'}. Fare ${naira(
-        ride.agreedPrice ?? ride.quotedPrice,
-      )}.${ride.startOtp ? ` Start PIN ${ride.startOtp}.` : ''}`,
-    });
+  const shareLiveTrip = async () => {
+    try {
+      const link = await safetyApi.share(rideId);
+      await Share.share({ message: `Track my Kari trip live: ${env.apiBaseUrl}${link.url}` });
+    } catch (e) {
+      Alert.alert('Could not create link', errorMessage(e));
+    }
   };
+
+  const openChat = () => router.push({ pathname: '/chat/[rideId]', params: { rideId } });
+
+  const makeCall = async () => {
+    try {
+      const call = await commsApi.call(rideId);
+      Alert.alert(
+        'Connecting call',
+        `Dial ${call.proxyNumber} to reach your driver — both numbers stay private.`,
+        [
+          { text: 'Close', style: 'cancel' },
+          { text: 'Call', onPress: () => void Linking.openURL(`tel:${call.proxyNumber}`) },
+        ],
+      );
+    } catch (e) {
+      Alert.alert('Could not start call', errorMessage(e));
+    }
+  };
+
+  const sos = () =>
+    Alert.alert(
+      'Send SOS?',
+      'Alerts your emergency contacts and our safety team with your live location.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Send SOS',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const lat = current?.lat ?? ride?.pickupLat ?? 0;
+              const lng = current?.lng ?? ride?.pickupLng ?? 0;
+              await safetyApi.panic({ rideId, lat, lng });
+              Alert.alert('SOS sent', 'Your emergency contacts and our safety team have been alerted.');
+            } catch (e) {
+              Alert.alert('Could not send SOS', errorMessage(e));
+            }
+          },
+        },
+      ],
+    );
 
   if (!ride) {
     return (
@@ -179,13 +223,13 @@ export default function RideScreen() {
         </View>
         <View className="flex-row gap-2">
           <Pressable
-            onPress={() => Alert.alert('Call', 'In-app calling arrives in a later phase.')}
+            onPress={makeCall}
             className="h-10 w-10 items-center justify-center rounded-full bg-surface"
           >
             <Ionicons name="call" size={18} color={colors.brand} />
           </Pressable>
           <Pressable
-            onPress={() => Alert.alert('Chat', 'In-app chat arrives in a later phase.')}
+            onPress={openChat}
             className="h-10 w-10 items-center justify-center rounded-full bg-surface"
           >
             <Ionicons name="chatbubble-ellipses" size={18} color={colors.brand} />
@@ -220,10 +264,16 @@ export default function RideScreen() {
         />
       </View>
 
-      <Pressable onPress={shareRide} className="mt-1 flex-row items-center">
-        <Ionicons name="share-social" size={18} color={colors.brand} />
-        <Text className="ml-2 font-pmedium text-sm text-brand">Share ride details</Text>
-      </Pressable>
+      <View className="mt-2 flex-row items-center justify-between">
+        <Pressable onPress={shareLiveTrip} className="flex-row items-center">
+          <Ionicons name="share-social" size={18} color={colors.brand} />
+          <Text className="ml-2 font-pmedium text-sm text-brand">Share live trip</Text>
+        </Pressable>
+        <Pressable onPress={sos} className="flex-row items-center">
+          <Ionicons name="alert-circle" size={18} color={colors.danger} />
+          <Text className="ml-1.5 font-pmedium text-sm text-danger">SOS</Text>
+        </Pressable>
+      </View>
     </View>
   );
 
@@ -284,10 +334,16 @@ export default function RideScreen() {
               <View className="mt-3">
                 <Row label="Agreed fare" value={naira(ride.agreedPrice)} />
               </View>
-              <Pressable onPress={shareRide} className="mt-3 flex-row items-center">
-                <Ionicons name="share-social" size={18} color={colors.brand} />
-                <Text className="ml-2 font-pmedium text-sm text-brand">Share ride details</Text>
-              </Pressable>
+              <View className="mt-3 flex-row items-center justify-between">
+                <Pressable onPress={shareLiveTrip} className="flex-row items-center">
+                  <Ionicons name="share-social" size={18} color={colors.brand} />
+                  <Text className="ml-2 font-pmedium text-sm text-brand">Share live trip</Text>
+                </Pressable>
+                <Pressable onPress={sos} className="flex-row items-center">
+                  <Ionicons name="alert-circle" size={18} color={colors.danger} />
+                  <Text className="ml-1.5 font-pmedium text-sm text-danger">SOS</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
         );

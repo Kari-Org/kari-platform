@@ -12,8 +12,15 @@ import type {
 } from '@kari/types';
 import { apiFetch } from './client';
 import type {
+  AppNotification,
   AuthResult,
+  Carpool,
+  CarpoolCreateResult,
+  ChatMessage,
+  EmergencyContact,
   Leaderboard,
+  MaskedCall,
+  PanicEvent,
   PlaceSuggestion,
   PublicUser,
   Quote,
@@ -22,6 +29,10 @@ import type {
   Ride,
   RiderProfile,
   SavedAddress,
+  SharedTripLink,
+  ShuttleBooking,
+  ShuttleRoute,
+  ShuttleTrip,
   Subscription,
   SubscriptionPlan,
   TopupInit,
@@ -170,4 +181,56 @@ export const subscriptionsApi = {
 
 export const gamificationApi = {
   leaderboard: () => apiFetch<Leaderboard>('/leaderboard'),
+};
+
+// ─── Ride variants (Phase 5) ─────────────────────────────────────────────────
+export const carpoolsApi = {
+  create: (body: { quoteRef: string; carCategory: CarCategory; maxSeats?: number }) =>
+    apiFetch<CarpoolCreateResult>('/carpools', { method: 'POST', body }),
+  joinable: (lat: number, lng: number) => apiFetch<Carpool[]>(`/carpools?lat=${lat}&lng=${lng}`),
+  mine: () => apiFetch<Carpool[]>('/carpools/mine'),
+  get: (id: string) => apiFetch<Carpool>(`/carpools/${id}`),
+  join: (id: string) => apiFetch<Carpool>(`/carpools/${id}/join`, { method: 'POST' }),
+  leave: (id: string) => apiFetch<Carpool>(`/carpools/${id}/leave`, { method: 'POST' }),
+  cancel: (id: string) => apiFetch<Carpool>(`/carpools/${id}/cancel`, { method: 'POST' }),
+};
+
+export const shuttleApi = {
+  routes: () => apiFetch<ShuttleRoute[]>('/shuttle/routes'),
+  trips: (routeId?: string) =>
+    apiFetch<ShuttleTrip[]>(`/shuttle/trips${routeId ? `?routeId=${encodeURIComponent(routeId)}` : ''}`),
+  book: (tripId: string, body: { fromStopId: string; toStopId: string; seats?: number }) =>
+    apiFetch<ShuttleBooking>(`/shuttle/trips/${tripId}/book`, { method: 'POST', body }),
+  myBookings: () => apiFetch<ShuttleBooking[]>('/shuttle/bookings/mine'),
+  cancel: (id: string) => apiFetch<ShuttleBooking>(`/shuttle/bookings/${id}/cancel`, { method: 'POST' }),
+};
+
+// ─── Safety & comms (Phase 6) ────────────────────────────────────────────────
+export const safetyApi = {
+  contacts: () => apiFetch<EmergencyContact[]>('/safety/contacts'),
+  addContact: (body: { name: string; phone: string; relationship?: string }) =>
+    apiFetch<EmergencyContact>('/safety/contacts', { method: 'POST', body }),
+  removeContact: (id: string) =>
+    apiFetch<{ removed: boolean }>(`/safety/contacts/${id}`, { method: 'DELETE' }),
+  panic: (body: { rideId?: string; lat: number; lng: number }) =>
+    apiFetch<PanicEvent>('/safety/panic', { method: 'POST', body }),
+  share: (rideId: string) =>
+    apiFetch<SharedTripLink>(`/rides/${rideId}/share`, { method: 'POST' }),
+  stopShare: (rideId: string) =>
+    apiFetch<{ stopped: number }>(`/rides/${rideId}/share/stop`, { method: 'POST' }),
+};
+
+export const commsApi = {
+  messages: (rideId: string) => apiFetch<ChatMessage[]>(`/rides/${rideId}/messages`),
+  send: (rideId: string, body: string) =>
+    apiFetch<ChatMessage>(`/rides/${rideId}/messages`, { method: 'POST', body: { body } }),
+  call: (rideId: string) => apiFetch<MaskedCall>(`/rides/${rideId}/call`, { method: 'POST' }),
+};
+
+export const notificationsApi = {
+  list: () => apiFetch<AppNotification[]>('/notifications'),
+  markRead: (id: string) =>
+    apiFetch<AppNotification>(`/notifications/${id}/read`, { method: 'POST' }),
+  registerDevice: (body: { token: string; platform?: string }) =>
+    apiFetch('/notifications/devices', { method: 'POST', body }),
 };

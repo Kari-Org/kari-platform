@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { type ComponentProps, useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
-import { CarCategory, PaymentMethod, PriceType } from '@kari/types';
-import { ridesApi, walletApi } from '@/api/endpoints';
+import { CarCategory, KycStatus, PaymentMethod, PriceType } from '@kari/types';
+import { carpoolsApi, ridersApi, ridesApi, walletApi } from '@/api/endpoints';
 import type { Quote } from '@/api/types';
 import { Checkbox } from '@/components/Checkbox';
 import { InputField } from '@/components/InputField';
@@ -43,6 +43,7 @@ export default function Book() {
   const router = useRouter();
   const { pickup, dropoff } = useLocationStore();
   const { data: wallet } = useQuery({ queryKey: ['wallet'], queryFn: walletApi.summary });
+  const { data: profile } = useQuery({ queryKey: ['rider-me'], queryFn: ridersApi.me });
   const [step, setStep] = useState<'type' | 'class'>('type');
   const [rideType, setRideType] = useState<'solo' | 'carpool'>('solo');
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -84,6 +85,7 @@ export default function Book() {
 
   const request = async () => {
     if (!quote) return;
+    if (rideType === 'carpool') return startCarpool();
     setLoading(true);
     try {
       const res = await ridesApi.request({
@@ -96,6 +98,32 @@ export default function Book() {
       router.replace({ pathname: '/ride/[id]', params: { id: res.ride.id } });
     } catch (e) {
       Alert.alert('Could not request ride', errorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startCarpool = async () => {
+    if (!quote) return;
+    if (profile?.ninStatus !== KycStatus.VERIFIED) {
+      Alert.alert(
+        'Verify your NIN',
+        'Carpooling is NIN-gated so co-riders can trust each other.',
+        [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Verify NIN', onPress: () => router.push('/verify-nin') },
+        ],
+      );
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await carpoolsApi.create({ quoteRef: quote.ref, carCategory: category });
+      router.replace({ pathname: '/carpool/[id]', params: { id: res.carpool.id } });
+    } catch (e) {
+      const msg = errorMessage(e);
+      if (/NIN/i.test(msg)) router.push('/verify-nin');
+      else Alert.alert('Could not start carpool', msg);
     } finally {
       setLoading(false);
     }
@@ -147,8 +175,8 @@ export default function Book() {
             <TypeCard
               label="Carpooling"
               icon="people"
-              active={false}
-              onPress={() => Alert.alert('Coming soon', 'Carpooling arrives in a later phase.')}
+              active={rideType === 'carpool'}
+              onPress={() => setRideType('carpool')}
             />
           </View>
           <View className="flex-1" />
@@ -185,60 +213,74 @@ export default function Book() {
             );
           })}
 
-          <Text className="mb-2 mt-2 font-pmedium text-sm text-muted">Payment</Text>
-          <View className="mb-2 flex-row gap-2">
-            {PAYMENTS.map((p) => (
-              <Pressable
-                key={p.value}
-                onPress={() => setPayment(p.value)}
-                className={`rounded-pill border px-4 py-2 ${
-                  payment === p.value ? 'border-brand bg-brand' : 'border-hairline'
-                }`}
-              >
-                <Text
-                  className={`font-pmedium text-sm ${payment === p.value ? 'text-bg' : 'text-muted'}`}
-                >
-                  {p.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-          {payment === PaymentMethod.WALLET ? (
-            <View className="mb-2 flex-row items-center justify-between rounded-card bg-card px-3 py-2">
-              <Text className="font-sans text-xs text-muted">
-                Wallet balance: <Text className="text-white">{naira(wallet?.balance ?? 0)}</Text>
+          {rideType === 'carpool' ? (
+            <View className="mb-2 mt-2 flex-row items-start rounded-card bg-card p-3">
+              <Ionicons name="wallet-outline" size={16} color={colors.brand} />
+              <Text className="ml-2 flex-1 font-sans text-xs text-muted">
+                Each rider pays their share from their Kari wallet — invite friends after you start
+                it to split the fare.
               </Text>
-              {fare && (wallet?.balance ?? 0) < fare.amount ? (
-                <Pressable onPress={() => router.push('/wallet')} hitSlop={8}>
-                  <Text className="font-pmedium text-xs text-brand">Top up</Text>
-                </Pressable>
+            </View>
+          ) : (
+            <>
+              <Text className="mb-2 mt-2 font-pmedium text-sm text-muted">Payment</Text>
+              <View className="mb-2 flex-row gap-2">
+                {PAYMENTS.map((p) => (
+                  <Pressable
+                    key={p.value}
+                    onPress={() => setPayment(p.value)}
+                    className={`rounded-pill border px-4 py-2 ${
+                      payment === p.value ? 'border-brand bg-brand' : 'border-hairline'
+                    }`}
+                  >
+                    <Text
+                      className={`font-pmedium text-sm ${payment === p.value ? 'text-bg' : 'text-muted'}`}
+                    >
+                      {p.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              {payment === PaymentMethod.WALLET ? (
+                <View className="mb-2 flex-row items-center justify-between rounded-card bg-card px-3 py-2">
+                  <Text className="font-sans text-xs text-muted">
+                    Wallet balance: <Text className="text-white">{naira(wallet?.balance ?? 0)}</Text>
+                  </Text>
+                  {fare && (wallet?.balance ?? 0) < fare.amount ? (
+                    <Pressable onPress={() => router.push('/wallet')} hitSlop={8}>
+                      <Text className="font-pmedium text-xs text-brand">Top up</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
               ) : null}
-            </View>
-          ) : null}
 
-          {quote?.negotiable ? (
-            <View className="mb-2 mt-2">
-              <Checkbox checked={negotiate} onChange={setNegotiate}>
-                <Text className="font-sans text-muted">Negotiate the fare</Text>
-              </Checkbox>
-            </View>
-          ) : null}
-          {negotiate ? (
-            <InputField
-              label="Your offer (₦)"
-              value={proposed}
-              onChangeText={setProposed}
-              keyboardType="number-pad"
-              placeholder={`e.g. ${Math.round((fare?.amount ?? 1000) * 0.8)}`}
-            />
-          ) : null}
+              {quote?.negotiable ? (
+                <View className="mb-2 mt-2">
+                  <Checkbox checked={negotiate} onChange={setNegotiate}>
+                    <Text className="font-sans text-muted">Negotiate the fare</Text>
+                  </Checkbox>
+                </View>
+              ) : null}
+              {negotiate ? (
+                <InputField
+                  label="Your offer (₦)"
+                  value={proposed}
+                  onChangeText={setProposed}
+                  keyboardType="number-pad"
+                  placeholder={`e.g. ${Math.round((fare?.amount ?? 1000) * 0.8)}`}
+                />
+              ) : null}
+            </>
+          )}
 
           <View className="mb-8 mt-2">
             <KariButton
               label={
-                negotiate
-                  ? `Request · offer ₦${proposed || '…'}`
-                  : `Select ride · ${naira(fare?.amount ?? 0)}`
+                rideType === 'carpool'
+                  ? `Start carpool · ${naira(fare?.amount ?? 0)}`
+                  : negotiate
+                    ? `Request · offer ₦${proposed || '…'}`
+                    : `Select ride · ${naira(fare?.amount ?? 0)}`
               }
               onPress={request}
               loading={loading}

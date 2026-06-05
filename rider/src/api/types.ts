@@ -2,15 +2,20 @@ import type {
   AccessibilityNeed,
   BehaviorPreference,
   CarCategory,
+  CarpoolStatus,
   Gender,
   KycStatus,
   LedgerDirection,
   MusicPreference,
+  NotificationChannel,
+  PanicStatus,
   PaymentMethod,
   Personality,
   PriceType,
   RideStatus,
   RideType,
+  ShuttleBookingStatus,
+  ShuttleTripStatus,
   SubscriptionStatus,
   TransactionType,
   UserRole,
@@ -217,4 +222,131 @@ export interface LeaderboardEntry {
 export interface Leaderboard {
   weekKey: string;
   entries: LeaderboardEntry[];
+}
+
+// ─── Ride variants (Phase 5) ─────────────────────────────────────────────────
+export interface CarpoolMember {
+  riderId: string;
+  shareAmount: number;
+  isCreator: boolean;
+}
+
+export interface Carpool {
+  id: string;
+  creatorId: string;
+  status: CarpoolStatus;
+  driverId: string | null;
+  pickupLat: number;
+  pickupLng: number;
+  pickupAddress: string | null;
+  dropoffLat: number;
+  dropoffLng: number;
+  dropoffAddress: string | null;
+  distanceMeters: number;
+  durationSeconds: number;
+  carCategory: CarCategory;
+  totalFare: number;
+  maxSeats: number;
+  seatsTaken: number;
+  departAt: string | null;
+  members: CarpoolMember[];
+  seatsAvailable: number;
+}
+
+export interface CarpoolCreateResult {
+  carpool: Carpool;
+  dispatchedTo: number;
+}
+
+export interface ShuttleStop {
+  id: string;
+  routeId: string;
+  name: string;
+  lat: number;
+  lng: number;
+  sequence: number;
+  fareFromOrigin: number;
+}
+
+export interface ShuttleRoute {
+  id: string;
+  name: string;
+  corridor: string;
+  active: boolean;
+  stops: ShuttleStop[];
+}
+
+export interface ShuttleTrip {
+  id: string;
+  routeId: string;
+  routeName: string | null;
+  departAt: string;
+  capacity: number;
+  seatsBooked: number;
+  seatsAvailable: number;
+  status: ShuttleTripStatus;
+}
+
+export interface ShuttleBooking {
+  id: string;
+  tripId: string;
+  from: string | null;
+  to: string | null;
+  seats: number;
+  fare: number;
+  status: ShuttleBookingStatus;
+  createdAt: string;
+}
+
+// ─── Safety & comms (Phase 6) ────────────────────────────────────────────────
+export interface EmergencyContact {
+  id: string;
+  name: string;
+  phone: string;
+  relationship: string | null;
+}
+
+export interface PanicEvent {
+  id: string;
+  status: PanicStatus;
+  rideId: string | null;
+  lat: number;
+  lng: number;
+  contactsAlerted: number;
+  createdAt: string;
+}
+
+export interface SharedTripLink {
+  token: string;
+  rideId: string;
+  url: string;
+  expiresAt: string;
+  active: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  rideId: string;
+  senderId: string;
+  recipientId: string;
+  body: string;
+  createdAt: string;
+  readAt?: string | null;
+}
+
+export interface MaskedCall {
+  proxyNumber: string;
+  sessionId: string;
+  provider: string;
+}
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  data: Record<string, unknown> | null;
+  channels: NotificationChannel[] | null;
+  read: boolean;
+  createdAt: string;
 }
