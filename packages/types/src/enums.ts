@@ -241,3 +241,20 @@ export enum ShuttleBookingStatus {
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
 }
+
+// ─── Safety & Comms (Phase 6) ────────────────────────────────────────────────
+
+/** Channels a notification fans out to. */
+export enum NotificationChannel {
+  PUSH = 'PUSH',
+  SMS = 'SMS',
+  EMAIL = 'EMAIL',
+  IN_APP = 'IN_APP',
+}
+
+/** Lifecycle of a panic alert. */
+export enum PanicStatus {
+  OPEN = 'OPEN',
+  RESOLVED = 'RESOLVED',
+  CANCELLED = 'CANCELLED',
+}

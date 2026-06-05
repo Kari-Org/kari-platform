@@ -331,6 +331,14 @@ emergency car-alarm integration. Tracked, not built in MVP.
 - **Reuse:** RidesModule now exports `PricingService` + `MatchingService`; MoneyModule exports `CommissionService`. Verified by an E2E (23/23) including the ledger invariant Σ(balances)=0.
 - **Deferred:** real-time carpool join UX over sockets, dynamic shuttle trip generation/scheduling, shuttle driver payout, per-member mixed payment methods, mobile UI.
 
+**Phase 6 — Safety & Comms (landed 2026-06-04):** modules 15–17 (Safety / Communication / Notifications).
+- **Notifications** (`NotificationsModule`): the first real **BullMQ queue + `@Processor` worker**. `NotificationsService.notify()` persists an in-app `Notification` row synchronously and enqueues a `deliver` job; the worker fans out to the user's **push / SMS / email** providers per the notification's `channels`. `sendSms()` enqueues a raw `sms` job for non-user recipients (emergency contacts). `DeviceToken` registry for push. `GET /notifications`, `POST /notifications/:id/read`, `POST /notifications/devices`.
+- **Safety** (`SafetyModule`): `EmergencyContact` CRUD; **panic** (`POST /safety/panic`) → `PanicEvent` + SOS SMS to every contact (via Notifications queue) + in-app confirmation + socket `safety:panic` to ops and the assigned driver; **share-trip** → `SharedTrip` opaque token (12 h TTL, revocable) resolved by a **`@Public` `GET /trips/shared/:token`** returning read-only status + driver/vehicle but **never the start PIN or rider PII**.
+- **Communication** (`CommsModule`): persisted **in-ride chat** (`POST/GET /rides/:id/messages`, delivered live via `RealtimeService.emitToUser('chat:message')`) and **masked calls** (`POST /rides/:id/call` → `VoiceProvider` proxy session). Both gated to the two ride participants (non-participant → 403).
+- **Providers added:** `EmailProvider` + `VoiceProvider` contracts + noop impls, selected by config (`EMAIL_FROM`/`EMAIL_API_KEY`, `TWILIO_VOICE_FROM`); real SendGrid/Twilio land behind the same interfaces.
+- **Enums added:** `NotificationChannel`, `PanicStatus`. Verified by an E2E (20/20) covering device register, contacts CRUD, participant-gated chat, masked call, public share (PIN hidden, revocation 404), and panic (event + in-app + queued contact SMS + resolve).
+- **Deferred:** real Expo/Twilio/SendGrid impls, WhatsApp in the fan-out, broad ride-event → notification hooks (only panic wired), live driver-location push to the share link, masked-call teardown/duration tracking, mobile UI.
+
 ---
 
-*Architecture draft v1; updated as decisions land (latest: Phase 5 Ride variants, 2026-06-04).*
+*Architecture draft v1; updated as decisions land (latest: Phase 6 Safety & Comms, 2026-06-04).*

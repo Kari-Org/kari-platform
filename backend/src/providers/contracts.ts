@@ -148,6 +148,35 @@ export interface PushProvider {
   send(input: PushInput): Promise<DeliveryResult>;
 }
 
+// ─── Email ───────────────────────────────────────────────────────────────────
+export interface SendEmailInput {
+  to: string;
+  subject: string;
+  body: string;
+  html?: boolean;
+}
+export interface EmailProvider {
+  readonly name: string;
+  sendEmail(input: SendEmailInput): Promise<DeliveryResult>;
+}
+
+// ─── Voice / masked calls (Twilio) ───────────────────────────────────────────
+export interface MaskedCallInput {
+  fromNumber: string;
+  toNumber: string;
+  reference?: string;
+}
+export interface MaskedCallResult {
+  /** The proxy number both parties dial/see — real numbers stay hidden. */
+  proxyNumber: string;
+  sessionId: string;
+  provider: string;
+}
+export interface VoiceProvider {
+  readonly name: string;
+  connectMaskedCall(input: MaskedCallInput): Promise<MaskedCallResult>;
+}
+
 // ─── DI tokens ───────────────────────────────────────────────────────────────
 export const PAYMENT_PROVIDER = Symbol('PAYMENT_PROVIDER');
 export const IDENTITY_PROVIDER = Symbol('IDENTITY_PROVIDER');
@@ -157,3 +186,5 @@ export const STORAGE_PROVIDER = Symbol('STORAGE_PROVIDER');
 export const MAPS_PROVIDER = Symbol('MAPS_PROVIDER');
 export const LIVENESS_PROVIDER = Symbol('LIVENESS_PROVIDER');
 export const PUSH_PROVIDER = Symbol('PUSH_PROVIDER');
+export const EMAIL_PROVIDER = Symbol('EMAIL_PROVIDER');
+export const VOICE_PROVIDER = Symbol('VOICE_PROVIDER');

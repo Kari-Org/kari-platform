@@ -1,6 +1,7 @@
 import { Global, Logger, Module, type Provider } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../config/config.module';
 import {
+  EMAIL_PROVIDER,
   IDENTITY_PROVIDER,
   LIVENESS_PROVIDER,
   MAPS_PROVIDER,
@@ -8,9 +9,11 @@ import {
   PUSH_PROVIDER,
   SMS_PROVIDER,
   STORAGE_PROVIDER,
+  VOICE_PROVIDER,
   WHATSAPP_PROVIDER,
 } from './contracts';
 import {
+  NoopEmailProvider,
   NoopIdentityProvider,
   NoopLivenessProvider,
   NoopMapsProvider,
@@ -18,6 +21,7 @@ import {
   NoopPushProvider,
   NoopSmsProvider,
   NoopStorageProvider,
+  NoopVoiceProvider,
   NoopWhatsAppProvider,
 } from './noop.providers';
 import { PaystackPaymentProvider } from './paystack.provider';
@@ -106,6 +110,22 @@ const providers: Provider[] = [
     useFactory: (c: AppConfig) => {
       note('Push', !!c.providers.expo.accessToken, 'Expo');
       return new NoopPushProvider();
+    },
+  },
+  {
+    provide: EMAIL_PROVIDER,
+    inject: [APP_CONFIG],
+    useFactory: (c: AppConfig) => {
+      note('Email', !!c.providers.email.apiKey, 'Email');
+      return new NoopEmailProvider();
+    },
+  },
+  {
+    provide: VOICE_PROVIDER,
+    inject: [APP_CONFIG],
+    useFactory: (c: AppConfig) => {
+      note('Voice (masked calls)', !!c.providers.twilio.accountSid, 'Twilio Voice');
+      return new NoopVoiceProvider();
     },
   },
 ];

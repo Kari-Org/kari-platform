@@ -5,17 +5,21 @@ import type {
   ChargeResult,
   ChargeStatus,
   DeliveryResult,
+  EmailProvider,
   IdentityProvider,
   LivenessProvider,
   LivenessResult,
   LivenessSession,
   MapsProvider,
+  MaskedCallInput,
+  MaskedCallResult,
   NinVerificationResult,
   PaymentProvider,
   PlaceSuggestion,
   PushInput,
   PushProvider,
   PutObjectInput,
+  SendEmailInput,
   SendMessageInput,
   SmsProvider,
   StorageProvider,
@@ -23,6 +27,7 @@ import type {
   TransferResult,
   TripEstimate,
   TripQuery,
+  VoiceProvider,
   WhatsAppProvider,
 } from './contracts';
 
@@ -202,5 +207,29 @@ export class NoopPushProvider implements PushProvider {
   async send(input: PushInput): Promise<DeliveryResult> {
     this.logger.warn(`[noop] push -> ${input.to}: ${input.title}`);
     return { success: true, provider: this.name };
+  }
+}
+
+export class NoopEmailProvider implements EmailProvider {
+  readonly name = NAME;
+  private readonly logger = new Logger('NoopEmailProvider');
+  async sendEmail(input: SendEmailInput): Promise<DeliveryResult> {
+    this.logger.warn(`[noop] email -> ${input.to}: ${input.subject}`);
+    return { success: true, provider: this.name };
+  }
+}
+
+export class NoopVoiceProvider implements VoiceProvider {
+  readonly name = NAME;
+  private readonly logger = new Logger('NoopVoiceProvider');
+  async connectMaskedCall(input: MaskedCallInput): Promise<MaskedCallResult> {
+    this.logger.warn(
+      `[noop] maskedCall ${input.reference ?? ''} ${input.fromNumber} <-> ${input.toNumber} via proxy (dev only)`,
+    );
+    return {
+      proxyNumber: '+2347000000000',
+      sessionId: `noop-call-${input.reference ?? 'session'}`,
+      provider: this.name,
+    };
   }
 }

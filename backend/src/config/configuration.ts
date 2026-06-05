@@ -53,7 +53,8 @@ export interface AppConfig {
     paystack: { secretKey?: string; publicKey?: string };
     dojah: { apiKey?: string; appId?: string };
     termii: { apiKey?: string; senderId: string };
-    twilio: { accountSid?: string; authToken?: string; whatsappFrom?: string };
+    twilio: { accountSid?: string; authToken?: string; whatsappFrom?: string; voiceFrom?: string };
+    email: { from: string; apiKey?: string };
     aws: { region: string; accessKeyId?: string; secretAccessKey?: string; s3Bucket?: string };
     google: { mapsApiKey?: string; oauthClientIds: string[] };
     expo: { accessToken?: string };
@@ -136,7 +137,9 @@ export function loadConfiguration(): AppConfig {
         accountSid: e.TWILIO_ACCOUNT_SID,
         authToken: e.TWILIO_AUTH_TOKEN,
         whatsappFrom: e.TWILIO_WHATSAPP_FROM,
+        voiceFrom: e.TWILIO_VOICE_FROM,
       },
+      email: { from: e.EMAIL_FROM, apiKey: e.EMAIL_API_KEY },
       aws: {
         region: e.AWS_REGION,
         accessKeyId: e.AWS_ACCESS_KEY_ID,

@@ -25,6 +25,9 @@ import { ReferralsModule } from './referrals/referrals.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { CarpoolsModule } from './carpools/carpools.module';
 import { ShuttleModule } from './shuttle/shuttle.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { SafetyModule } from './safety/safety.module';
+import { CommsModule } from './comms/comms.module';
 
 @Module({
   imports: [
@@ -54,6 +57,9 @@ import { ShuttleModule } from './shuttle/shuttle.module';
     SubscriptionsModule,
     CarpoolsModule,
     ShuttleModule,
+    NotificationsModule,
+    SafetyModule,
+    CommsModule,
   ],
   controllers: [AppController],
   providers: [
