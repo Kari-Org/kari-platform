@@ -86,11 +86,29 @@ export default function RideScreen() {
     try {
       await ridesApi.cancel(rideId);
       await refetch();
+      // A late cancel may have charged a penalty — refresh the wallet balance.
+      await qc.invalidateQueries({ queryKey: ['wallet'] });
     } catch (e) {
       Alert.alert('Could not cancel', errorMessage(e));
     } finally {
       setBusy(false);
     }
+  };
+
+  const confirmCancel = () => {
+    const committed =
+      ride != null &&
+      [RideStatus.ACCEPTED, RideStatus.DRIVER_ARRIVED].includes(ride.status);
+    Alert.alert(
+      'Cancel ride?',
+      committed
+        ? 'A driver is already on the way — a cancellation fee (₦500) may apply.'
+        : 'Are you sure you want to cancel this ride?',
+      [
+        { text: 'Keep ride', style: 'cancel' },
+        { text: 'Cancel ride', style: 'destructive', onPress: () => void cancel() },
+      ],
+    );
   };
 
   const acceptOffer = async (offerId: string) => {
@@ -325,7 +343,7 @@ export default function RideScreen() {
         {body()}
         {showCancel && (
           <View className="pb-8 pt-4">
-            <KariButton label="Cancel ride" variant="outline" onPress={cancel} loading={busy} />
+            <KariButton label="Cancel ride" variant="outline" onPress={confirmCancel} loading={busy} />
           </View>
         )}
       </ScrollView>

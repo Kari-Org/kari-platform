@@ -29,6 +29,9 @@ export default function Account() {
       </View>
 
       <View className="mt-5 overflow-hidden rounded-card bg-card">
+        <Row icon="wallet-outline" label="Wallet" onPress={() => router.push('/wallet')} />
+        <Row icon="gift-outline" label="Rewards & referrals" onPress={() => router.push('/rewards')} />
+        <Row icon="repeat-outline" label="Subscriptions" onPress={() => router.push('/subscriptions')} />
         <Row icon="receipt-outline" label="My rides" onPress={() => router.push('/ride-history')} />
       </View>
 

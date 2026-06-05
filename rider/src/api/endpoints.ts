@@ -13,13 +13,21 @@ import type {
 import { apiFetch } from './client';
 import type {
   AuthResult,
+  Leaderboard,
   PlaceSuggestion,
   PublicUser,
   Quote,
+  ReferralInfo,
   RequestRideResult,
   Ride,
   RiderProfile,
   SavedAddress,
+  Subscription,
+  SubscriptionPlan,
+  TopupInit,
+  TxnView,
+  Wallet,
+  WalletTxn,
 } from './types';
 
 export const authApi = {
@@ -130,4 +138,36 @@ export const ridesApi = {
     apiFetch(`/rides/${id}/rate`, { method: 'POST', body }),
   acceptOffer: (id: string, offerId: string) =>
     apiFetch<Ride>(`/rides/${id}/offers/${offerId}/accept`, { method: 'POST' }),
+};
+
+// ─── Money (Phase 3) ─────────────────────────────────────────────────────────
+export const walletApi = {
+  summary: () => apiFetch<Wallet>('/wallet'),
+  transactions: () => apiFetch<WalletTxn[]>('/wallet/transactions'),
+  topup: (amount: number) =>
+    apiFetch<TopupInit>('/wallet/topup', { method: 'POST', body: { amount } }),
+  verify: (reference: string) =>
+    apiFetch<TxnView>(`/wallet/topup/${encodeURIComponent(reference)}/verify`, { method: 'POST' }),
+};
+
+// ─── Engagement (Phase 4) ────────────────────────────────────────────────────
+export const referralsApi = {
+  me: () => apiFetch<ReferralInfo>('/referrals/me'),
+  apply: (code: string) =>
+    apiFetch<{ applied: boolean; rewardOnFirstRide: number }>('/referrals/apply', {
+      method: 'POST',
+      body: { code },
+    }),
+};
+
+export const subscriptionsApi = {
+  plans: () => apiFetch<SubscriptionPlan[]>('/subscriptions/plans'),
+  mine: () => apiFetch<Subscription[]>('/subscriptions/mine'),
+  subscribe: (planId: string) =>
+    apiFetch<Subscription>('/subscriptions', { method: 'POST', body: { planId } }),
+  cancel: (id: string) => apiFetch<Subscription>(`/subscriptions/${id}/cancel`, { method: 'POST' }),
+};
+
+export const gamificationApi = {
+  leaderboard: () => apiFetch<Leaderboard>('/leaderboard'),
 };

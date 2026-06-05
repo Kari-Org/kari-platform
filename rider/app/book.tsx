@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { type ComponentProps, useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { CarCategory, PaymentMethod, PriceType } from '@kari/types';
-import { ridesApi } from '@/api/endpoints';
+import { ridesApi, walletApi } from '@/api/endpoints';
 import type { Quote } from '@/api/types';
 import { Checkbox } from '@/components/Checkbox';
 import { InputField } from '@/components/InputField';
@@ -41,6 +42,7 @@ const formatTrip = (seconds: number) => {
 export default function Book() {
   const router = useRouter();
   const { pickup, dropoff } = useLocationStore();
+  const { data: wallet } = useQuery({ queryKey: ['wallet'], queryFn: walletApi.summary });
   const [step, setStep] = useState<'type' | 'class'>('type');
   const [rideType, setRideType] = useState<'solo' | 'carpool'>('solo');
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -201,6 +203,18 @@ export default function Book() {
               </Pressable>
             ))}
           </View>
+          {payment === PaymentMethod.WALLET ? (
+            <View className="mb-2 flex-row items-center justify-between rounded-card bg-card px-3 py-2">
+              <Text className="font-sans text-xs text-muted">
+                Wallet balance: <Text className="text-white">{naira(wallet?.balance ?? 0)}</Text>
+              </Text>
+              {fare && (wallet?.balance ?? 0) < fare.amount ? (
+                <Pressable onPress={() => router.push('/wallet')} hitSlop={8}>
+                  <Text className="font-pmedium text-xs text-brand">Top up</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
 
           {quote?.negotiable ? (
             <View className="mb-2 mt-2">

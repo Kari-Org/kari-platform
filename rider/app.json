@@ -47,8 +47,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiBaseUrl": "http://10.233.0.135:3000",
-      "socketUrl": "http://10.233.0.135:3000",
+      "apiBaseUrl": "http://10.233.0.135:5001",
+      "socketUrl": "http://10.233.0.135:5001",
       "googleWebClientId": "",
       "googleIosClientId": ""
     }

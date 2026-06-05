@@ -4,12 +4,15 @@ import type {
   CarCategory,
   Gender,
   KycStatus,
+  LedgerDirection,
   MusicPreference,
   PaymentMethod,
   Personality,
   PriceType,
   RideStatus,
   RideType,
+  SubscriptionStatus,
+  TransactionType,
   UserRole,
   UserStatus,
 } from '@kari/types';
@@ -130,4 +133,88 @@ export interface DriverSummary {
 export interface RequestRideResult {
   ride: Ride;
   dispatchedTo: number;
+}
+
+// ─── Money (Phase 3) ─────────────────────────────────────────────────────────
+export interface Wallet {
+  walletId: string;
+  currency: string;
+  balanceKobo: number;
+  balance: number;
+}
+
+export interface WalletTxn {
+  id: string;
+  type: TransactionType;
+  direction: LedgerDirection;
+  amountKobo: number;
+  amount: number;
+  balanceAfterKobo: number;
+  balanceAfter: number;
+  at: string;
+}
+
+export interface TopupInit {
+  reference: string;
+  authorizationUrl: string | null;
+  amount: number;
+  amountKobo: number;
+  status: 'pending';
+  provider: string;
+}
+
+export interface TxnView {
+  reference: string;
+  type: TransactionType;
+  status: string;
+  amountKobo: number;
+  amount: number;
+  rideId: string | null;
+  provider: string | null;
+  providerRef: string | null;
+  createdAt: string;
+}
+
+// ─── Engagement (Phase 4) ────────────────────────────────────────────────────
+export interface ReferralInfo {
+  code: string;
+  referredBy: string | null;
+  rewarded: boolean;
+  referralsCount: number;
+  rewardNaira: number;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  priceNaira: number;
+  billingCycleDays: number;
+  includedRides: number | null;
+  sameDriver: boolean;
+  description: string;
+}
+
+export interface Subscription {
+  id: string;
+  planId: string;
+  planName: string;
+  status: SubscriptionStatus;
+  assignedDriverId: string | null;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  ridesUsed: number;
+  includedRides: number | null;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  driverId: string;
+  name: string;
+  points: number;
+  rides: number;
+}
+
+export interface Leaderboard {
+  weekKey: string;
+  entries: LeaderboardEntry[];
 }
