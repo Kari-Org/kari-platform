@@ -55,6 +55,13 @@ export const envSchema = z
     MIN_TOPUP: z.coerce.number().int().positive().default(100), // naira
     MIN_PAYOUT: z.coerce.number().int().positive().default(1000), // naira
 
+    // Engagement — gamification + referrals (Phase 4)
+    GAMIFICATION_POINTS_PER_RIDE: z.coerce.number().int().nonnegative().default(10),
+    GAMIFICATION_TOP3_REDUCTION_BPS: z.coerce.number().int().min(0).max(10_000).default(100), // −1% per top-3 leaderboard rank
+    GAMIFICATION_MAX_REDUCTION_BPS: z.coerce.number().int().min(0).max(10_000).default(300), // cap total reduction
+    COMMISSION_MIN_RATE_BPS: z.coerce.number().int().min(0).max(10_000).default(1000), // commission can't drop below 10%
+    REFERRAL_REWARD: z.coerce.number().int().nonnegative().default(500), // naira credited to each side
+
     // Providers — all optional; absence selects the no-op implementation
     PAYSTACK_SECRET_KEY: z.string().optional(),
     PAYSTACK_PUBLIC_KEY: z.string().optional(),

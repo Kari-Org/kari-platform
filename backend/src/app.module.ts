@@ -20,6 +20,9 @@ import { AdminModule } from './admin/admin.module';
 import { RidesModule } from './rides/rides.module';
 import { PlacesModule } from './places/places.module';
 import { MoneyModule } from './money/money.module';
+import { GamificationModule } from './gamification/gamification.module';
+import { ReferralsModule } from './referrals/referrals.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { MoneyModule } from './money/money.module';
     RidesModule,
     PlacesModule,
     MoneyModule,
+    GamificationModule,
+    ReferralsModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [

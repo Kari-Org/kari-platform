@@ -42,6 +42,13 @@ export interface AppConfig {
     minTopup: number; // naira
     minPayout: number; // naira
   };
+  engagement: {
+    pointsPerRide: number;
+    top3ReductionBps: number;
+    maxReductionBps: number;
+    minRateBps: number;
+    referralReward: number; // naira
+  };
   providers: {
     paystack: { secretKey?: string; publicKey?: string };
     dojah: { apiKey?: string; appId?: string };
@@ -113,6 +120,13 @@ export function loadConfiguration(): AppConfig {
       driverCancelFee: e.DRIVER_CANCEL_FEE,
       minTopup: e.MIN_TOPUP,
       minPayout: e.MIN_PAYOUT,
+    },
+    engagement: {
+      pointsPerRide: e.GAMIFICATION_POINTS_PER_RIDE,
+      top3ReductionBps: e.GAMIFICATION_TOP3_REDUCTION_BPS,
+      maxReductionBps: e.GAMIFICATION_MAX_REDUCTION_BPS,
+      minRateBps: e.COMMISSION_MIN_RATE_BPS,
+      referralReward: e.REFERRAL_REWARD,
     },
     providers: {
       paystack: { secretKey: e.PAYSTACK_SECRET_KEY, publicKey: e.PAYSTACK_PUBLIC_KEY },

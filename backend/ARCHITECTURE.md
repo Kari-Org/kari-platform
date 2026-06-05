@@ -315,6 +315,15 @@ emergency car-alarm integration. Tracked, not built in MVP.
 - **Provider:** `PaymentProvider` extended with `initiateTransfer`/`verifyTransfer`/`verifyWebhookSignature`. Real `PaystackPaymentProvider` (initialize/verify/transfer/recipient, HMAC-SHA512 webhook) selected when `PAYSTACK_SECRET_KEY` is set; otherwise the no-op auto-succeeds so dev/CI flows complete keyless. Webhook is `@Public()` + signature-verified over the raw body (`rawBody: true`).
 - **Open for later phases:** real Paystack bank-code resolution for payouts (currently passes the stored bank field); async settlement via BullMQ if settle-on-complete becomes a hot path (synchronous + idempotent for now); rider/driver wallet UI (mobile).
 
+**Phase 4 — Engagement (landed 2026-06-04):** modules 10–12 (Commission reductions / Gamification / Subscriptions) + referrals.
+- **Gamification** (`GamificationModule`): `DriverScore` (per ISO-week + an `ALL` all-time bucket) and `Achievement` entities. Each completed ride awards `GAMIFICATION_POINTS_PER_RIDE` (default 10) and evaluates milestone badges (first / 10 / 50 / 100 rides, top-rated ≥4.8★ over ≥20 ratings). Weekly leaderboard ranks by points.
+- **Commission reduction (closes the Phase 3 hook):** `CommissionService.resolveRateBps` now subtracts `GamificationService.commissionReductionBps(driver)` — top-3 weekly drivers get `GAMIFICATION_TOP3_REDUCTION_BPS` (−100 bps) off, capped at `GAMIFICATION_MAX_REDUCTION_BPS` and floored at `COMMISSION_MIN_RATE_BPS` (10%). Verified: a leaderboard-leading driver's next ride is settled at 19% instead of 20%.
+- **Referrals** (`ReferralsModule`): each `User` gets a unique lazily-generated `referralCode`; `POST /referrals/apply` records `referredByUserId` (one-time, no self-referral). On the referee's first completed ride both sides are credited `REFERRAL_REWARD` (default ₦500) via a REVENUE-funded `REFERRAL` ledger transaction — idempotent via the `referralRewarded` flag + a per-referee reference.
+- **Subscriptions** (`SubscriptionsModule`): static plan catalog (Weekly Lite / Monthly Commute / Monthly Unlimited). Subscribe charges the plan fee from the wallet (`SUBSCRIPTION` ledger txn, rolled back if the charge fails) and creates an ACTIVE `Subscription`. **Same-driver:** the first driver to serve an active subscriber is captured as `assignedDriverId`; `MatchingService.findCandidates` then dispatches *exclusively* to that driver when they're online + eligible.
+- **Ride hooks:** `rides.complete()` fires gamification + referral rewards (best-effort, never blocks completion); `rides.request()` routes subscribers to their sticky driver; `accept`/`acceptOffer` capture it.
+- **Enums added:** `TransactionType.SUBSCRIPTION` + `REFERRAL`, `AchievementBadge`.
+- **Deferred:** subscription auto-renew billing (BullMQ cron) + metered per-ride coverage/discount; streak-based commission bonuses; mobile engagement UI.
+
 ---
 
-*Architecture draft v1; updated as decisions land (latest: Phase 3 Money, 2026-06-04).*
+*Architecture draft v1; updated as decisions land (latest: Phase 4 Engagement, 2026-06-04).*

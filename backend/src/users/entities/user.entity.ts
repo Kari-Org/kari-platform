@@ -34,4 +34,18 @@ export class User extends BaseEntity {
   /** Sub-role for ADMIN users (null for riders/drivers) — drives the admin RBAC. */
   @Column({ type: 'varchar', length: 16, nullable: true })
   adminRole: AdminRole | null;
+
+  // ─── Referrals (Phase 4) ────────────────────────────────────────────────────
+  /** This user's own shareable referral code (generated lazily). Unique. */
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  referralCode: string | null;
+
+  /** Who referred them — set when they apply a code (one-time). */
+  @Column({ type: 'uuid', nullable: true })
+  referredByUserId: string | null;
+
+  /** Whether the one-time referral reward has been paid (idempotency guard). */
+  @Column({ type: 'boolean', default: false })
+  referralRewarded: boolean;
 }

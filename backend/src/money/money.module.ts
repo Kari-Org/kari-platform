@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DriverModule } from '../driver/driver.module';
+import { GamificationModule } from '../gamification/gamification.module';
 import { UsersModule } from '../users/users.module';
 import { CommissionService } from './commission.service';
 import { LedgerEntry } from './entities/ledger-entry.entity';
@@ -23,6 +24,7 @@ import { WalletService } from './wallet.service';
     TypeOrmModule.forFeature([Wallet, Transaction, LedgerEntry]),
     UsersModule,
     DriverModule,
+    GamificationModule,
   ],
   controllers: [WalletController, PaymentsController],
   providers: [LedgerService, CommissionService, WalletService, PaymentsService],

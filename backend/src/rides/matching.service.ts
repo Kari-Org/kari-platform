@@ -39,6 +39,7 @@ export class MatchingService {
     lng: number,
     category: CarCategory,
     preference: BehaviorPreference,
+    preferredDriverId: string | null = null,
     radiusMeters = DEFAULT_RADIUS_METERS,
     limit = DEFAULT_LIMIT,
   ): Promise<string[]> {
@@ -82,6 +83,10 @@ export class MatchingService {
       if (matched.length >= limit) {
         break;
       }
+    }
+    // Subscriber's sticky driver: if they're eligible + nearby, dispatch exclusively to them.
+    if (preferredDriverId && matched.includes(preferredDriverId)) {
+      return [preferredDriverId];
     }
     return matched;
   }

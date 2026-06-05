@@ -134,6 +134,10 @@ export enum TransactionType {
   REFUND = 'REFUND',
   PENALTY = 'PENALTY',
   REWARD = 'REWARD',
+  /** Recurring subscription plan charge (Phase 4). */
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  /** Referral bonus credited to referrer/referee (Phase 4). */
+  REFERRAL = 'REFERRAL',
 }
 
 export enum SubscriptionStatus {
@@ -195,4 +199,18 @@ export enum WalletOwnerType {
 export enum SystemAccount {
   REVENUE = 'REVENUE',
   GATEWAY = 'GATEWAY',
+}
+
+// ─── Engagement (Phase 4) ────────────────────────────────────────────────────
+
+/**
+ * Driver achievement badges, unlocked as drivers hit milestones. Surfaced in the
+ * app and feed the gamification/engagement loops.
+ */
+export enum AchievementBadge {
+  FIRST_RIDE = 'FIRST_RIDE',
+  TEN_RIDES = 'TEN_RIDES',
+  FIFTY_RIDES = 'FIFTY_RIDES',
+  HUNDRED_RIDES = 'HUNDRED_RIDES',
+  TOP_RATED = 'TOP_RATED',
 }

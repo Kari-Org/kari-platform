@@ -20,9 +20,12 @@ import {
 } from '@kari/types';
 import { DriverService } from '../driver/driver.service';
 import type { DriverProfile } from '../driver/entities/driver-profile.entity';
+import { GamificationService } from '../gamification/gamification.service';
 import { PaymentsService } from '../money/payments.service';
 import { RealtimeService } from '../realtime/realtime.service';
+import { ReferralsService } from '../referrals/referrals.service';
 import { RiderService } from '../rider/rider.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import type { RiderProfile } from '../rider/entities/rider-profile.entity';
 import type { CancelRideDto } from './dto/cancel-ride.dto';
 import type { QuoteDto } from './dto/quote.dto';
@@ -59,6 +62,9 @@ export class RidesService {
     private readonly drivers: DriverService,
     private readonly riders: RiderService,
     private readonly payments: PaymentsService,
+    private readonly gamification: GamificationService,
+    private readonly referrals: ReferralsService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
   // ─── helpers ──────────────────────────────────────────────────────────────
@@ -182,11 +188,13 @@ export class RidesService {
     });
     ride = await this.rides.save(ride);
 
+    const sub = await this.subscriptions.activeFor(riderId);
     const candidates = await this.matching.findCandidates(
       quote.pickup.lat,
       quote.pickup.lng,
       dto.carCategory,
       rider.preferredDriverBehavior,
+      sub?.assignedDriverId ?? null,
     );
     if (candidates.length > 0) {
       ride.status = RideStatus.OFFERED;
@@ -215,6 +223,7 @@ export class RidesService {
     ride.startOtp = this.otp();
     const saved = await this.saveLocked(ride);
     await this.drivers.setAvailability(driverId, DriverAvailability.ON_TRIP);
+    await this.subscriptions.noteServingDriver(ride.riderId, driverId).catch(() => undefined);
     this.realtime.emitToUser(ride.riderId, 'ride:accepted', await this.view(saved, UserRole.RIDER));
     return this.view(saved, UserRole.DRIVER);
   }
@@ -270,6 +279,7 @@ export class RidesService {
       { status: NegotiationStatus.REJECTED },
     );
     await this.drivers.setAvailability(offer.driverId, DriverAvailability.ON_TRIP);
+    await this.subscriptions.noteServingDriver(ride.riderId, offer.driverId).catch(() => undefined);
     this.realtime.emitToUser(offer.driverId, 'ride:accepted', await this.view(saved, UserRole.DRIVER));
     return this.view(saved, UserRole.RIDER);
   }
@@ -334,6 +344,13 @@ export class RidesService {
     }
     const saved = await this.rides.save(ride);
     await this.drivers.setAvailability(driverId, DriverAvailability.ONLINE);
+    // Engagement hooks — non-critical; never block completion.
+    try {
+      await this.gamification.awardForRide(driverId);
+      await this.referrals.rewardForFirstRide(ride.riderId);
+    } catch (err) {
+      this.logger.error(`engagement hooks failed for ride ${ride.id}`, err as Error);
+    }
     this.realtime.emitToUser(ride.riderId, 'ride:completed', await this.view(saved, UserRole.RIDER));
     return this.view(saved, UserRole.DRIVER);
   }

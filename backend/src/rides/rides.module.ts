@@ -7,7 +7,10 @@ import { AvailabilityController } from './availability.controller';
 import { Rating } from './entities/rating.entity';
 import { RideOffer } from './entities/ride-offer.entity';
 import { Ride } from './entities/ride.entity';
+import { GamificationModule } from '../gamification/gamification.module';
 import { MoneyModule } from '../money/money.module';
+import { ReferralsModule } from '../referrals/referrals.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { MatchingService } from './matching.service';
 import { PricingService } from './pricing.service';
 import { RidesController } from './rides.controller';
@@ -20,6 +23,9 @@ import { RidesService } from './rides.service';
     RiderModule,
     RealtimeModule,
     MoneyModule,
+    GamificationModule,
+    ReferralsModule,
+    SubscriptionsModule,
   ],
   controllers: [RidesController, AvailabilityController],
   providers: [PricingService, MatchingService, RidesService],

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../config/config.module';
+import { GamificationService } from '../gamification/gamification.service';
 
 export interface CommissionSplit {
   rateBps: number;
@@ -8,18 +9,22 @@ export interface CommissionSplit {
 }
 
 /**
- * Resolves the platform's cut of a fare. The base rate comes from config
- * (COMMISSION_RATE_BPS). The `resolveRateBps` hook is where Phase 11's
- * gamification reductions will subtract (e.g. top-3 drivers −100 bps, weekly
- * streaks more) — for now every driver pays the base rate.
+ * Resolves the platform's cut of a fare: the base rate (COMMISSION_RATE_BPS)
+ * minus the driver's leaderboard-earned reduction (Phase 4 gamification),
+ * floored at COMMISSION_MIN_RATE_BPS so it can never go below the configured
+ * minimum.
  */
 @Injectable()
 export class CommissionService {
-  constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
+  constructor(
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
+    private readonly gamification: GamificationService,
+  ) {}
 
-  async resolveRateBps(_driverId: string): Promise<number> {
-    // TODO(Phase 11): subtract leaderboard/streak reductions for this driver.
-    return this.config.money.commissionRateBps;
+  async resolveRateBps(driverId: string): Promise<number> {
+    const base = this.config.money.commissionRateBps;
+    const reduction = await this.gamification.commissionReductionBps(driverId);
+    return Math.max(this.config.engagement.minRateBps, base - reduction);
   }
 
   /** Splits a fare (kobo) into platform commission + driver net. Always exactly balanced. */
