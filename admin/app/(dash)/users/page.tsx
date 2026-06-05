@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { PageHeader } from '@/components/shell/page-header';
 import { Badge, type Tone } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ const STATUS_TONE: Record<string, Tone> = {
 };
 
 export default function UsersPage() {
+  const router = useRouter();
   const [role, setRole] = useState<'RIDER' | 'DRIVER'>('RIDER');
   const [search, setSearch] = useState('');
   const { data, isLoading } = useQuery({
@@ -82,7 +84,13 @@ export default function UsersPage() {
           className="flex-1 rounded-md border border-hairline bg-surface px-3 py-2 text-sm text-white outline-none placeholder:text-subtle focus:border-brand"
         />
       </div>
-      <DataTable columns={columns} rows={data?.items} loading={isLoading} empty="No users found" />
+      <DataTable
+        columns={columns}
+        rows={data?.items}
+        loading={isLoading}
+        empty="No users found"
+        onRowClick={(u) => router.push(`/users/${u.id}`)}
+      />
     </div>
   );
 }
