@@ -1,15 +1,37 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThanOrEqual, Repository } from 'typeorm';
-import { CarCategory, DriverAvailability, DriverType, RideStatus, UserRole } from '@kari/types';
+import {
+  CarCategory,
+  DriverAvailability,
+  DriverType,
+  KycStatus,
+  RideStatus,
+  SystemAccount,
+  TransactionStatus,
+  TransactionType,
+  UserRole,
+  UserStatus,
+} from '@kari/types';
 import { PasswordService } from '../auth/services/password.service';
+import { APP_CONFIG, type AppConfig } from '../config/config.module';
 import { DriverService } from '../driver/driver.service';
 import { DriverProfile } from '../driver/entities/driver-profile.entity';
+import { LedgerService } from '../money/ledger.service';
+import { Transaction } from '../money/entities/transaction.entity';
+import { RealtimeService } from '../realtime/realtime.service';
 import { RiderProfile } from '../rider/entities/rider-profile.entity';
 import { Ride } from '../rides/entities/ride.entity';
+import { MatchingService } from '../rides/matching.service';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { TicketsService } from '../tickets/tickets.service';
+import { TicketStatus } from '../tickets/entities/ticket.entity';
+import type { UpdateTicketDto } from '../tickets/dto/update-ticket.dto';
+import { AuditService } from './audit/audit.service';
 import type { CreateDedicatedDriverDto } from './dto/create-dedicated-driver.dto';
+
+const ACTIVE_DRIVING = [RideStatus.ACCEPTED, RideStatus.DRIVER_ARRIVED, RideStatus.IN_PROGRESS];
 
 const ACTIVE_RIDE_STATUSES = [
   RideStatus.SEARCHING,
@@ -48,10 +70,17 @@ export class AdminService {
     private readonly users: UsersService,
     private readonly password: PasswordService,
     private readonly drivers: DriverService,
+    private readonly matching: MatchingService,
+    private readonly ledger: LedgerService,
+    private readonly realtime: RealtimeService,
+    private readonly audit: AuditService,
+    private readonly tickets: TicketsService,
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(Ride) private readonly rideRepo: Repository<Ride>,
     @InjectRepository(RiderProfile) private readonly riderRepo: Repository<RiderProfile>,
     @InjectRepository(DriverProfile) private readonly driverRepo: Repository<DriverProfile>,
+    @InjectRepository(Transaction) private readonly txnRepo: Repository<Transaction>,
   ) {}
 
   /**
@@ -228,5 +257,188 @@ export class AdminService {
     if (status) qb.andWhere('r.status = :status', { status });
     const [rows, total] = await qb.getManyAndCount();
     return { items: rows.map(stripPin), total, page, limit };
+  }
+
+  // ─── A2 · Live fleet ───────────────────────────────────────────────────────
+  /** Online/on-trip drivers with their last GEO position + any active ride. */
+  async fleet() {
+    const positions = await this.matching.fleetPositions();
+    const ids = positions.map((p) => p.driverId);
+    const profiles = ids.length ? await this.drivers.findByUserIds(ids) : [];
+    const byId = new Map(profiles.map((p) => [p.userId, p]));
+    const activeRides = ids.length
+      ? await this.rideRepo.find({ where: { driverId: In(ids), status: In(ACTIVE_DRIVING) } })
+      : [];
+    const rideByDriver = new Map(activeRides.map((r) => [r.driverId as string, r]));
+
+    const drivers = positions.map((pos) => {
+      const p = byId.get(pos.driverId);
+      const ride = rideByDriver.get(pos.driverId) ?? null;
+      return {
+        driverId: pos.driverId,
+        name: p ? fullName(p) : '—',
+        lat: pos.lat,
+        lng: pos.lng,
+        availability: p?.availability ?? DriverAvailability.ONLINE,
+        category: p?.vehicle?.category ?? null,
+        rideId: ride?.id ?? null,
+        rideStatus: ride?.status ?? null,
+      };
+    });
+    return {
+      drivers,
+      counts: {
+        total: drivers.length,
+        online: drivers.filter((d) => d.availability === DriverAvailability.ONLINE).length,
+        onTrip: drivers.filter((d) => d.availability === DriverAvailability.ON_TRIP).length,
+      },
+    };
+  }
+
+  // ─── A3 · Write actions ──────────────────────────────────────────────────────
+  /** Suspend / reactivate a user account. */
+  async setUserStatus(id: string, status: UserStatus) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('user not found');
+    user.status = status;
+    await this.userRepo.save(user);
+    return { id: user.id, status: user.status };
+  }
+
+  /** Approve or reject a driver's KYC (NIN + liveness). Approval completes onboarding. */
+  async verifyDriver(userId: string, approve: boolean) {
+    const profile = await this.driverRepo.findOne({ where: { userId } });
+    if (!profile) throw new NotFoundException('driver profile not found');
+    profile.ninStatus = approve ? KycStatus.VERIFIED : KycStatus.REJECTED;
+    if (approve) {
+      profile.livenessVerified = true;
+      profile.onboardingComplete = true;
+    }
+    await this.driverRepo.save(profile);
+    return {
+      userId,
+      ninStatus: profile.ninStatus,
+      livenessVerified: profile.livenessVerified,
+      onboardingComplete: profile.onboardingComplete,
+    };
+  }
+
+  /** Admin override-cancel of any non-terminal ride (no penalty; both parties notified). */
+  async cancelRide(rideId: string, reason?: string) {
+    const ride = await this.rideRepo.findOne({ where: { id: rideId } });
+    if (!ride) throw new NotFoundException('ride not found');
+    if (ride.status === RideStatus.COMPLETED || ride.status === RideStatus.CANCELLED) {
+      throw new ConflictException(`cannot cancel a ${ride.status.toLowerCase()} ride`);
+    }
+    const driverId = ride.driverId;
+    ride.status = RideStatus.CANCELLED;
+    ride.cancelledAt = new Date();
+    ride.cancelReason = reason ?? 'Cancelled by admin';
+    await this.rideRepo.save(ride);
+    if (driverId) await this.drivers.setAvailability(driverId, DriverAvailability.ONLINE);
+    const payload = { rideId, reason: ride.cancelReason, byAdmin: true };
+    this.realtime.emitToUser(ride.riderId, 'ride:cancelled', payload);
+    if (driverId) this.realtime.emitToUser(driverId, 'ride:cancelled', payload);
+    return stripPin(ride);
+  }
+
+  // ─── A6 · Financials ─────────────────────────────────────────────────────────
+  /** Platform revenue (REVENUE wallet), GMV, payouts + top-ups. Amounts in naira. */
+  async financeSummary() {
+    const today = startOfToday();
+    const revenue = await this.ledger.systemWallet(SystemAccount.REVENUE);
+    const gmvAll = await this.rideRepo
+      .createQueryBuilder('r')
+      .select('COALESCE(SUM(r."agreedPrice"), 0)', 'sum')
+      .where('r.status = :s', { s: RideStatus.COMPLETED })
+      .getRawOne<{ sum: string }>();
+    const gmvToday = await this.rideRepo
+      .createQueryBuilder('r')
+      .select('COALESCE(SUM(r."agreedPrice"), 0)', 'sum')
+      .where('r.status = :s', { s: RideStatus.COMPLETED })
+      .andWhere('r."createdAt" >= :d', { d: today })
+      .getRawOne<{ sum: string }>();
+    const agg = async (type: TransactionType) =>
+      this.txnRepo
+        .createQueryBuilder('t')
+        .select('COALESCE(SUM(t.amount), 0)', 'sum')
+        .addSelect('COUNT(*)', 'count')
+        .where('t.type = :type', { type })
+        .andWhere('t.status = :st', { st: TransactionStatus.SUCCESS })
+        .getRawOne<{ sum: string; count: string }>();
+    const [payouts, topups] = await Promise.all([
+      agg(TransactionType.RIDE_PAYOUT),
+      agg(TransactionType.TOPUP),
+    ]);
+
+    return {
+      revenue: revenue.balance / 100,
+      gmvAllTime: Number(gmvAll?.sum ?? 0),
+      gmvToday: Number(gmvToday?.sum ?? 0),
+      payouts: Number(payouts?.sum ?? 0) / 100,
+      payoutCount: Number(payouts?.count ?? 0),
+      topups: Number(topups?.sum ?? 0) / 100,
+      topupCount: Number(topups?.count ?? 0),
+    };
+  }
+
+  /** Paginated payout transactions (money out to driver banks). */
+  async payouts(params: Page) {
+    const { page, limit } = params;
+    const [rows, total] = await this.txnRepo.findAndCount({
+      where: { type: TransactionType.RIDE_PAYOUT },
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    const items = rows.map((t) => ({
+      id: t.id,
+      reference: t.reference,
+      amount: t.amount / 100,
+      status: t.status,
+      userId: t.userId,
+      provider: t.provider,
+      providerRef: t.providerRef,
+      createdAt: t.createdAt,
+    }));
+    return { items, total, page, limit };
+  }
+
+  /** Current fare + commission configuration (read-only; sourced from env config). */
+  fareConfig() {
+    const { pricing, money } = this.config;
+    return {
+      pricing: {
+        baseFare: pricing.baseFare,
+        perKm: pricing.perKm,
+        perMin: pricing.perMin,
+        fuelIndex: pricing.fuelIndex,
+      },
+      commission: {
+        commissionRateBps: money.commissionRateBps,
+        commissionPct: money.commissionRateBps / 100,
+      },
+      cancellation: {
+        cancellationFee: money.cancellationFee,
+        cancellationGraceSeconds: money.cancellationGraceSeconds,
+        penaltyDriverShareBps: money.penaltyDriverShareBps,
+        driverCancelFee: money.driverCancelFee,
+      },
+      wallet: { minTopup: money.minTopup, minPayout: money.minPayout },
+    };
+  }
+
+  // ─── A5 · Tickets ────────────────────────────────────────────────────────────
+  listTickets(params: Page & { status?: TicketStatus }) {
+    return this.tickets.list(params);
+  }
+
+  updateTicket(id: string, adminId: string, dto: UpdateTicketDto) {
+    return this.tickets.update(id, adminId, dto);
+  }
+
+  // ─── A3 · Audit log ──────────────────────────────────────────────────────────
+  listAudit(params: Page & { action?: string }) {
+    return this.audit.list(params);
   }
 }

@@ -34,6 +34,21 @@ export class MatchingService {
     await this.drivers.setAvailability(userId, DriverAvailability.OFFLINE);
   }
 
+  /** All drivers currently in the GEO set, with their last known position (admin fleet view). */
+  async fleetPositions(): Promise<Array<{ driverId: string; lat: number; lng: number }>> {
+    const ids = await this.redis.zrange(GEO_KEY, 0, -1);
+    if (!ids.length) return [];
+    const coords = (await this.redis.call('GEOPOS', GEO_KEY, ...ids)) as Array<
+      [string, string] | null
+    >;
+    const out: Array<{ driverId: string; lat: number; lng: number }> = [];
+    ids.forEach((id, i) => {
+      const c = coords[i];
+      if (c) out.push({ driverId: id, lng: Number(c[0]), lat: Number(c[1]) });
+    });
+    return out;
+  }
+
   async findCandidates(
     lat: number,
     lng: number,

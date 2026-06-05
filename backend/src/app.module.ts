@@ -28,6 +28,7 @@ import { ShuttleModule } from './shuttle/shuttle.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SafetyModule } from './safety/safety.module';
 import { CommsModule } from './comms/comms.module';
+import { TicketsModule } from './tickets/tickets.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { CommsModule } from './comms/comms.module';
     NotificationsModule,
     SafetyModule,
     CommsModule,
+    TicketsModule,
   ],
   controllers: [AppController],
   providers: [
