@@ -324,6 +324,13 @@ emergency car-alarm integration. Tracked, not built in MVP.
 - **Enums added:** `TransactionType.SUBSCRIPTION` + `REFERRAL`, `AchievementBadge`.
 - **Deferred:** subscription auto-renew billing (BullMQ cron) + metered per-ride coverage/discount; streak-based commission bonuses; mobile engagement UI.
 
+**Phase 5 — Ride variants (landed 2026-06-04):** modules 13–14 (Shuttle / Carpooling).
+- **Carpooling** (`CarpoolsModule`): `Carpool` (`@Version` seat guard) + `CarpoolMember`. **NIN-gated** — create *and* join require the rider's `ninStatus = VERIFIED`. Created from a ride quote (the solo fare becomes `totalFare`); **cost-split** = `totalFare / member-count`, recomputed on join/leave (alone ⇒ full fare). Seat claims are optimistic-locked (first wins the last seat). Dispatched to nearby drivers (reuses `MatchingService`, emits `carpool:offer`); on completion the whole fare is settled in **one balanced ledger transaction** — every member debited their share, the driver credited net, the platform credited commission.
+- **Shuttle** (`ShuttleModule`): `ShuttleRoute` + ordered `ShuttleStop` (cumulative `fareFromOrigin`) + `ShuttleTrip` (`@Version` seat inventory) + `ShuttleBooking`. Lekki + Aba corridor routes/stops and a few upcoming trips are **seeded on boot** (idempotent). A booking's fare = stop-distance × seats, charged from the wallet to REVENUE (driver is dedicated/salaried — no per-trip payout yet); seats are optimistic-locked; cancel refunds + frees seats.
+- **Enums added:** `CarpoolStatus`, `ShuttleTripStatus`, `ShuttleBookingStatus`. `RideType.CARPOOL`/`SHUTTLE` already existed. Settlement reuses `TransactionType.RIDE_CHARGE` / `REFUND`.
+- **Reuse:** RidesModule now exports `PricingService` + `MatchingService`; MoneyModule exports `CommissionService`. Verified by an E2E (23/23) including the ledger invariant Σ(balances)=0.
+- **Deferred:** real-time carpool join UX over sockets, dynamic shuttle trip generation/scheduling, shuttle driver payout, per-member mixed payment methods, mobile UI.
+
 ---
 
-*Architecture draft v1; updated as decisions land (latest: Phase 4 Engagement, 2026-06-04).*
+*Architecture draft v1; updated as decisions land (latest: Phase 5 Ride variants, 2026-06-04).*

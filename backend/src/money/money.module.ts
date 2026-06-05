@@ -28,6 +28,6 @@ import { WalletService } from './wallet.service';
   ],
   controllers: [WalletController, PaymentsController],
   providers: [LedgerService, CommissionService, WalletService, PaymentsService],
-  exports: [PaymentsService, LedgerService],
+  exports: [PaymentsService, LedgerService, CommissionService],
 })
 export class MoneyModule {}

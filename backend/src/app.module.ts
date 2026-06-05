@@ -23,6 +23,8 @@ import { MoneyModule } from './money/money.module';
 import { GamificationModule } from './gamification/gamification.module';
 import { ReferralsModule } from './referrals/referrals.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { CarpoolsModule } from './carpools/carpools.module';
+import { ShuttleModule } from './shuttle/shuttle.module';
 
 @Module({
   imports: [
@@ -50,6 +52,8 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
     GamificationModule,
     ReferralsModule,
     SubscriptionsModule,
+    CarpoolsModule,
+    ShuttleModule,
   ],
   controllers: [AppController],
   providers: [

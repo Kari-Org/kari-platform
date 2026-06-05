@@ -29,5 +29,6 @@ import { RidesService } from './rides.service';
   ],
   controllers: [RidesController, AvailabilityController],
   providers: [PricingService, MatchingService, RidesService],
+  exports: [PricingService, MatchingService],
 })
 export class RidesModule {}

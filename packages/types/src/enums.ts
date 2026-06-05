@@ -214,3 +214,30 @@ export enum AchievementBadge {
   HUNDRED_RIDES = 'HUNDRED_RIDES',
   TOP_RATED = 'TOP_RATED',
 }
+
+// ─── Ride variants (Phase 5) ─────────────────────────────────────────────────
+
+/** A shared carpool ride forming up, dispatched, and settled across members. */
+export enum CarpoolStatus {
+  OPEN = 'OPEN', // accepting members, awaiting a driver
+  MATCHED = 'MATCHED', // a driver accepted; still joinable until full/departure
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+/** A scheduled shuttle run along a fixed route. */
+export enum ShuttleTripStatus {
+  SCHEDULED = 'SCHEDULED',
+  BOARDING = 'BOARDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+/** A rider's seat reservation on a shuttle trip. */
+export enum ShuttleBookingStatus {
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+}
