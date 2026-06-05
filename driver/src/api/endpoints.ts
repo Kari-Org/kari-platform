@@ -2,14 +2,23 @@ import type { CarCategory, KycStatus, OtpChannel, UserRole } from '@kari/types';
 import { apiFetch } from '@kari/mobile-core';
 import type {
   AchievementView,
+  AppNotification,
   AuthResult,
+  Carpool,
+  ChatMessage,
   DriverEarnings,
   DriverProfile,
+  EmergencyContact,
   GamificationSummary,
   Leaderboard,
+  MaskedCall,
+  PanicEvent,
   PublicUser,
   ReferralInfo,
   Ride,
+  SharedTripLink,
+  ShuttleRoute,
+  ShuttleTrip,
   TxnView,
   Wallet,
   WalletTxn,
@@ -148,4 +157,50 @@ export const referralsApi = {
       method: 'POST',
       body: { code },
     }),
+};
+
+// ─── Ride variants (Phase 5) ─────────────────────────────────────────────────
+export const carpoolsApi = {
+  get: (id: string) => apiFetch<Carpool>(`/carpools/${id}`),
+  accept: (id: string) => apiFetch<Carpool>(`/carpools/${id}/accept`, { method: 'POST' }),
+  complete: (id: string) => apiFetch<Carpool>(`/carpools/${id}/complete`, { method: 'POST' }),
+  cancel: (id: string) => apiFetch<Carpool>(`/carpools/${id}/cancel`, { method: 'POST' }),
+};
+
+export const shuttleApi = {
+  routes: () => apiFetch<ShuttleRoute[]>('/shuttle/routes'),
+  trips: (routeId?: string) =>
+    apiFetch<ShuttleTrip[]>(
+      `/shuttle/trips${routeId ? `?routeId=${encodeURIComponent(routeId)}` : ''}`,
+    ),
+};
+
+// ─── Safety & comms (Phase 6) ────────────────────────────────────────────────
+export const safetyApi = {
+  contacts: () => apiFetch<EmergencyContact[]>('/safety/contacts'),
+  addContact: (body: { name: string; phone: string; relationship?: string }) =>
+    apiFetch<EmergencyContact>('/safety/contacts', { method: 'POST', body }),
+  removeContact: (id: string) =>
+    apiFetch<{ removed: boolean }>(`/safety/contacts/${id}`, { method: 'DELETE' }),
+  panic: (body: { rideId?: string; lat: number; lng: number }) =>
+    apiFetch<PanicEvent>('/safety/panic', { method: 'POST', body }),
+  share: (rideId: string) =>
+    apiFetch<SharedTripLink>(`/rides/${rideId}/share`, { method: 'POST' }),
+  stopShare: (rideId: string) =>
+    apiFetch<{ stopped: number }>(`/rides/${rideId}/share/stop`, { method: 'POST' }),
+};
+
+export const commsApi = {
+  messages: (rideId: string) => apiFetch<ChatMessage[]>(`/rides/${rideId}/messages`),
+  send: (rideId: string, body: string) =>
+    apiFetch<ChatMessage>(`/rides/${rideId}/messages`, { method: 'POST', body: { body } }),
+  call: (rideId: string) => apiFetch<MaskedCall>(`/rides/${rideId}/call`, { method: 'POST' }),
+};
+
+export const notificationsApi = {
+  list: () => apiFetch<AppNotification[]>('/notifications'),
+  markRead: (id: string) =>
+    apiFetch<AppNotification>(`/notifications/${id}/read`, { method: 'POST' }),
+  registerDevice: (body: { token: string; platform?: string }) =>
+    apiFetch('/notifications/devices', { method: 'POST', body }),
 };

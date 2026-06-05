@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import type { Ride } from '@/api/types';
+import type { Carpool, Ride } from '@/api/types';
 import { useAvailabilityStore } from '@/stores/availability.store';
+import { useCarpoolStore } from '@/stores/carpool.store';
 import { useRideStore } from '@/stores/ride.store';
 import { useDispatchChannel } from './useDispatchChannel';
 
@@ -37,6 +38,11 @@ export function useDriverDispatch(): void {
       } else if (evt === 'ride:cancelled') {
         const p = payload as { rideId?: string };
         if (p?.rideId && incomingOffer?.id === p.rideId) setIncomingOffer(null);
+      } else if (evt === 'carpool:offer') {
+        // Carpool requests only matter while online; they accumulate in the
+        // carpool store and the Carpool screen renders + acts on them.
+        if (!online) return;
+        useCarpoolStore.getState().addOffer(payload as Carpool);
       }
     },
     [router],

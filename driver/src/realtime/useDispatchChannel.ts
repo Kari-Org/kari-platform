@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { connectSocket, getSocket } from '@kari/mobile-core';
 
 /** Events the driver receives over its `user:{id}` room. */
-const DRIVER_EVENTS = ['ride:offer', 'ride:accepted', 'ride:cancelled'] as const;
+const DRIVER_EVENTS = ['ride:offer', 'ride:accepted', 'ride:cancelled', 'carpool:offer'] as const;
 
 /**
  * Subscribes to dispatch + ride events. `ride:offer` = a new dispatch (STANDARD

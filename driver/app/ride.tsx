@@ -2,13 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Share, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { OtpInput } from 'react-native-otp-entry';
 import { RideStatus } from '@kari/types';
 import { KariButton, Screen, colors } from '@kari/mobile-core';
-import { ridesApi } from '@/api/endpoints';
+import { commsApi, ridesApi, safetyApi } from '@/api/endpoints';
 import type { Ride } from '@/api/types';
+import { env } from '@/lib/env';
 import { errorMessage } from '@/lib/error';
 import { useDispatchChannel } from '@/realtime/useDispatchChannel';
 import { useAvailabilityStore } from '@/stores/availability.store';
@@ -24,6 +25,25 @@ function Row({ label, value }: { label: string; value: string }) {
       <Text className="font-sans text-muted">{label}</Text>
       <Text className="font-psemibold text-white">{value}</Text>
     </View>
+  );
+}
+
+function SafetyButton({
+  icon,
+  label,
+  onPress,
+  danger,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  danger?: boolean;
+}) {
+  return (
+    <Pressable onPress={onPress} className="flex-1 items-center rounded-card bg-card py-3">
+      <Ionicons name={icon} size={20} color={danger ? colors.danger : colors.brand} />
+      <Text className={`mt-1 font-pmedium text-xs ${danger ? 'text-danger' : 'text-white'}`}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -129,6 +149,59 @@ export default function DriverRideScreen() {
 
   const fare = naira(ride.agreedPrice ?? ride.quotedPrice);
   const km = (ride.distanceMeters / 1000).toFixed(1);
+
+  const openChat = () => router.push({ pathname: '/chat/[rideId]', params: { rideId } });
+
+  const makeCall = async () => {
+    try {
+      const call = await commsApi.call(rideId);
+      Alert.alert(
+        'Connecting call',
+        `Dial ${call.proxyNumber} to reach your rider — both numbers stay private.`,
+        [
+          { text: 'Close', style: 'cancel' },
+          { text: 'Call', onPress: () => void Linking.openURL(`tel:${call.proxyNumber}`) },
+        ],
+      );
+    } catch (e) {
+      Alert.alert('Could not start call', errorMessage(e));
+    }
+  };
+
+  const shareLiveTrip = async () => {
+    try {
+      const link = await safetyApi.share(rideId);
+      await Share.share({ message: `Follow my Kari trip live: ${env.apiBaseUrl}${link.url}` });
+    } catch (e) {
+      Alert.alert('Could not share trip', errorMessage(e));
+    }
+  };
+
+  const sendSos = () =>
+    Alert.alert('Send SOS?', 'This alerts your emergency contacts with your live location.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Send SOS',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const evt = await safetyApi.panic({
+              rideId,
+              lat: here?.lat ?? ride.pickupLat,
+              lng: here?.lng ?? ride.pickupLng,
+            });
+            Alert.alert(
+              'SOS sent',
+              evt.contactsAlerted > 0
+                ? `${evt.contactsAlerted} emergency contact${evt.contactsAlerted > 1 ? 's' : ''} alerted.`
+                : 'Help has been notified.',
+            );
+          } catch (e) {
+            Alert.alert('Could not send SOS', errorMessage(e));
+          }
+        },
+      },
+    ]);
 
   const RouteCard = () => (
     <View className="mt-4 rounded-card bg-card p-4">
@@ -291,6 +364,10 @@ export default function DriverRideScreen() {
 
   const showCancel =
     ride.status === RideStatus.ACCEPTED || ride.status === RideStatus.DRIVER_ARRIVED;
+  const showSafety =
+    ride.status === RideStatus.ACCEPTED ||
+    ride.status === RideStatus.DRIVER_ARRIVED ||
+    ride.status === RideStatus.IN_PROGRESS;
 
   return (
     <Screen className="px-5">
@@ -299,6 +376,14 @@ export default function DriverRideScreen() {
           TRIP · {ride.status.replace(/_/g, ' ')}
         </Text>
         {body()}
+        {showSafety && (
+          <View className="mt-4 flex-row gap-2">
+            <SafetyButton icon="chatbubble-ellipses" label="Chat" onPress={openChat} />
+            <SafetyButton icon="call" label="Call" onPress={makeCall} />
+            <SafetyButton icon="share-social" label="Share" onPress={shareLiveTrip} />
+            <SafetyButton icon="warning" label="SOS" danger onPress={sendSos} />
+          </View>
+        )}
         {showCancel && (
           <View className="pt-4">
             <KariButton label="Cancel trip" variant="outline" onPress={confirmCancel} loading={busy} />

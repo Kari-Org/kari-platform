@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
 import { colors } from '@kari/mobile-core';
 import { IncomingRequest } from '@/components/IncomingRequest';
+import { registerForPush } from '@/lib/push';
 import { useDriverDispatch } from '@/realtime/useDriverDispatch';
 import { useRideStore } from '@/stores/ride.store';
 
@@ -9,6 +11,11 @@ export default function TabsLayout() {
   // Global dispatch listener — surfaces incoming requests on any tab.
   useDriverDispatch();
   const incomingOffer = useRideStore((s) => s.incomingOffer);
+
+  // Register for push-for-dispatch once (best-effort; no-op in Expo Go).
+  useEffect(() => {
+    void registerForPush();
+  }, []);
 
   return (
     <>

@@ -46,7 +46,16 @@ export default function Account() {
 
         <View className="mt-4 overflow-hidden rounded-card bg-card px-4">
           <NavRow icon="cash-outline" label="Earnings & payouts" onPress={() => router.push('/earnings')} />
-          <NavRow icon="trophy-outline" label="Rewards & referrals" onPress={() => router.push('/rewards')} last />
+          <NavRow icon="trophy-outline" label="Rewards & referrals" onPress={() => router.push('/rewards')} />
+          <NavRow icon="people-outline" label="Carpool" onPress={() => router.push('/carpool')} />
+          <NavRow icon="bus-outline" label="Shuttle schedule" onPress={() => router.push('/shuttle')} />
+          <NavRow icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
+          <NavRow
+            icon="shield-checkmark-outline"
+            label="Emergency contacts"
+            onPress={() => router.push('/safety')}
+            last
+          />
         </View>
 
         <Card title="Contact">
