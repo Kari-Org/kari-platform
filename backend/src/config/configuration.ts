@@ -33,8 +33,17 @@ export interface AppConfig {
     fuelIndex: number;
     negotiationMinMeters: number;
   };
+  money: {
+    commissionRateBps: number;
+    cancellationFee: number; // naira
+    cancellationGraceSeconds: number;
+    penaltyDriverShareBps: number;
+    driverCancelFee: number; // naira
+    minTopup: number; // naira
+    minPayout: number; // naira
+  };
   providers: {
-    paystack: { secretKey?: string };
+    paystack: { secretKey?: string; publicKey?: string };
     dojah: { apiKey?: string; appId?: string };
     termii: { apiKey?: string; senderId: string };
     twilio: { accountSid?: string; authToken?: string; whatsappFrom?: string };
@@ -96,8 +105,17 @@ export function loadConfiguration(): AppConfig {
       fuelIndex: e.RIDE_FUEL_INDEX,
       negotiationMinMeters: e.RIDE_NEGOTIATION_MIN_METERS,
     },
+    money: {
+      commissionRateBps: e.COMMISSION_RATE_BPS,
+      cancellationFee: e.CANCELLATION_FEE,
+      cancellationGraceSeconds: e.CANCELLATION_GRACE_SECONDS,
+      penaltyDriverShareBps: e.PENALTY_DRIVER_SHARE_BPS,
+      driverCancelFee: e.DRIVER_CANCEL_FEE,
+      minTopup: e.MIN_TOPUP,
+      minPayout: e.MIN_PAYOUT,
+    },
     providers: {
-      paystack: { secretKey: e.PAYSTACK_SECRET_KEY },
+      paystack: { secretKey: e.PAYSTACK_SECRET_KEY, publicKey: e.PAYSTACK_PUBLIC_KEY },
       dojah: { apiKey: e.DOJAH_API_KEY, appId: e.DOJAH_APP_ID },
       termii: { apiKey: e.TERMII_API_KEY, senderId: e.TERMII_SENDER_ID },
       twilio: {

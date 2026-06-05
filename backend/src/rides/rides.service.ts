@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,6 +20,7 @@ import {
 } from '@kari/types';
 import { DriverService } from '../driver/driver.service';
 import type { DriverProfile } from '../driver/entities/driver-profile.entity';
+import { PaymentsService } from '../money/payments.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import { RiderService } from '../rider/rider.service';
 import type { RiderProfile } from '../rider/entities/rider-profile.entity';
@@ -45,6 +47,8 @@ const ACTIVE_STATUSES = [
 
 @Injectable()
 export class RidesService {
+  private readonly logger = new Logger(RidesService.name);
+
   constructor(
     @InjectRepository(Ride) private readonly rides: Repository<Ride>,
     @InjectRepository(RideOffer) private readonly offers: Repository<RideOffer>,
@@ -54,6 +58,7 @@ export class RidesService {
     private readonly realtime: RealtimeService,
     private readonly drivers: DriverService,
     private readonly riders: RiderService,
+    private readonly payments: PaymentsService,
   ) {}
 
   // ─── helpers ──────────────────────────────────────────────────────────────
@@ -311,8 +316,22 @@ export class RidesService {
     if (ride.status !== RideStatus.IN_PROGRESS) {
       throw new BadRequestException('ride must be in progress to complete');
     }
+    // Settle the fare first (idempotent by ride id). If this throws, the ride
+    // stays IN_PROGRESS so the driver can safely retry completing it.
+    const settlement = await this.payments.settleRide({
+      rideId: ride.id,
+      riderId: ride.riderId,
+      driverId: ride.driverId,
+      fareNaira: ride.agreedPrice ?? ride.quotedPrice,
+      paymentMethod: ride.paymentMethod,
+    });
     ride.status = RideStatus.COMPLETED;
     ride.completedAt = new Date();
+    if (settlement.settled) {
+      ride.commission = Math.round(settlement.commissionKobo / 100);
+      ride.driverEarnings = Math.round(settlement.driverNetKobo / 100);
+      ride.settledAt = new Date();
+    }
     const saved = await this.rides.save(ride);
     await this.drivers.setAvailability(driverId, DriverAvailability.ONLINE);
     this.realtime.emitToUser(ride.riderId, 'ride:completed', await this.view(saved, UserRole.RIDER));
@@ -326,13 +345,34 @@ export class RidesService {
     if (ride.status === RideStatus.COMPLETED || ride.status === RideStatus.CANCELLED) {
       throw new BadRequestException(`cannot cancel a ${ride.status.toLowerCase()} ride`);
     }
+    // Capture commitment context before mutating: a penalty only applies once a
+    // driver was assigned (driverId set at ACCEPTED) and past the grace window.
+    const driverId = ride.driverId;
+    const secondsSinceAccept = ride.acceptedAt
+      ? Math.max(0, Math.floor((Date.now() - ride.acceptedAt.getTime()) / 1000))
+      : null;
+
     ride.status = RideStatus.CANCELLED;
     ride.cancelledAt = new Date();
     ride.cancelReason = dto.reason ?? null;
     const saved = await this.rides.save(ride);
-    if (ride.driverId) {
-      await this.drivers.setAvailability(ride.driverId, DriverAvailability.ONLINE);
+    if (driverId) {
+      await this.drivers.setAvailability(driverId, DriverAvailability.ONLINE);
     }
+
+    // Cancellation penalty is best-effort — it must never block the cancel itself.
+    try {
+      await this.payments.applyCancellationPenalty({
+        rideId: ride.id,
+        riderId: ride.riderId,
+        driverId,
+        cancelledBy: role,
+        secondsSinceAccept,
+      });
+    } catch (err) {
+      this.logger.error(`cancellation penalty for ride ${ride.id} failed`, err as Error);
+    }
+
     const otherId = userId === ride.riderId ? ride.driverId : ride.riderId;
     if (otherId) {
       this.realtime.emitToUser(otherId, 'ride:cancelled', { rideId, reason: ride.cancelReason });

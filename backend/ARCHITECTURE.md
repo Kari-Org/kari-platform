@@ -304,6 +304,17 @@ emergency car-alarm integration. Tracked, not built in MVP.
 6. **Push** — Expo Push (matches Expo RN) vs FCM directly (decide in Phase 6).
 7. **Chat** — build on our WebSocket layer (MVP) vs managed (Stream/Sendbird) (decide in Phase 6).
 
+**Phase 3 — Money (landed 2026-06-04):** modules 8–10 (Payments/Wallet/Commission) implemented as a single `MoneyModule`.
+- **Unit = kobo (minor units).** All ledger/wallet/transaction amounts are integer kobo (bigint + numeric transformer); ride fares stay whole naira and convert at the boundary (×100). Matches Paystack's native unit — no rounding at the gateway.
+- **Double-entry, projection balances.** `Wallet` + `Transaction` + `LedgerEntry`. Every change posts ≥2 balanced legs through `LedgerService.post` inside one DB transaction, pessimistic-locking each wallet row in a stable order; `wallet.balance` is a cached projection updated in that same txn (never mutated elsewhere). Idempotent by `Transaction.reference`. **Global invariant: Σ(all wallet balances) = 0** — asserted by the E2E.
+- **System wallets:** `REVENUE` (commission + platform penalty share) and `GATEWAY` (clearing/contra for money in transit to/from Paystack; its negative balance = net funds held in user wallets). Lazily created.
+- **Settlement on ride complete** (`PaymentsService.settleRide`, idempotent by `ride_{id}`): **CASH** (default) → platform collects commission *from the driver* (driver wallet may go negative = owes platform); **WALLET/CARD** → rider charged the full fare, driver paid net, platform keeps commission. Ride stores `commission` / `driverEarnings` / `settledAt`.
+- **Commission:** base `COMMISSION_RATE_BPS` (default **2000** = 20%); `CommissionService.resolveRateBps(driver)` is the hook for Phase 11 leaderboard reductions (returns base for now). Split is exact (`driverNet = fare − commission`).
+- **Cancellation penalty:** free before a driver is assigned or within `CANCELLATION_GRACE_SECONDS` (default 120); after that a rider cancel charges `CANCELLATION_FEE` (default ₦500) split `PENALTY_DRIVER_SHARE_BPS` (default 6000 = 60% to driver, rest to REVENUE); driver cancel charges `DRIVER_CANCEL_FEE` (default ₦0 = strike only). Best-effort — never blocks the cancel.
+- **Top-up / payout:** top-up = PENDING txn → gateway `initiateCharge` → `verifyCharge`/webhook → GATEWAY-debit/user-credit (`settlePending`). Payout = reserve funds (driver-debit/GATEWAY-credit) → `initiateTransfer` → reverse on failure; `MIN_TOPUP` ₦100, `MIN_PAYOUT` ₦1000.
+- **Provider:** `PaymentProvider` extended with `initiateTransfer`/`verifyTransfer`/`verifyWebhookSignature`. Real `PaystackPaymentProvider` (initialize/verify/transfer/recipient, HMAC-SHA512 webhook) selected when `PAYSTACK_SECRET_KEY` is set; otherwise the no-op auto-succeeds so dev/CI flows complete keyless. Webhook is `@Public()` + signature-verified over the raw body (`rawBody: true`).
+- **Open for later phases:** real Paystack bank-code resolution for payouts (currently passes the stored bank field); async settlement via BullMQ if settle-on-complete becomes a hot path (synchronous + idempotent for now); rider/driver wallet UI (mobile).
+
 ---
 
-*End of architecture draft v1. Build plan tracked separately; this doc updates as decisions land.*
+*Architecture draft v1; updated as decisions land (latest: Phase 3 Money, 2026-06-04).*

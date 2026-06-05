@@ -165,3 +165,34 @@ export enum NegotiationStatus {
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
 }
+
+// ─── Money (Phase 3) ─────────────────────────────────────────────────────────
+
+/** Lifecycle of a money Transaction (gateway leg + ledger postings). */
+export enum TransactionStatus {
+  /** Created, awaiting gateway confirmation (e.g. top-up not yet paid). */
+  PENDING = 'PENDING',
+  /** Confirmed; ledger entries posted. */
+  SUCCESS = 'SUCCESS',
+  /** Gateway declined / abandoned; no ledger impact. */
+  FAILED = 'FAILED',
+  /** Posted then reversed by a compensating transaction. */
+  REVERSED = 'REVERSED',
+}
+
+/** Who owns a wallet: an end user, or a platform-internal system account. */
+export enum WalletOwnerType {
+  USER = 'USER',
+  SYSTEM = 'SYSTEM',
+}
+
+/**
+ * Stable keys for the platform's singleton system wallets. Double-entry needs a
+ * counterparty for every user-facing leg:
+ * - REVENUE — commission earned + the platform's share of cancellation penalties.
+ * - GATEWAY — clearing account for money in transit to/from Paystack (top-ups in, payouts out).
+ */
+export enum SystemAccount {
+  REVENUE = 'REVENUE',
+  GATEWAY = 'GATEWAY',
+}

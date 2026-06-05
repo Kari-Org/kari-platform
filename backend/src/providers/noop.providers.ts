@@ -19,6 +19,8 @@ import type {
   SendMessageInput,
   SmsProvider,
   StorageProvider,
+  TransferInput,
+  TransferResult,
   TripEstimate,
   TripQuery,
   WhatsAppProvider,
@@ -44,11 +46,33 @@ export class NoopPaymentProvider implements PaymentProvider {
   private readonly logger = new Logger('NoopPaymentProvider');
   async initiateCharge(input: ChargeInput): Promise<ChargeResult> {
     this.logger.warn(`[noop] initiateCharge ref=${input.reference} amount=${input.amount}`);
-    return { reference: input.reference, provider: this.name };
+    return {
+      reference: input.reference,
+      authorizationUrl: `noop://pay/${input.reference}`,
+      provider: this.name,
+    };
   }
   async verifyCharge(reference: string): Promise<ChargeStatus> {
-    this.logger.warn(`[noop] verifyCharge ref=${reference}`);
-    return 'pending';
+    // Dev stand-in: top-ups settle immediately so wallet flows are testable
+    // without a real gateway. Production configures Paystack (see ProvidersModule).
+    this.logger.warn(`[noop] verifyCharge ref=${reference} -> success (dev only)`);
+    return 'success';
+  }
+  async initiateTransfer(input: TransferInput): Promise<TransferResult> {
+    this.logger.warn(`[noop] initiateTransfer ref=${input.reference} amount=${input.amount} -> success (dev only)`);
+    return {
+      reference: input.reference,
+      providerRef: `noop-tr-${input.reference}`,
+      status: 'success',
+      provider: this.name,
+    };
+  }
+  async verifyTransfer(reference: string): Promise<ChargeStatus> {
+    this.logger.warn(`[noop] verifyTransfer ref=${reference} -> success (dev only)`);
+    return 'success';
+  }
+  verifyWebhookSignature(): boolean {
+    return true; // dev: accept all webhooks
   }
 }
 

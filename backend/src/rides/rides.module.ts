@@ -7,6 +7,7 @@ import { AvailabilityController } from './availability.controller';
 import { Rating } from './entities/rating.entity';
 import { RideOffer } from './entities/ride-offer.entity';
 import { Ride } from './entities/ride.entity';
+import { MoneyModule } from '../money/money.module';
 import { MatchingService } from './matching.service';
 import { PricingService } from './pricing.service';
 import { RidesController } from './rides.controller';
@@ -18,6 +19,7 @@ import { RidesService } from './rides.service';
     DriverModule,
     RiderModule,
     RealtimeModule,
+    MoneyModule,
   ],
   controllers: [RidesController, AvailabilityController],
   providers: [PricingService, MatchingService, RidesService],

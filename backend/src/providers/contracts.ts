@@ -21,10 +21,37 @@ export interface ChargeResult {
   provider: string;
 }
 export type ChargeStatus = 'pending' | 'success' | 'failed';
+
+/** A bank payout (wallet → driver's bank account) via the gateway's transfer API. */
+export interface TransferInput {
+  amount: number; // minor units (kobo)
+  currency?: string;
+  reference: string;
+  recipient: {
+    name: string;
+    accountNumber: string;
+    bankCode: string; // gateway bank code (e.g. Paystack NUBAN code)
+  };
+  reason?: string;
+  metadata?: Record<string, unknown>;
+}
+export interface TransferResult {
+  reference: string;
+  providerRef?: string; // gateway transfer code / id
+  status: ChargeStatus;
+  provider: string;
+}
+
 export interface PaymentProvider {
   readonly name: string;
+  /** Start an inbound charge (top-up). Returns a hosted authorization URL when applicable. */
   initiateCharge(input: ChargeInput): Promise<ChargeResult>;
   verifyCharge(reference: string): Promise<ChargeStatus>;
+  /** Start an outbound transfer (payout) to a bank account. */
+  initiateTransfer(input: TransferInput): Promise<TransferResult>;
+  verifyTransfer(reference: string): Promise<ChargeStatus>;
+  /** Validate a gateway webhook against the raw request body (HMAC). */
+  verifyWebhookSignature(rawBody: string, signature: string): boolean;
 }
 
 // ─── Identity / NIN (Dojah) ──────────────────────────────────────────────────

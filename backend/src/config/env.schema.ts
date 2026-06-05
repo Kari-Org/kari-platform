@@ -46,8 +46,18 @@ export const envSchema = z
     RIDE_FUEL_INDEX: z.coerce.number().positive().default(1),
     RIDE_NEGOTIATION_MIN_METERS: z.coerce.number().nonnegative().default(2000),
 
+    // Money — commission, penalties, wallet limits (Phase 3)
+    COMMISSION_RATE_BPS: z.coerce.number().int().min(0).max(10_000).default(2000), // 20%
+    CANCELLATION_FEE: z.coerce.number().int().nonnegative().default(500), // naira, charged on late cancel
+    CANCELLATION_GRACE_SECONDS: z.coerce.number().int().nonnegative().default(120), // free-cancel window after a driver accepts
+    PENALTY_DRIVER_SHARE_BPS: z.coerce.number().int().min(0).max(10_000).default(6000), // 60% of a rider penalty compensates the driver
+    DRIVER_CANCEL_FEE: z.coerce.number().int().nonnegative().default(0), // naira, charged to a driver who cancels post-accept
+    MIN_TOPUP: z.coerce.number().int().positive().default(100), // naira
+    MIN_PAYOUT: z.coerce.number().int().positive().default(1000), // naira
+
     // Providers — all optional; absence selects the no-op implementation
     PAYSTACK_SECRET_KEY: z.string().optional(),
+    PAYSTACK_PUBLIC_KEY: z.string().optional(),
     DOJAH_API_KEY: z.string().optional(),
     DOJAH_APP_ID: z.string().optional(),
     TERMII_API_KEY: z.string().optional(),

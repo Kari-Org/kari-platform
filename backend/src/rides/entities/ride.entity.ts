@@ -91,6 +91,18 @@ export class Ride extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   cancelReason: string | null;
 
+  // ─── settlement (Phase 3) ──────────────────────────────────────────────────
+  /** Platform commission taken on this ride, in naira (set at completion). */
+  @Column({ type: 'int', nullable: true })
+  commission: number | null;
+
+  /** Driver's net earnings for this ride, in naira (fare − commission). */
+  @Column({ type: 'int', nullable: true })
+  driverEarnings: number | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  settledAt: Date | null;
+
   /** Optimistic-lock guard: concurrent accepts of the same ride — first wins. */
   @VersionColumn()
   version: number;

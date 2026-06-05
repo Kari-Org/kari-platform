@@ -19,6 +19,7 @@ import { RiderModule } from './rider/rider.module';
 import { AdminModule } from './admin/admin.module';
 import { RidesModule } from './rides/rides.module';
 import { PlacesModule } from './places/places.module';
+import { MoneyModule } from './money/money.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PlacesModule } from './places/places.module';
     AdminModule,
     RidesModule,
     PlacesModule,
+    MoneyModule,
   ],
   controllers: [AppController],
   providers: [

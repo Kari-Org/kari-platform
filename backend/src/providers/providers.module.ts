@@ -20,6 +20,7 @@ import {
   NoopStorageProvider,
   NoopWhatsAppProvider,
 } from './noop.providers';
+import { PaystackPaymentProvider } from './paystack.provider';
 
 const log = new Logger('Providers');
 
@@ -43,7 +44,11 @@ const providers: Provider[] = [
     provide: PAYMENT_PROVIDER,
     inject: [APP_CONFIG],
     useFactory: (c: AppConfig) => {
-      note('Payments', !!c.providers.paystack.secretKey, 'Paystack');
+      if (c.providers.paystack.secretKey) {
+        log.log('Payments: Paystack credentials present — using live Paystack provider');
+        return new PaystackPaymentProvider(c.providers.paystack.secretKey);
+      }
+      note('Payments', false, 'Paystack');
       return new NoopPaymentProvider();
     },
   },
