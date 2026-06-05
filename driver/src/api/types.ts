@@ -1,13 +1,16 @@
 import type {
+  AchievementBadge,
   CarCategory,
   DriverAvailability,
   DriverType,
   KycStatus,
+  LedgerDirection,
   PaymentMethod,
   Personality,
   PriceType,
   RideStatus,
   RideType,
+  TransactionType,
   UserRole,
   UserStatus,
 } from '@kari/types';
@@ -100,4 +103,91 @@ export interface RiderSummary {
   name: string;
   ratingAvg: number;
   ratingCount: number;
+}
+
+// ─── Money (Phase 3) ─────────────────────────────────────────────────────────
+export interface Wallet {
+  walletId: string;
+  currency: string;
+  balanceKobo: number;
+  balance: number;
+}
+
+export interface WalletTxn {
+  id: string;
+  type: TransactionType;
+  direction: LedgerDirection;
+  amountKobo: number;
+  amount: number;
+  balanceAfterKobo: number;
+  balanceAfter: number;
+  at: string;
+}
+
+/** Shape returned by a payout request (transaction view). */
+export interface TxnView {
+  reference: string;
+  type: TransactionType;
+  status: string;
+  amountKobo: number;
+  amount: number;
+  rideId: string | null;
+  provider: string | null;
+  providerRef: string | null;
+  createdAt: string;
+}
+
+/** Driver earnings summary (gross, commission, penalties, payouts, balance). */
+export interface DriverEarnings {
+  balanceKobo: number;
+  balance: number;
+  grossEarningsKobo: number;
+  grossEarnings: number;
+  commissionPaidKobo: number;
+  commissionPaid: number;
+  penaltiesKobo: number;
+  penalties: number;
+  cancellationCompensationKobo: number;
+  cancellationCompensation: number;
+  paidOutKobo: number;
+  paidOut: number;
+}
+
+// ─── Engagement (Phase 4) ────────────────────────────────────────────────────
+export interface ReferralInfo {
+  code: string;
+  referredBy: string | null;
+  rewarded: boolean;
+  referralsCount: number;
+  rewardNaira: number;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  driverId: string;
+  name: string;
+  points: number;
+  rides: number;
+}
+
+export interface Leaderboard {
+  weekKey: string;
+  entries: LeaderboardEntry[];
+}
+
+export interface GamificationSummary {
+  weekKey: string;
+  weekPoints: number;
+  weekRides: number;
+  weekRank: number | null;
+  allTimePoints: number;
+  allTimeRides: number;
+  commissionReductionBps: number;
+  achievementsUnlocked: number;
+}
+
+export interface AchievementView {
+  badge: AchievementBadge;
+  unlocked: boolean;
+  unlockedAt: string | null;
 }

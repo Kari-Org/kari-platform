@@ -1,6 +1,19 @@
 import type { CarCategory, KycStatus, OtpChannel, UserRole } from '@kari/types';
 import { apiFetch } from '@kari/mobile-core';
-import type { AuthResult, DriverProfile, PublicUser, Ride } from './types';
+import type {
+  AchievementView,
+  AuthResult,
+  DriverEarnings,
+  DriverProfile,
+  GamificationSummary,
+  Leaderboard,
+  PublicUser,
+  ReferralInfo,
+  Ride,
+  TxnView,
+  Wallet,
+  WalletTxn,
+} from './types';
 
 export const authApi = {
   signup: (body: {
@@ -107,4 +120,32 @@ export const ridesApi = {
     apiFetch<Ride>(`/rides/${id}/cancel`, { method: 'POST', body: { reason } }),
   rate: (id: string, body: { stars: number; comment?: string }) =>
     apiFetch(`/rides/${id}/rate`, { method: 'POST', body }),
+};
+
+// ─── Money (Phase 3) ─────────────────────────────────────────────────────────
+export const walletApi = {
+  summary: () => apiFetch<Wallet>('/wallet'),
+  transactions: () => apiFetch<WalletTxn[]>('/wallet/transactions'),
+  payout: (amount: number) =>
+    apiFetch<TxnView>('/wallet/payout', { method: 'POST', body: { amount } }),
+};
+
+export const paymentsApi = {
+  earnings: () => apiFetch<DriverEarnings>('/payments/earnings'),
+};
+
+// ─── Engagement (Phase 4) ────────────────────────────────────────────────────
+export const gamificationApi = {
+  leaderboard: () => apiFetch<Leaderboard>('/leaderboard'),
+  me: () => apiFetch<GamificationSummary>('/gamification/me'),
+  achievements: () => apiFetch<AchievementView[]>('/gamification/achievements'),
+};
+
+export const referralsApi = {
+  me: () => apiFetch<ReferralInfo>('/referrals/me'),
+  apply: (code: string) =>
+    apiFetch<{ applied: boolean; rewardOnFirstRide: number }>('/referrals/apply', {
+      method: 'POST',
+      body: { code },
+    }),
 };

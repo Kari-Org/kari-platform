@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { type ReactNode } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { KycStatus } from '@kari/types';
 import { KariButton, Screen, colors } from '@kari/mobile-core';
 import { authApi, driversApi } from '@/api/endpoints';
@@ -15,6 +16,7 @@ const AVAIL: Record<string, { label: string; color: string }> = {
 
 export default function Account() {
   const logout = useAuthStore((s) => s.logout);
+  const router = useRouter();
   const { data: p } = useQuery({ queryKey: ['driver-me'], queryFn: driversApi.me });
   const { data: user } = useQuery({ queryKey: ['auth-me'], queryFn: authApi.me });
 
@@ -40,6 +42,11 @@ export default function Account() {
             <View className="mr-2 h-2 w-2 rounded-full" style={{ backgroundColor: avail.color }} />
             <Text className="font-pmedium text-xs text-white">{avail.label}</Text>
           </View>
+        </View>
+
+        <View className="mt-4 overflow-hidden rounded-card bg-card px-4">
+          <NavRow icon="cash-outline" label="Earnings & payouts" onPress={() => router.push('/earnings')} />
+          <NavRow icon="trophy-outline" label="Rewards & referrals" onPress={() => router.push('/rewards')} last />
         </View>
 
         <Card title="Contact">
@@ -102,6 +109,29 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
       <Text className="mb-2 font-pmedium text-sm text-subtle">{title}</Text>
       <View className="rounded-card bg-card px-4">{children}</View>
     </View>
+  );
+}
+
+function NavRow({
+  icon,
+  label,
+  onPress,
+  last,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  last?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`flex-row items-center py-3.5 ${last ? '' : 'border-b border-hairline'}`}
+    >
+      <Ionicons name={icon} size={18} color={colors.brand} />
+      <Text className="ml-3 flex-1 font-pmedium text-sm text-white">{label}</Text>
+      <Ionicons name="chevron-forward" size={16} color={colors.subtle} />
+    </Pressable>
   );
 }
 

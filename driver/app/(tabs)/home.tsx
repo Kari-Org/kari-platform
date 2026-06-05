@@ -8,13 +8,14 @@ import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DriverAvailability, RideStatus } from '@kari/types';
 import { colors } from '@kari/mobile-core';
-import { availabilityApi, driversApi, ridesApi } from '@/api/endpoints';
+import { availabilityApi, driversApi, ridesApi, walletApi } from '@/api/endpoints';
 import { errorMessage } from '@/lib/error';
 import { requestLocationPermission, startTracking, stopTracking } from '@/location/tracker';
 import { useAvailabilityStore } from '@/stores/availability.store';
 import { useRideStore } from '@/stores/ride.store';
 
 const LAGOS = { latitude: 6.5244, longitude: 3.3792 };
+const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const ACTIVE: RideStatus[] = [
   RideStatus.ACCEPTED,
   RideStatus.DRIVER_ARRIVED,
@@ -33,6 +34,7 @@ export default function Home() {
   const restored = useRef(false);
 
   const { data: me } = useQuery({ queryKey: ['driver-me'], queryFn: driversApi.me });
+  const { data: wallet } = useQuery({ queryKey: ['wallet'], queryFn: walletApi.summary });
 
   // Restore in-flight state after a cold start: resume an active trip, or
   // reflect an ONLINE availability the server still remembers.
@@ -103,19 +105,31 @@ export default function Home() {
       </MapView>
 
       <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, justifyContent: 'space-between' }} pointerEvents="box-none">
-        {/* greeting */}
-        <View className="mx-4 mt-2 flex-row items-center rounded-card bg-surface/95 px-4 py-3">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-card">
-            <Ionicons name="person" size={20} color={colors.brand} />
+        {/* greeting + earnings peek */}
+        <View>
+          <View className="mx-4 mt-2 flex-row items-center rounded-card bg-surface/95 px-4 py-3">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-card">
+              <Ionicons name="person" size={20} color={colors.brand} />
+            </View>
+            <View className="ml-3 flex-1">
+              <Text className="font-sans text-xs text-subtle">Welcome back,</Text>
+              <Text className="font-psemibold text-base text-white">{name}</Text>
+            </View>
+            <View className="flex-row items-center rounded-pill bg-card px-3 py-1.5">
+              <View className={`mr-2 h-2 w-2 rounded-full ${online ? 'bg-success' : 'bg-subtle'}`} />
+              <Text className="font-pmedium text-xs text-white">{online ? 'Online' : 'Offline'}</Text>
+            </View>
           </View>
-          <View className="ml-3 flex-1">
-            <Text className="font-sans text-xs text-subtle">Welcome back,</Text>
-            <Text className="font-psemibold text-base text-white">{name}</Text>
-          </View>
-          <View className="flex-row items-center rounded-pill bg-card px-3 py-1.5">
-            <View className={`mr-2 h-2 w-2 rounded-full ${online ? 'bg-success' : 'bg-subtle'}`} />
-            <Text className="font-pmedium text-xs text-white">{online ? 'Online' : 'Offline'}</Text>
-          </View>
+
+          <Pressable
+            onPress={() => router.push('/earnings')}
+            className="mx-4 mt-2 flex-row items-center rounded-card bg-surface/95 px-4 py-3"
+          >
+            <Ionicons name="wallet" size={18} color={colors.brand} />
+            <Text className="ml-3 flex-1 font-pmedium text-sm text-white">Available balance</Text>
+            <Text className="font-pbold text-sm text-white">{naira(wallet?.balance ?? 0)}</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.subtle} style={{ marginLeft: 6 }} />
+          </Pressable>
         </View>
 
         {/* online toggle */}

@@ -52,8 +52,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiBaseUrl": "http://localhost:3000",
-      "socketUrl": "http://localhost:3000"
+      "apiBaseUrl": "http://localhost:5001",
+      "socketUrl": "http://localhost:5001"
     }
   }
 }
