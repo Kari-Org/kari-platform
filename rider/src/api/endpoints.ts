@@ -35,6 +35,7 @@ import type {
   ShuttleTrip,
   Subscription,
   SubscriptionPlan,
+  SupportTicket,
   TopupInit,
   TxnView,
   Wallet,
@@ -233,4 +234,10 @@ export const notificationsApi = {
     apiFetch<AppNotification>(`/notifications/${id}/read`, { method: 'POST' }),
   registerDevice: (body: { token: string; platform?: string }) =>
     apiFetch('/notifications/devices', { method: 'POST', body }),
+};
+
+export const ticketsApi = {
+  mine: () => apiFetch<SupportTicket[]>('/tickets/mine'),
+  create: (body: { subject: string; message: string; category?: string; rideId?: string }) =>
+    apiFetch<SupportTicket>('/tickets', { method: 'POST', body }),
 };

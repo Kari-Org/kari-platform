@@ -40,6 +40,7 @@ export default function Account() {
       <View className="mt-4 overflow-hidden rounded-card bg-card">
         <Row icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
         <Row icon="shield-checkmark-outline" label="Emergency contacts" onPress={() => router.push('/safety')} />
+        <Row icon="help-buoy-outline" label="Help & support" onPress={() => router.push('/support')} />
       </View>
 
       <View className="flex-1" />

@@ -19,6 +19,7 @@ import type {
   SharedTripLink,
   ShuttleRoute,
   ShuttleTrip,
+  SupportTicket,
   TxnView,
   Wallet,
   WalletTxn,
@@ -157,6 +158,12 @@ export const referralsApi = {
       method: 'POST',
       body: { code },
     }),
+};
+
+export const ticketsApi = {
+  mine: () => apiFetch<SupportTicket[]>('/tickets/mine'),
+  create: (body: { subject: string; message: string; category?: string; rideId?: string }) =>
+    apiFetch<SupportTicket>('/tickets', { method: 'POST', body }),
 };
 
 // ─── Ride variants (Phase 5) ─────────────────────────────────────────────────

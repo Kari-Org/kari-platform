@@ -350,3 +350,20 @@ export interface AppNotification {
   read: boolean;
   createdAt: string;
 }
+
+// ─── Support tickets ─────────────────────────────────────────────────────────
+export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+
+export interface SupportTicket {
+  id: string;
+  requesterId: string;
+  requesterRole: string;
+  category: string;
+  subject: string;
+  message: string;
+  status: TicketStatus;
+  rideId: string | null;
+  adminReply: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -54,8 +54,8 @@ export default function Account() {
             icon="shield-checkmark-outline"
             label="Emergency contacts"
             onPress={() => router.push('/safety')}
-            last
           />
+          <NavRow icon="help-buoy-outline" label="Help & support" onPress={() => router.push('/support')} last />
         </View>
 
         <Card title="Contact">
