@@ -16,14 +16,27 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.kari.rider"
+      "bundleIdentifier": "com.kari.rider",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.kari.rider",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000D26"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -54,6 +67,12 @@
       "socketUrl": "https://karibackend-production.up.railway.app",
       "googleWebClientId": "",
       "googleIosClientId": ""
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b846e15a-53ec-49ac-bea2-477d080677e9"
     }
   }
 }
