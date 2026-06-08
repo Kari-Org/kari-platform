@@ -47,6 +47,9 @@
       "typedRoutes": true
     },
     "extra": {
+      "eas": {
+        "projectId": "b846e15a-53ec-49ac-bea2-477d080677e9"
+      },
       "apiBaseUrl": "http://10.233.0.135:5001",
       "socketUrl": "http://10.233.0.135:5001",
       "googleWebClientId": "",
