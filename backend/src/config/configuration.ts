@@ -9,6 +9,7 @@ export interface AppConfig {
   port: number;
   logLevel: string;
   corsOrigins: string | string[];
+  docs: { enabled?: boolean; user?: string; password?: string };
   database: {
     url?: string;
     host: string;
@@ -91,6 +92,7 @@ export function loadConfiguration(): AppConfig {
       e.CORS_ORIGINS.trim() === '*'
         ? '*'
         : e.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean),
+    docs: { enabled: e.SWAGGER_ENABLED, user: e.DOCS_USER, password: e.DOCS_PASSWORD },
     database: {
       url: e.DATABASE_URL,
       host: e.POSTGRES_HOST,

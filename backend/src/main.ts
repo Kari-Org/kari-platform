@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
@@ -31,7 +32,20 @@ async function bootstrap(): Promise<void> {
   await wsAdapter.connect();
   app.useWebSocketAdapter(wsAdapter);
 
-  if (!config.isProd) {
+  // API docs — unset ⇒ on in non-prod; SWAGGER_ENABLED overrides. When
+  // DOCS_USER + DOCS_PASSWORD are set, /docs is gated by HTTP basic auth.
+  if (config.docs.enabled ?? !config.isProd) {
+    if (config.docs.user && config.docs.password) {
+      const expected =
+        'Basic ' + Buffer.from(`${config.docs.user}:${config.docs.password}`).toString('base64');
+      app.use(['/docs', '/docs-json'], (req: Request, res: Response, next: NextFunction) => {
+        if (req.headers.authorization === expected) return next();
+        res
+          .set('WWW-Authenticate', 'Basic realm="Kari API Docs"')
+          .status(401)
+          .send('Authentication required');
+      });
+    }
     const docConfig = new DocumentBuilder()
       .setTitle('Kari API')
       .setDescription('Kari platform unified backend — interactive API docs')

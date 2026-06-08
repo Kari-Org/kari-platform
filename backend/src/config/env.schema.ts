@@ -16,6 +16,14 @@ export const envSchema = z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
     CORS_ORIGINS: z.string().default('*'),
+    // API docs (Swagger). Unset ⇒ on in non-prod, off in prod. Set true/false to
+    // override (e.g. SWAGGER_ENABLED=true to expose docs on a prod instance).
+    SWAGGER_ENABLED: z
+      .enum(['true', 'false'])
+      .optional()
+      .transform((v) => (v === undefined ? undefined : v === 'true')),
+    DOCS_USER: z.string().optional(),
+    DOCS_PASSWORD: z.string().optional(),
 
     // PostgreSQL
     POSTGRES_HOST: z.string().default('localhost'),
