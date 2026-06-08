@@ -10,11 +10,13 @@ export interface AppConfig {
   logLevel: string;
   corsOrigins: string | string[];
   database: {
+    url?: string;
     host: string;
     port: number;
     user: string;
     password: string;
     name: string;
+    ssl: boolean;
     synchronize: boolean;
     logging: boolean;
   };
@@ -90,11 +92,13 @@ export function loadConfiguration(): AppConfig {
         ? '*'
         : e.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean),
     database: {
+      url: e.DATABASE_URL,
       host: e.POSTGRES_HOST,
       port: e.POSTGRES_PORT,
       user: e.POSTGRES_USER,
       password: e.POSTGRES_PASSWORD,
       name: e.POSTGRES_DB,
+      ssl: e.DB_SSL,
       synchronize: e.DB_SYNCHRONIZE,
       logging: e.DB_LOGGING,
     },

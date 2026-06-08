@@ -14,11 +14,19 @@ import { APP_CONFIG, type AppConfig } from '../config/config.module';
       inject: [APP_CONFIG],
       useFactory: (config: AppConfig) => ({
         type: 'postgres',
-        host: config.database.host,
-        port: config.database.port,
-        username: config.database.user,
-        password: config.database.password,
-        database: config.database.name,
+        // A managed DATABASE_URL wins over the discrete host/port/credentials.
+        ...(config.database.url
+          ? {
+              url: config.database.url,
+              ssl: config.database.ssl ? { rejectUnauthorized: false } : undefined,
+            }
+          : {
+              host: config.database.host,
+              port: config.database.port,
+              username: config.database.user,
+              password: config.database.password,
+              database: config.database.name,
+            }),
         autoLoadEntities: true,
         synchronize: config.database.synchronize,
         logging: config.database.logging,

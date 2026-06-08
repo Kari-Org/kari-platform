@@ -23,6 +23,10 @@ export const envSchema = z
     POSTGRES_USER: z.string().default('kari'),
     POSTGRES_PASSWORD: z.string().default('kari'),
     POSTGRES_DB: z.string().default('kari'),
+    // Managed hosts (Railway/Render/Neon/etc.) provide a single connection URL.
+    // When set, it takes precedence over the discrete POSTGRES_* vars above.
+    DATABASE_URL: z.string().optional(),
+    DB_SSL: boolEnv(false),
     DB_SYNCHRONIZE: boolEnv(false),
     DB_LOGGING: boolEnv(false),
 
