@@ -55,8 +55,8 @@
       "eas": {
         "projectId": "2698aff4-1ce9-4b8c-9292-2b76f8886b95"
       },
-      "apiBaseUrl": "http://localhost:5001",
-      "socketUrl": "http://localhost:5001"
+      "apiBaseUrl": "https://karibackend-production.up.railway.app",
+      "socketUrl": "https://karibackend-production.up.railway.app"
     }
   }
 }

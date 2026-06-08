@@ -50,8 +50,8 @@
       "eas": {
         "projectId": "b846e15a-53ec-49ac-bea2-477d080677e9"
       },
-      "apiBaseUrl": "http://10.233.0.135:5001",
-      "socketUrl": "http://10.233.0.135:5001",
+      "apiBaseUrl": "https://karibackend-production.up.railway.app",
+      "socketUrl": "https://karibackend-production.up.railway.app",
       "googleWebClientId": "",
       "googleIosClientId": ""
     }
