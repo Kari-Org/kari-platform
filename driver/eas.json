@@ -5,12 +5,14 @@
   },
   "build": {
     "development": {
+      "node": "22.13.1",
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
       "ios": { "simulator": true }
     },
     "preview": {
+      "node": "22.13.1",
       "distribution": "internal",
       "channel": "preview"
     },
@@ -19,6 +21,7 @@
       "ios": { "simulator": true }
     },
     "production": {
+      "node": "22.13.1",
       "autoIncrement": true,
       "channel": "production"
     }
