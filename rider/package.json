@@ -7,7 +7,8 @@
     "start": "expo start",
     "ios": "expo start --ios",
     "android": "expo start --android",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eas-build-post-install": "pnpm --filter @kari/types build"
   },
   "dependencies": {
     "@expo-google-fonts/geist-mono": "^0.4.2",
