@@ -1,11 +1,18 @@
 # Kari Driver App — Architecture & Design
 
-> **Status:** Draft v1 · **Date:** 2026-06-03 · **Stack:** Expo (React Native) + TypeScript
-> The single source of truth for the unified driver app. It supersedes the two legacy driver apps
+> **Status:** Draft v1 · **Date:** 2026-06-03 · **Reconciled with code:** 2026-06-08 · **Stack:** Expo (React Native) + TypeScript
+> Design rationale + lineage for the unified driver app. It supersedes the two legacy driver apps
 > (`KariDriverMobile` / Expo-RN auth-funnel scaffold, `KariDriverMobileFlutter` / Flutter full-UI
-> prototype), taking the **rider app's proven architecture** (see `../rider/ARCHITECTURE.md`), the
+> prototype), taking the **rider app's proven architecture** (see `../../rider/context/ARCHITECTURE.md`), the
 > Flutter app's **screen flows + design polish**, and wiring both to the live backend
-> (`../backend/ARCHITECTURE.md`) over typed `@kari/types` contracts.
+> (`../../backend/context/ARCHITECTURE.md`) over typed `@kari/types` contracts.
+>
+> **As-built reconciliation (2026-06-08):** corrected where the code diverged — **HankenGrotesk** (not
+> Poppins; ⚠ a few stray Poppins refs remain in code, tracked in progress-tracker.md), dispatch is the
+> **`IncomingRequest` overlay** (not a `request/[id]` route), the active ride is **`ride.tsx`** (not
+> `trip/[id]`), the 3-way gate lives in **`index.tsx`**, and the app imports `@kari/mobile-core` **directly**
+> (no re-export shims). As-built detail: [README.md](README.md), [screen-catalog.md](screen-catalog.md),
+> [stores.md](stores.md), [ui-registry.md](ui-registry.md).
 
 ---
 
@@ -61,8 +68,8 @@ driver-specific additions in **bold**.
 | Language | TypeScript (strict) | Shared `@kari/types` |
 | Navigation | Expo Router v6 | Typed routes, groups, gating |
 | Styling | NativeWind v4 + Tailwind | Same tokenized design system as rider |
-| Fonts | Poppins | Brand type |
-| Client state | Zustand | `auth` / `availability` / `ride` stores |
+| Fonts | **HankenGrotesk** + ArchivoExpanded (wordmark) | Brand type; see context/design-tokens.md |
+| Client state | Zustand | `auth` / `availability` / `ride` / `carpool` / `signup` stores |
 | Server state | TanStack Query | Caching, mutations, optimistic ride actions |
 | API client | thin typed `fetch` wrapper | Envelope unwrap + Bearer + 401 refresh (reuse rider's) |
 | Realtime | `socket.io-client` | **Dispatch** + ride events (JWT on connect) |
@@ -112,47 +119,49 @@ driver/
 ├── app/                          # Expo Router routes (thin screens)
 │   ├── _layout.tsx               # Providers, splash, 3-way auth+onboarding gate, global dispatch listener
 │   ├── index.tsx                 # Redirect by auth/onboarding state
-│   ├── (auth)/                   # welcome, signup, verify, otp, signin, success
-│   ├── (onboarding)/             # KYC wizard: personal, quiz, vehicle, documents, liveness, payout, review
-│   ├── (app)/(tabs)/             # home (online toggle + map), trips, account
-│   ├── request/[id].tsx          # incoming-request overlay (accept / reject / counter-offer)
-│   └── trip/[id].tsx             # active ride: to-pickup → arrived → start-PIN → in-progress → complete → rate
-├── src/
-│   ├── api/                      # typed client (shared w/ rider), endpoints, query hooks
-│   ├── stores/                   # auth.store, availability.store, ride.store (Zustand)
-│   ├── realtime/                 # socket client + dispatch/ride-event hooks
-│   ├── location/                 # background task (expo-task-manager), tracker start/stop
-│   ├── features/                 # auth/ onboarding/ dispatch/ trip/ earnings/ account/
-│   ├── components/               # shared UI (Button, Input, Screen, Sheet, MapView, OnlineToggle, …)
-│   ├── theme/                    # tokens, tailwind preset, dark map style
-│   └── lib/                      # env, storage, formatting, geo helpers
+│   ├── (auth)/                   # welcome, signup, verify-method, otp, signin
+│   ├── (onboarding)/             # index.tsx — single-screen 6-step KYC wizard
+│   ├── (tabs)/                   # home (online toggle + map), trips, account   (no (app) wrapper)
+│   └── *.tsx                     # ride (active trip), earnings, carpool, shuttle, safety, chat, … (see screen-catalog.md)
+├── src/                          # imports @kari/mobile-core DIRECTLY — no theme/api re-export shims
+│   ├── api/                      # endpoints.ts + queryClient + types (apiFetch imported from mobile-core)
+│   ├── stores/                   # auth, availability, ride, carpool, signup (Zustand)
+│   ├── realtime/                 # useDriverDispatch + useDispatchChannel
+│   ├── location/                 # tracker.ts — expo-task-manager background task, start/stop
+│   ├── components/               # 3 driver-specific: IncomingRequest, SwipeToAccept, BrandMark
+│   └── lib/                      # env, storage, error, push
 └── assets/                       # fonts, images, icons, dispatch sound
 ```
 
-> **Code sharing:** the api client, socket layer, theme tokens, and several primitives are near-identical
-> to the rider app. **Open decision (§15):** extract a shared `@kari/mobile-core` workspace package vs.
-> copy-and-adapt per app.
+> **Code sharing (resolved):** the api client, socket layer, theme tokens, and primitives live in
+> **`@kari/mobile-core`**. The driver app imports them **directly** (no local re-export shims — unlike the
+> rider app, which wraps them). Dispatch is the `IncomingRequest` overlay rendered by `(tabs)/_layout` (not a
+> `request/[id]` route); the active ride is the single `ride.tsx` (not `trip/[id]`).
 
 ---
 
 ## 6. Navigation Architecture
 
-- **Expo Router**, groups: `(auth)`, `(onboarding)`, `(app)/(tabs)`, plus top-level `request/[id]` and `trip/[id]`.
-- **Three-way gate** in the root layout: unauthenticated → `(auth)`; authenticated but
-  `!onboardingComplete` → `(onboarding)`; ready → `(app)/(tabs)/home`.
-- **Tabs**: Home · Trips · Account — dark + yellow dot tab bar (Flutter parity).
-- **Onboarding** is a linear gated stack (each step persists to its backend endpoint; progress resumes).
-- **Dispatch** (`request/[id]`) is presented **modally over the tabs** by the global listener on `ride:offer`.
-- **Active trip** (`trip/[id]`) is a full-screen flow pushed on accept; it owns the navigate→arrive→start→complete states.
+- **Expo Router**, groups: `(auth)`, `(onboarding)`, `(tabs)`; flow screens (`ride`, `earnings`, `carpool`, …) at the top level.
+- **Three-way hard gate** — implemented in **`app/index.tsx`** (the splash), not `_layout`: `unauthenticated →
+  /(auth)/welcome`; authenticated → `driversApi.me()` → `onboardingComplete ? /(tabs)/home : /(onboarding)`.
+  (`_layout.tsx` additionally bounces any unauthenticated access back to welcome.)
+- **Tabs**: Home · Trips · Account — **default Expo `Tabs` + Ionicons** (not a dot tab bar).
+- **Onboarding** is the single-screen `(onboarding)/index.tsx` wizard; `complete` is the hard gate.
+- **Dispatch** is the **`IncomingRequest` overlay** rendered by `(tabs)/_layout` when `incomingOffer` is set
+  (via `useDriverDispatch` on `ride:offer`) — **not** a route you navigate to.
+- **Active trip** is the single `ride.tsx`, pushed on accept; it owns navigate → arrived → start-PIN → complete → rate.
 
 ---
 
 ## 7. State Management
 
 **Client (Zustand):**
-- `useAuthStore` — `{ accessToken, refreshToken, user, status }`; tokens from secure-store.
+- `useAuthStore` — `{ status, user, accessToken, refreshToken }`; secure-store keys are driver-namespaced (`kari.driver.*`); wires `configureApi(...)`.
 - `useAvailabilityStore` — `{ online, lastFix, watching }`; drives the online toggle + background tracker.
 - `useRideStore` — `{ activeRideId, incomingOffer }`; the in-flight dispatch/trip.
+- `useCarpoolStore` — `{ offers[], activeCarpoolId }`; carpool offers discovered via the `carpool:offer` socket event.
+- `useSignupDraft` — transient signup draft (channel chosen before `/auth/signup`). *(Detail: stores.md)*
 
 **Server (TanStack Query):** driver profile (`/drivers/me`), onboarding state, trips (`/rides/mine`),
 ride detail (`/rides/:id`), earnings (Phase 3). Ride actions are mutations with optimistic status;
@@ -178,8 +187,10 @@ Typed `endpoints` module over the shared client; every shape from `@kari/types`.
 - **Driver subscribes to:** `ride:offer` (a dispatch — STANDARD or NEGOTIATE), `ride:accepted` (the rider
   accepted my counter-offer), `ride:cancelled` (rider cancelled). The driver is the **actor** for
   arrived/start/complete, so it drives those via HTTP and reflects them locally.
-- A root-level `useDispatchChannel()` hook: on `ride:offer` → play sound + haptic, push `request/[id]`
-  with a countdown; on `ride:accepted` → go to `trip/[id]`; on `ride:cancelled` → toast + return home.
+- `useDispatchChannel(onEvent)` subscribes to `['ride:offer','ride:accepted','ride:cancelled','carpool:offer']`;
+  `useDriverDispatch()` (mounted in `(tabs)/_layout`) turns them into store + nav: `ride:offer` → show the
+  `IncomingRequest` overlay (**only while online & idle**); `ride:accepted` → `router.replace('/ride')`;
+  `ride:cancelled` → clear the card; `carpool:offer` → carpool store.
 
 ---
 
@@ -202,8 +213,12 @@ Same tokens as the rider app (the two legacy apps already converged on this iden
 
 **Colors:** `brand #FFFF00` · `bg #070707` · `surface #121212` · `card #181818` · `border #2A2A2A` ·
 `text #FFFFFF` · `muted #CBCBCB` · `subtle #888888` · `success #3BD17A` · `danger #FF5A5F`.
-**Type:** Poppins (`display 28/700 · h1 24/700 · h2 20/600 · body 16/400 · caption 12/400`).
+**Type:** **HankenGrotesk** (text) + **ArchivoExpanded** (wordmark) (`display 28/700 · h1 24/700 · h2 20/600 · body 16/400 · caption 12/400`).
 **Radii:** `pill 999 · input 30 · card 12`. **Spacing:** 4-pt scale.
+
+> *As-built component set is in [ui-registry.md](ui-registry.md): the 10 `@kari/mobile-core` primitives
+> (imported directly) + 3 driver-specific (`IncomingRequest`, `SwipeToAccept`, `BrandMark`). The lists below
+> are the original design sketch — e.g. there's no DotTabBar or AddressAutocomplete; tabs use Expo Tabs + Ionicons.*
 
 **Core components** (reuse rider's where identical): `Screen`, `KariButton`, `InputField`, `PhoneInput`,
 `OtpField`, `Select`, `Checkbox`, `SuccessBadge`, `StepDots`, `BrandMark`, `ScreenHeader` (back/cancel),
@@ -264,7 +279,7 @@ metaphor), `DocumentUploadTile` (pick/capture → upload → status), `LivenessC
 
 **Locked:**
 1. Stack = Expo SDK 54 / RN / TS — identical foundation to the rider app; `@kari/types` contracts.
-2. Design tokens = the shared dark + `#FFFF00` system; Poppins. Carry the Flutter flows + design.
+2. Design tokens = the shared dark + `#FFFF00` system; **HankenGrotesk + ArchivoExpanded** (the Poppins note was superseded). Carry the Flutter flows + design.
 3. Tokens in `expo-secure-store`; backend JWT auth (drop the legacy client-side Cognito entirely).
 4. Onboarding is a hard gate on `/drivers/onboarding/complete`.
 5. **Code sharing** — ✅ extract a shared **`@kari/mobile-core`** workspace package (typed API client +

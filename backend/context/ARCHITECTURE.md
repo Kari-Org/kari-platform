@@ -1,9 +1,15 @@
 # Kari Backend — Architecture
 
-> **Status:** Draft v1 · **Date:** 2026-06-02 · **Stack:** NestJS + TypeScript
-> This document is the single source of truth for the unified Kari backend. It supersedes the two
+> **Status:** Draft v1 · **Date:** 2026-06-02 · **Reconciled with code:** 2026-06-08 · **Stack:** NestJS + TypeScript
+> This document is the design rationale + lineage for the unified Kari backend. It supersedes the two
 > legacy backends (`KariBackend` / NestJS, `kariBackendJava` / Spring Boot), carrying forward the
 > best of each and adding the scope defined in the MVP Requirements Specification (v1.0, 2025-01-14).
+>
+> **As-built reconciliation (2026-06-08):** corrected where the code diverged from the original intent —
+> **scrypt** (not Argon2id), **services split by concern** (not a two-tier orchestration/data split), and
+> **`user:{id}` socket rooms only** (not per-resource rooms). The detailed as-built reference lives in the
+> sibling files in this folder: [README.md](README.md), [module-catalog.md](module-catalog.md),
+> [entity-relationships.md](entity-relationships.md), [api-inventory.md](api-inventory.md).
 
 ---
 
@@ -62,7 +68,7 @@ Design goals, in priority order:
 | Cache / ephemeral | Redis | Price quotes (TTL), **live driver geo-index (GEO)**, socket adapter, BullMQ backend |
 | Jobs / async | BullMQ (Redis) | OTP expiry, commission calc, leaderboard, billing, notification fan-out (replaces `setTimeout` hack) |
 | Realtime | Socket.IO + `@socket.io/redis-adapter` | Targeted rooms, JWT-auth, horizontal scale at peak |
-| Auth | JWT (access + refresh), Passport, Argon2 | Self-issued, stateless, rotating refresh |
+| Auth | JWT (access + refresh), Passport, **scrypt** | Self-issued, stateless, rotating refresh; scrypt = no native dep |
 | Object storage | AWS S3 | Driver documents (carry from Java) |
 | Identity/liveness | AWS Rekognition Face Liveness | Carry from Java; >0.9 confidence gate |
 | NIN / KYC | Pluggable; **Dojah** primary | NG-focused NIN/BVN verification (locked 2026-06-02) |
@@ -81,9 +87,11 @@ Design goals, in priority order:
 
 ## 4. Architectural Principles
 
-1. **Two-tier services** (from Java). Each domain has an *orchestration service* (talks to sockets,
-   Redis, pricing, providers) and a *data service* (owns DB access + transaction boundaries).
-   Controllers stay thin.
+1. **Concern-split services, thin controllers.** Controllers stay thin (HTTP only). Each module's logic is
+   split into focused services by concern (`money` → wallet/ledger/payments/commission; `rides` →
+   rides/matching/pricing) — a service owns both its logic and its DB access, and multi-writes use a
+   `QueryRunner` transaction inline. *(The original intent was a two-tier orchestration/data split from the
+   Java app; the code uses concern-split instead — see ../../context/code-standards.md.)*
 2. **One identity, role-scoped profiles.** A single `User` (auth identity) with role-specific
    `DriverProfile` / `RiderProfile`. No separate identity pools; no duplicate identity stores.
 3. **Money is double-entry.** Every balance change is a `LedgerEntry`. Wallets are projections of the
@@ -107,20 +115,24 @@ Design goals, in priority order:
 
 ### 5.1 Request path (HTTP)
 ```
-Client → Guard (JWT + role) → Controller (thin) → OrchestrationService → DataService (@Transactional) → Repository → Postgres
-                                                          ↓
-                                            Providers / Redis / Queue / Socket
+Client → JwtAuthGuard (GLOBAL; @Public opts out) + ThrottlerGuard → ValidationPipe
+       → Controller (thin) → Service(s) (QueryRunner txn on multi-write) → Repository → Postgres
+                                   ↓
+                     Providers / Redis / Queue / Socket
 ```
+RolesGuard / PermissionsGuard apply per-controller. A global `ResponseEnvelopeInterceptor` wraps every
+success in `ApiResponse<T>`; `AllExceptionsFilter` normalizes every error to the same shape.
 
 ### 5.2 Realtime path (WebSocket)
 ```
-Client --CONNECT(JWT)--> Gateway (auth middleware) → joins room user:{id}, role rooms
-Ride events → SocketService.emitTo(user:{driverId}, ...)        # targeted, never broadcast
+Client --CONNECT(JWT)--> Gateway (verifies JWT) → joins its `user:{id}` room (only)
+Events → RealtimeService.emitToUser(userId, event, payload)     # targeted to user rooms, never broadcast
 Multi-instance fan-out → Redis adapter (pub/sub) → all nodes
 ```
 
-Rooms: `user:{userId}`, `ride:{rideId}`, `carpool:{id}`, `shuttle:{tripId}`. Subscriptions are
-authorized against JWT claims (closes the Java "TODO: restrict subscriptions" gap).
+Rooms: **`user:{userId}` only** — every socket auto-joins its own on connect — plus an **`'ops'`** room for
+panic. Events fan out to each participant's `user:{id}` room via `emitToUser`. There are **no**
+`ride:`/`carpool:`/`shuttle:` rooms (the original per-resource-room design was not implemented).
 
 ### 5.3 Matching flow (the core loop)
 ```
@@ -147,6 +159,10 @@ authorized against JWT claims (closes the Java "TODO: restrict subscriptions" ga
 | **S3** | Driver/rider document binaries (license, NIN card, car photos, profile photo) |
 
 ### 6.2 Core entities (overview)
+
+> The **authoritative 29-entity list** with real table/column names and FKs is in
+> [entity-relationships.md](entity-relationships.md). The sketch below is the original design — some names
+> differ from the as-built (e.g. `RideOffer` not `RideNegotiation`; `DriverScore` not `LeaderboardEntry`).
 - **User** — id, role(`DRIVER`/`RIDER`/`ADMIN`), email, phone, passwordHash, status, verification flags.
 - **DriverProfile** — userId, **driverType(`FREELANCE`/`DEDICATED`)**, personality(`TALKATIVE`/`RESERVED`/`NEUTRAL`), onboarding status, DOB, origin, NIN status, KYC/liveness status, payment details, walletId, referralCode, ratingAvg.
 - **RiderProfile** — userId, preferredDriverBehavior, savedAddresses(home/work), card token (gateway ref), walletId, ninStatus, ratingAvg.
@@ -171,7 +187,7 @@ authorized against JWT claims (closes the Java "TODO: restrict subscriptions" ga
 
 - **Self-issued JWT** (HS256 or RS256), short-lived **access** + rotating **refresh**. No Cognito.
 - One `User`; `role` claim + `userId` in token. Guards: `@Roles(DRIVER|RIDER|ADMIN)`.
-- Passwords hashed with **Argon2id**.
+- Passwords hashed with **scrypt** (Node built-in; `salt:hash` hex, constant-time compare — deliberately no native dependency; **not** Argon2id).
 - **Signup OTP** (SMS/WhatsApp) verifies phone before account activation.
 - **Auth factors per requirements:** OTP + security questions server-side; **fingerprint / Face ID are
   device-side** (mobile unlocks a stored refresh token) — backend treats them as a trusted-device signal.
@@ -183,11 +199,12 @@ authorized against JWT claims (closes the Java "TODO: restrict subscriptions" ga
 
 ## 8. Module Catalog
 
-Each module = orchestration service + data service + controller(s) + entities. MVP scope noted.
+Each module = controller(s) + one or more concern-split services + entities. MVP scope noted. The full
+as-built catalog (routes, entities owned, dependencies) is in [module-catalog.md](module-catalog.md).
 
 | # | Module | Responsibility | Key decisions | Source |
 |---|---|---|---|---|
-| 1 | **Auth** | Signup, login, JWT access/refresh, password, signup-OTP | Self-issued, Argon2, refresh rotation | Java model + Nest OTP |
+| 1 | **Auth** | Signup, login, JWT access/refresh, password, signup-OTP | Self-issued, scrypt, refresh rotation | Java model + Nest OTP |
 | 2 | **Identity / KYC** | Document upload (S3), Rekognition liveness, **NIN verification**, verification gating | Pluggable KYC provider; liveness hard-gate | Java + new (NIN) |
 | 3 | **Drivers** | Profile, **freelance vs dedicated**, multi-step onboarding, **personality quiz**, vehicle, availability | Driver-type drives onboarding path & dispatch eligibility | Java + req |
 | 4 | **Riders** | Light onboarding, **driver-behavior preference**, saved addresses, card token | Low friction (req); preference feeds matching | Java + req |
@@ -243,15 +260,18 @@ Each module = orchestration service + data service + controller(s) + entities. M
 | WhatsApp | `WhatsAppProvider` | Twilio | OTP alt channel |
 | Voice (masked) | `VoiceProvider` | Twilio | In-ride masked calls |
 | Push | `PushProvider` | Expo Push / FCM | Mobile notifications |
+| Email | `EmailProvider` | **AWS SES** | Transactional only (notifications channel); marketing email is separate/roadmap |
 
 No provider IDs/keys in code — all via validated config; every provider has a `test`/`noop` impl for local + CI.
+**As-built:** only `PaymentProvider` (Paystack) has a real implementation today — the other 9 run on their
+noop until built (10 contracts total). See [../../context/provider-docs.md](../../context/provider-docs.md).
 
 ---
 
 ## 11. Non-Functional Requirements (mapped)
 
 - **Scalability (peak):** stateless app nodes behind LB; Redis socket adapter; queues absorb spikes; Redis GEO for hot matching path.
-- **Security:** Argon2, JWT rotation, KYC gating, ride-start OTP, idempotency, rate limiting, masked calls, least-privilege provider keys.
+- **Security:** scrypt password hashing, JWT rotation, KYC gating, ride-start OTP, idempotency, rate limiting, masked calls, least-privilege provider keys.
 - **Performance:** targeted sockets (no broadcast), cached quotes, GEO index, async fan-out.
 - **Usability:** consistent API envelope, OpenAPI docs, clear error shape.
 - **Compliance:** Nigerian data handling (NDPR), NIN handled as sensitive PII (encrypted at rest, never logged, never in URLs), audit trail via ledger + event log.
@@ -287,7 +307,8 @@ No provider IDs/keys in code — all via validated config; every provider has a 
 | NFRs (scalability, security, performance, usability, compliance) | Cross-cutting / Infra |
 
 **Post-MVP (KARI V1.0 roadmap):** Spotify partnership, "Kari Wrapped", watchlist address + push,
-emergency car-alarm integration. Tracked, not built in MVP.
+emergency car-alarm integration, **fare-split with friends** (social graph), **marketing email** (separate
+from the transactional `EmailProvider`). Tracked, not built in MVP.
 
 ---
 

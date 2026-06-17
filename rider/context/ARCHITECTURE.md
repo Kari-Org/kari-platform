@@ -1,10 +1,16 @@
 # Kari Rider App — Architecture & Design
 
-> **Status:** Draft v1 · **Date:** 2026-06-02 · **Stack:** Expo (React Native) + TypeScript
-> The single source of truth for the unified rider app. It supersedes the two legacy rider apps
+> **Status:** Draft v1 · **Date:** 2026-06-02 · **Reconciled with code:** 2026-06-08 · **Stack:** Expo (React Native) + TypeScript
+> Design rationale + lineage for the unified rider app. It supersedes the two legacy rider apps
 > (`KariRiderMobile` / Expo-RN, `KariRiderMobileFlutter` / Flutter), taking the RN app's stack +
 > architecture and the Flutter app's design language + richer ride-flow screens, and wiring both to
-> the new backend (see `../backend/ARCHITECTURE.md`) over typed `@kari/types` contracts.
+> the backend (see `../../backend/context/ARCHITECTURE.md`) over typed `@kari/types` contracts.
+>
+> **As-built reconciliation (2026-06-08):** corrected where the code diverged — **HankenGrotesk** (not
+> Poppins), and a **2-way auth gate** (onboarding is reached by explicit navigation, not root-gated). The
+> as-built detail is in the sibling files: [README.md](README.md), [screen-catalog.md](screen-catalog.md),
+> [stores.md](stores.md), [ui-registry.md](ui-registry.md). Several components and the "ride-flow stack" in
+> §11–12 are the original design sketch — see screen-catalog.md / ui-registry.md for what's actually built.
 
 ---
 
@@ -36,7 +42,7 @@ Goals, in priority order:
 | Server state | none (axios stubbed) | none | **TanStack Query** (new) |
 | Maps | react-native-maps + Places ✓ | google_maps_flutter + Places | **RN's**, + debounce & polyline from Flutter |
 | Styling | NativeWind/Tailwind | ThemeData | **NativeWind**, tokenized |
-| Typography | SpaceMono (default leftover) | **Poppins** | **Poppins** |
+| Typography | SpaceMono (default leftover) | Poppins | **HankenGrotesk** (built; the Poppins pick was later changed) |
 | Token storage | AsyncStorage (insecure) | none | **expo-secure-store** |
 | Secrets | hardcoded key | **.env** | **env + backend proxy** |
 | **Best screens** | auth set, driver-select, negotiation | **home grid, driver-assigned (chat/playlist/share), trip-summary, rating, wave app bar** | **union of both** |
@@ -53,8 +59,8 @@ Goals, in priority order:
 | Language | TypeScript (strict) | Shared `@kari/types` with backend |
 | Navigation | Expo Router v6 (file-based) | Typed routes, route groups, auth gating |
 | Styling | NativeWind v4 + Tailwind | Tokenized design system |
-| Fonts | Poppins (`@expo-google-fonts/poppins`) | Brand type from Flutter app |
-| Client state | Zustand (+ persist) | `auth` / `location` / `ride` stores |
+| Fonts | **HankenGrotesk** (`@expo-google-fonts/hanken-grotesk`) + ArchivoExpanded (wordmark) | See context/design-tokens.md |
+| Client state | Zustand | `auth` / `location` / `ride` / `signup` stores |
 | Server state | **TanStack Query** | Caching, refetch, optimistic mutations |
 | API client | thin typed `fetch` wrapper | Unwraps `ApiResponse<T>`, Bearer + refresh |
 | Realtime | `socket.io-client` | Ride events from the gateway (JWT on connect) |
@@ -97,18 +103,17 @@ rider/
 ├── app/                          # Expo Router routes (thin screens)
 │   ├── _layout.tsx               # Providers (Query, theme, fonts), splash, auth gate
 │   ├── index.tsx                 # Redirect by auth state
-│   ├── (auth)/                   # welcome, signup, signin, verify, otp, success
-│   ├── (onboarding)/             # profile, preferences, addresses, nin
-│   └── (app)/(tabs)/             # home, rides, account  (+ nested ride-flow stack)
-├── src/
-│   ├── api/                      # typed client, endpoints, query/mutation hooks
-│   ├── stores/                   # auth.store, location.store, ride.store (Zustand)
-│   ├── realtime/                 # socket client + ride-event hooks
-│   ├── features/                 # auth/ onboarding/ rides/ account/ safety/  (components+logic)
-│   ├── components/               # shared UI (Button, Input, Screen, Sheet, MapView, …)
-│   ├── theme/                    # tokens, tailwind preset, map style JSON
-│   ├── lib/                      # env, storage, formatting, geo helpers
-│   └── types/                    # app-local types (re-exports @kari/types)
+│   ├── (auth)/                   # welcome, signup, verify-method, otp, signin, forgot-password
+│   ├── (onboarding)/             # profile, liveness, preferences  (linear)
+│   ├── (tabs)/                   # home, rides, account   (no (app) wrapper)
+│   └── *.tsx                     # book, ride/[id], carpools, shuttle, wallet, … (flow screens — see screen-catalog.md)
+├── src/                          # mostly thin re-exports of @kari/mobile-core
+│   ├── api/                      # endpoints.ts (typed) + re-exports: client, session, queryClient, types
+│   ├── stores/                   # auth, location, ride, signup (the substantial local logic)
+│   ├── realtime/                 # useRideChannel + socket re-export
+│   ├── components/               # 3 app-specific (AddressAutocomplete, BrandMark, DotTabBar) + primitive re-exports
+│   ├── theme/                    # tokens re-export
+│   └── lib/                      # env, storage, error, push
 └── assets/                       # fonts, images, icons, lottie
 ```
 
@@ -117,8 +122,9 @@ rider/
 ## 6. Navigation Architecture
 
 - **Expo Router**, route groups: `(auth)`, `(onboarding)`, `(app)/(tabs)`.
-- **Auth gate** in the root layout: unauthenticated → `(auth)`; authenticated-but-not-onboarded →
-  `(onboarding)`; ready → `(app)/(tabs)/home`.
+- **Auth gate (2-way)** in the root layout: `unauthenticated` & not in `(auth)` → `/(auth)/welcome`;
+  `authenticated` & in `(auth)` → `/(tabs)/home`. **Onboarding is not root-gated** — `success.tsx` routes a
+  new user into `/(onboarding)/profile`, then a linear profile → liveness → preferences chain.
 - **Tabs**: Home · Rides · Account — custom dark + yellow **dot tab bar** (Flutter parity), each tab a
   stack; re-tapping a tab pops to its root.
 - **Ride flow** is a nested stack pushed from Rides: `quote → searching → driver-assigned →
@@ -130,9 +136,10 @@ rider/
 ## 7. State Management
 
 **Client (Zustand):**
-- `useAuthStore` — `{ accessToken, refreshToken, user, status }`; tokens hydrated from secure-store; `login/logout/setTokens`.
-- `useLocationStore` — `{ current, pickup, dropoff }` (each `{ lat, lng, address }`); permission state.
-- `useRideStore` — `{ activeRideId, lastQuoteRef, draft }` — the in-flight booking/session.
+- `useAuthStore` — `{ status, user, accessToken, refreshToken }`; `hydrate/setSession/setUser/logout`; also calls `configureApi(...)` to wire the shared mobile-core client.
+- `useLocationStore` — `{ current, pickup, dropoff }` (each `{ lat, lng, address? }`).
+- `useRideStore` — `{ activeRideId, lastQuoteRef }`.
+- `useSignupDraft` — transient `{ email, phone, password, channel }` for multi-step signup. *(Detail: stores.md)*
 
 **Server (TanStack Query):** profile (`/auth/me`, `/riders/me`), saved addresses, ride detail/history,
 quotes (mutation), ride actions (mutations with optimistic status). Query keys namespaced per domain;
@@ -157,8 +164,8 @@ socket events invalidate/patch the relevant query cache so HTTP and realtime sta
 - `socket.io-client` connects to the gateway with the access token in `auth.token`; reconnects with backoff.
 - The app auto-joins its `user:{id}` room (server-side on connect). Rider subscribes to:
   `ride:accepted`, `ride:offer:driver`, `ride:arrived`, `ride:started`, `ride:completed`, `ride:cancelled`.
-- A `useRideChannel(rideId)` hook maps events → TanStack Query cache updates → UI re-render
-  (driver assigned, en route, arrived, PIN, in-progress, completed).
+- A `useRideChannel(onEvent)` hook subscribes to those events (on the rider's `user:{id}` room) and maps
+  them → cache/UI updates (driver assigned, en route, arrived, PIN, in-progress, completed).
 
 ---
 
@@ -189,11 +196,11 @@ The two legacy apps already converged on one identity — this formalizes it.
 | `textSubtle` | `#888888` | meta/disabled |
 | `success` `danger` | `#3BD17A` `#FF5A5F` | status |
 
-**Typography** — Poppins. `display 28/700 · h1 24/700 · h2 20/600 · body 16/400 · bodySm 14/400 · caption 12/400 · micro 10/400`.
+**Typography** — **HankenGrotesk** (text) + **ArchivoExpanded** (the "Kari" wordmark). `display 28/700 · h1 24/700 · h2 20/600 · body 16/400 · bodySm 14/400 · caption 12/400 · micro 10/400`.
 
 **Radii** — `pill 999 · input 30 · md 16 · card 12 · sm 8`.   **Spacing** — 4-pt scale (4/8/12/16/20/24/32).
 
-**Core components**
+**Core components** *(design sketch — the as-built set is in [ui-registry.md](ui-registry.md): 10 re-exported `@kari/mobile-core` primitives + 3 app-specific (`AddressAutocomplete`, `BrandMark`, `DotTabBar`). Items like WaveHeader/RideSheet/MapView/RideTypeGrid below were planned, not all built as separate components.)*
 - `Screen` (safe-area + dark bg), `KariButton` (primary pill yellow/black 47px; `outline`; loading state),
   `InputField` (card bg, r30), `PhoneField` (country code), `OtpField` (4-digit, yellow focus).
 - `WaveHeader` — signature yellow wave-clipped header ("Let's Ride, {name}", menu + bell).
@@ -257,7 +264,7 @@ auto-advancing home carousel.
 
 **Locked:**
 1. Stack = Expo/RN/TS (matches platform decision).
-2. Design tokens = the shared dark + `#FFFF00` system; **Poppins** typography (drop SpaceMono).
+2. Design tokens = the shared dark + `#FFFF00` system; typography = **HankenGrotesk** + ArchivoExpanded wordmark (the earlier Poppins pick was changed; SpaceMono dropped).
 3. Tokens in **expo-secure-store**; secrets server-side.
 4. Build on the RN app's structure; port Flutter's design + missing screens.
 
