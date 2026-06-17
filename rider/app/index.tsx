@@ -138,6 +138,6 @@ const styles = StyleSheet.create({
     borderColor: colors.brand,
   },
   pin: { width: PIN, height: PIN },
-  word: { marginTop: 10, color: '#ffffff', fontFamily: 'Poppins_700Bold', fontSize: 36 },
-  tag: { marginTop: 4, color: colors.muted, fontFamily: 'Poppins_400Regular', fontSize: 15 },
+  word: { marginTop: 10, color: '#ffffff', fontFamily: 'ArchivoExpanded', fontSize: 36 },
+  tag: { marginTop: 4, color: colors.muted, fontFamily: 'HankenGrotesk_400Regular', fontSize: 15 },
 });

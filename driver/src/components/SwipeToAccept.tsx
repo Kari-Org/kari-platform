@@ -74,7 +74,7 @@ export function SwipeToAccept({
           opacity: labelOpacity,
           textAlign: 'center',
           color: colors.brand,
-          fontFamily: 'Poppins_600SemiBold',
+          fontFamily: 'HankenGrotesk_600SemiBold',
           fontSize: 15,
         }}
       >

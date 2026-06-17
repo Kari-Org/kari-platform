@@ -25,7 +25,7 @@ export default function TabsLayout() {
           tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.hairline },
           tabBarActiveTintColor: colors.brand,
           tabBarInactiveTintColor: colors.subtle,
-          tabBarLabelStyle: { fontFamily: 'Poppins_500Medium', fontSize: 11 },
+          tabBarLabelStyle: { fontFamily: 'HankenGrotesk_500Medium', fontSize: 11 },
         }}
       >
         <Tabs.Screen
