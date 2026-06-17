@@ -65,8 +65,9 @@
       },
       "apiBaseUrl": "https://karibackend-production.up.railway.app",
       "socketUrl": "https://karibackend-production.up.railway.app",
-      "googleWebClientId": "",
-      "googleIosClientId": ""
+      "googleWebClientId": "903491688476-0j6qpegdjijhos887pl9q6i3dor5uq50.apps.googleusercontent.com",
+      "googleIosClientId": "903491688476-uank45rgrq74ucfek7hc29i2c3cb7tpn.apps.googleusercontent.com",
+      "googleAndroidClientId": "903491688476-s6lv41lpkdr84vb64foa9pt5f1b8ilbn.apps.googleusercontent.com"
     },
     "runtimeVersion": {
       "policy": "appVersion"

@@ -20,6 +20,7 @@ WebBrowser.maybeCompleteAuthSession();
 const extra = (Constants.expoConfig?.extra ?? {}) as {
   googleWebClientId?: string;
   googleIosClientId?: string;
+  googleAndroidClientId?: string;
 };
 
 export default function SignIn() {
@@ -28,9 +29,12 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const configured = !!(extra.googleWebClientId || extra.googleIosClientId);
+  const configured = !!(
+    extra.googleWebClientId || extra.googleIosClientId || extra.googleAndroidClientId
+  );
   const [, response, promptAsync] = Google.useAuthRequest({
     iosClientId: extra.googleIosClientId || undefined,
+    androidClientId: extra.googleAndroidClientId || undefined,
     webClientId: extra.googleWebClientId || undefined,
     scopes: ['openid', 'profile', 'email'],
   });
@@ -73,7 +77,7 @@ export default function SignIn() {
     if (!configured) {
       Alert.alert(
         'Google sign-in',
-        'Add your Google OAuth client IDs to app.json (extra.googleWebClientId / googleIosClientId) to enable this.',
+        'Add your Google OAuth client IDs to app.json (extra.googleWebClientId / googleIosClientId / googleAndroidClientId) to enable this.',
       );
       return;
     }
