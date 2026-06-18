@@ -10,6 +10,10 @@ export interface SelectOption {
 
 interface Props {
   label?: string;
+  /** Override the field label's size/color classes (default: "text-sm text-muted"). */
+  labelClassName?: string;
+  /** Override the selected/placeholder text size class (default: "text-base"). */
+  inputClassName?: string;
   placeholder?: string;
   value?: string | null;
   options: SelectOption[];
@@ -17,17 +21,29 @@ interface Props {
 }
 
 /** Labeled field that opens a bottom-sheet list of options. */
-export function Select({ label, placeholder = 'Select', value, options, onChange }: Props) {
+export function Select({
+  label,
+  labelClassName,
+  inputClassName,
+  placeholder = 'Select',
+  value,
+  options,
+  onChange,
+}: Props) {
   const [open, setOpen] = useState(false);
   const selected = options.find((o) => o.value === value);
   return (
     <View className="mb-4">
-      {label ? <Text className="mb-2 font-pmedium text-sm text-muted">{label}</Text> : null}
+      {label ? (
+        <Text className={`mb-2 font-pmedium ${labelClassName ?? 'text-sm text-muted'}`}>{label}</Text>
+      ) : null}
       <Pressable
         onPress={() => setOpen(true)}
         className="flex-row items-center justify-between rounded-input bg-card px-4 py-4"
       >
-        <Text className={`font-sans text-base ${selected ? 'text-white' : 'text-subtle'}`}>
+        <Text
+          className={`font-sans ${inputClassName ?? 'text-base'} ${selected ? 'text-white' : 'text-subtle'}`}
+        >
           {selected ? selected.label : placeholder}
         </Text>
         <Ionicons name="chevron-down" size={18} color={colors.subtle} />

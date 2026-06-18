@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -10,24 +9,21 @@ import {
   View,
 } from 'react-native';
 import { KariButton } from '@/components/KariButton';
-import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/tokens';
+import { OnboardingScreen } from '@/components/OnboardingScreen';
 
+// Copy + order per Figma "Customer Onboarding" carousel (252:3311 / 3322 / 3333).
 const SLIDES = [
   {
-    icon: 'shield-checkmark',
     title: 'Your Safety is Our Priority',
-    body: 'Verified drivers, OTP confirmation, and a panic button for emergencies.',
+    body: 'Enjoy secure rides with verified drivers, OTP confirmation, and a panic button for emergencies',
   },
   {
-    icon: 'car-sport',
     title: 'Rides Tailored for You',
-    body: 'Choose shuttles, carpooling, or subscriptions to fit your lifestyle.',
+    body: 'Choose from shuttles, carpooling, or subscriptions to fit your lifestyle',
   },
   {
-    icon: 'trophy',
     title: 'Ride, Earn, and Have Fun',
-    body: 'Earn badges, climb leaderboards, and enjoy rewards for riding with Kari.',
+    body: 'Earn badges, climb leaderboards, and enjoy rewards for consistent use',
   },
 ] as const;
 
@@ -39,7 +35,7 @@ export default function Welcome() {
     setIndex(Math.round(e.nativeEvent.contentOffset.x / width));
 
   return (
-    <Screen>
+    <OnboardingScreen>
       <ScrollView
         horizontal
         pagingEnabled
@@ -48,31 +44,35 @@ export default function Welcome() {
         className="flex-1"
       >
         {SLIDES.map((slide) => (
-          <View key={slide.title} style={{ width }} className="flex-1 items-center justify-center px-8">
-            <View className="mb-10 h-44 w-44 items-center justify-center rounded-full bg-brand/10">
-              <Ionicons name={slide.icon} size={72} color={colors.brand} />
-            </View>
-            <Text className="text-center font-pbold text-2xl text-white">{slide.title}</Text>
-            <Text className="mt-3 text-center font-sans text-base text-muted">{slide.body}</Text>
+          <View key={slide.title} style={{ width }} className="flex-1 justify-center px-9">
+            <Text className="text-center font-psemibold text-2xl text-white">{slide.title}</Text>
+            <Text className="mt-6 text-center font-sans text-xl leading-[29px] text-white">
+              {slide.body}
+            </Text>
           </View>
         ))}
       </ScrollView>
 
-      <View className="flex-row justify-center gap-2 pb-6">
+      {/* Figma dot row: active = wide white pill, inactive = small white/40 (252:3315). */}
+      <View className="flex-row gap-1.5 px-8 pb-5">
         {SLIDES.map((slide, i) => (
           <View
             key={slide.title}
-            className={`h-2 rounded-pill ${i === index ? 'w-6 bg-brand' : 'w-2 bg-subtle'}`}
+            className={`h-[7px] rounded-pill ${i === index ? 'w-8 bg-white' : 'w-[7px] bg-white/40'}`}
           />
         ))}
       </View>
 
-      <View className="px-5 pb-8">
+      {/* Entry kept as the existing dual CTA (feature-table item 6 dropped). */}
+      <View className="px-8 pb-8">
         <KariButton label="Get started" onPress={() => router.push('/(auth)/signup')} />
-        <Text onPress={() => router.push('/(auth)/signin')} className="mt-4 text-center font-sans text-muted">
+        <Text
+          onPress={() => router.push('/(auth)/signin')}
+          className="mt-4 text-center font-sans text-muted"
+        >
           I already have an account? <Text className="text-brand">Log in</Text>
         </Text>
       </View>
-    </Screen>
+    </OnboardingScreen>
   );
 }

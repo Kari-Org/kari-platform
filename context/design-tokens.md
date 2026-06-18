@@ -12,6 +12,12 @@ Design tokens for KariPlatform mobile and admin apps. Use these exact values —
 
 All tokens defined in `packages/mobile-core/src/theme/tokens.ts` and the Tailwind preset at `packages/mobile-core/tailwind-preset.js`.
 
+> **Source of truth (rider redesign):** the Figma file *Kari Mobile App* (`vVBjcKZOnxqIA6u9q35BxB`) is the
+> visual source of truth for the rider UI. The onboarding palette was verified against it and matches these
+> tokens exactly — `bg #070707`, `card`/off-black `#181818`, `subtle #888888`, `brand`/Primary-Yellow
+> `#FFFF00`, `white #FFFFFF`. `#000D26` (deep-navy "Primery") is a defined Figma variable reserved for the web
+> ink; not yet used on mobile.
+
 ### Colors
 ```typescript
 brand:    '#FFFF00'   // Kari yellow — primary accent

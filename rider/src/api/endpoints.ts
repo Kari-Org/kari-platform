@@ -66,8 +66,16 @@ export const authApi = {
   verify: (body: { phone: string; code: string }) =>
     apiFetch<AuthResult>('/auth/verify', { method: 'POST', body, auth: false }),
 
-  login: (body: { identifier: string; password: string }) =>
-    apiFetch<AuthResult>('/auth/login', { method: 'POST', body, auth: false }),
+  login: (body: { identifier: string; password: string; channel?: OtpChannel }) =>
+    apiFetch<{
+      verificationRequired: true;
+      phone: string;
+      channel: OtpChannel;
+      expiresInSeconds: number;
+    }>('/auth/login', { method: 'POST', body, auth: false }),
+
+  loginVerify: (body: { phone: string; code: string }) =>
+    apiFetch<AuthResult>('/auth/login/verify', { method: 'POST', body, auth: false }),
 
   google: (body: { idToken: string }) =>
     apiFetch<AuthResult & { isNewUser: boolean }>('/auth/google', {

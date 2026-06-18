@@ -1,12 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { type ComponentProps, useState } from 'react';
-import { Alert, ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 import { OtpChannel, UserRole } from '@kari/types';
 import { authApi } from '@/api/endpoints';
 import { BrandMark } from '@/components/BrandMark';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { OnboardingScreen } from '@/components/OnboardingScreen';
 import { errorMessage } from '@/lib/error';
 import { useSignupDraft } from '@/stores/signup.store';
 import { colors } from '@/theme/tokens';
@@ -48,59 +47,65 @@ export default function VerifyMethod() {
   };
 
   return (
-    <Screen className="px-5">
-      <ScreenHeader />
-      <View className="mt-4 items-center">
+    <OnboardingScreen className="px-6">
+      <View className="mb-10 mt-14 items-center">
         <BrandMark />
       </View>
-      <Text className="mt-8 text-center font-pbold text-3xl text-white">Verification</Text>
-      <Text className="mt-2 text-center font-sans text-base text-muted">
+      <Text className="text-center font-psemibold text-[28px] text-white">Verification</Text>
+      <Text className="mt-3 text-center font-pmedium text-base text-white">
         Kindly choose a verification method
       </Text>
-      <Text className="mb-8 mt-1 text-center font-sans text-sm text-subtle">
-        The code will be sent to: {draft.phone}
+      <Text className="mt-2 text-center font-sans text-xs text-white/50">
+        The code will be sent to your number:{' '}
+        <Text className="font-pmedium text-white">{draft.phone}</Text>
       </Text>
 
-      <MethodCard
-        icon="chatbubble-ellipses"
-        label="Get code via SMS"
-        loading={loading === OtpChannel.SMS}
-        onPress={() => choose(OtpChannel.SMS)}
-      />
-      <MethodCard
-        icon="logo-whatsapp"
-        label="Get code via WhatsApp"
-        loading={loading === OtpChannel.WHATSAPP}
-        onPress={() => choose(OtpChannel.WHATSAPP)}
-      />
-    </Screen>
+      <View className="mt-10 items-start gap-2.5">
+        <MethodPill
+          icon="chatbubble-ellipses-outline"
+          label="Get code via SMS"
+          loading={loading === OtpChannel.SMS}
+          onPress={() => choose(OtpChannel.SMS)}
+          extraPadRight
+        />
+        <MethodPill
+          icon="logo-whatsapp"
+          label="Get code via Whatsapp"
+          loading={loading === OtpChannel.WHATSAPP}
+          onPress={() => choose(OtpChannel.WHATSAPP)}
+        />
+      </View>
+    </OnboardingScreen>
   );
 }
 
-function MethodCard({
+function MethodPill({
   icon,
   label,
   loading,
   onPress,
+  extraPadRight,
 }: {
   icon: ComponentProps<typeof Ionicons>['name'];
   label: string;
   loading: boolean;
   onPress: () => void;
+  extraPadRight?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
       disabled={loading}
-      className="mb-4 flex-row items-center rounded-card bg-card px-5 py-5"
+      className={`flex-row items-center gap-1.5 rounded-pill bg-card py-4 pl-3 ${
+        extraPadRight ? 'pr-10' : 'pr-4'
+      }`}
     >
-      <Ionicons name={icon} size={22} color={colors.brand} />
-      <Text className="ml-4 flex-1 font-pmedium text-base text-white">{label}</Text>
       {loading ? (
-        <ActivityIndicator color={colors.brand} />
+        <ActivityIndicator color={colors.brand} size="small" />
       ) : (
-        <Ionicons name="chevron-forward" size={18} color={colors.subtle} />
+        <Ionicons name={icon} size={22} color="#ffffff" />
       )}
+      <Text className="font-pmedium text-xs text-white">{label}</Text>
     </Pressable>
   );
 }
