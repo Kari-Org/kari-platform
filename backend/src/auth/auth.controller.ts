@@ -45,10 +45,19 @@ export class AuthController {
   @Public()
   @HttpCode(200)
   @Post('login')
-  @ApiOperation({ summary: 'Log in with email or phone + password' })
-  @ResponseMessage('Login successful')
+  @ApiOperation({ summary: 'Validate email/phone + password; sends a login OTP (2FA)' })
+  @ResponseMessage('Enter the verification code sent to your phone')
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
+  }
+
+  @Public()
+  @HttpCode(200)
+  @Post('login/verify')
+  @ApiOperation({ summary: 'Confirm a login with the OTP; returns tokens' })
+  @ResponseMessage('Login successful')
+  loginVerify(@Body() dto: VerifyOtpDto) {
+    return this.auth.confirmLogin(dto);
   }
 
   @Public()

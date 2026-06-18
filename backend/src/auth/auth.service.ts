@@ -104,6 +104,25 @@ export class AuthService {
     if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException('account not verified — confirm the OTP first');
     }
+    // 2FA: a valid password mints a LOGIN-purpose OTP, but tokens are only issued
+    // once it's verified (confirmLogin). Because the LOGIN OTP can only be minted
+    // after the password check, the OTP step can't be used to bypass the password.
+    // The client persists its session, so this path only runs on an explicit
+    // re-login (fresh install, logout, or an expired refresh token).
+    const channel = dto.channel ?? OtpChannel.SMS;
+    const sent = await this.otp.send(user.phone, OtpPurpose.LOGIN, channel);
+    return { verificationRequired: true as const, phone: user.phone, ...sent };
+  }
+
+  async confirmLogin(dto: VerifyOtpDto) {
+    const ok = await this.otp.verify(dto.phone, OtpPurpose.LOGIN, dto.code);
+    if (!ok) {
+      throw new BadRequestException('invalid or expired code');
+    }
+    const user = await this.users.findByPhone(dto.phone);
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
     const tokens = await this.token.issue(user);
     return { user: toPublic(user), tokens };
   }

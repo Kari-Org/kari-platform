@@ -110,6 +110,7 @@ export enum OtpPurpose {
   SIGNUP = 'SIGNUP',
   RIDE_START = 'RIDE_START',
   PASSWORD_RESET = 'PASSWORD_RESET',
+  LOGIN = 'LOGIN',
 }
 
 /** Identity / KYC verification lifecycle (documents, NIN, liveness). */
