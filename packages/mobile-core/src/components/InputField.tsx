@@ -1,5 +1,6 @@
 import { Text, TextInput, type TextInputProps, View } from 'react-native';
 import { colors } from '../theme/tokens';
+import { useKeyboardDone } from './useKeyboardDone';
 
 interface Props extends TextInputProps {
   label?: string;
@@ -10,6 +11,8 @@ interface Props extends TextInputProps {
 }
 
 export function InputField({ label, labelClassName, inputClassName, ...props }: Props) {
+  // Numeric keyboards (no return key) get a "Done" accessory so they can be dismissed.
+  const { inputAccessoryViewID, accessory } = useKeyboardDone(props.keyboardType);
   return (
     <View className="mb-4">
       {label ? (
@@ -19,7 +22,9 @@ export function InputField({ label, labelClassName, inputClassName, ...props }: 
         placeholderTextColor={colors.subtle}
         className={`rounded-input bg-card px-4 py-4 font-sans ${inputClassName ?? 'text-base text-white'}`}
         {...props}
+        inputAccessoryViewID={props.inputAccessoryViewID ?? inputAccessoryViewID}
       />
+      {accessory}
     </View>
   );
 }

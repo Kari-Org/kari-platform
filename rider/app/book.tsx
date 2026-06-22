@@ -10,14 +10,15 @@ import {
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useKeyboardDone } from '@kari/mobile-core';
 import { CarCategory, KycStatus, PaymentMethod, PriceType } from '@kari/types';
 import { carpoolsApi, ridersApi, ridesApi, walletApi } from '@/api/endpoints';
 import type { Quote } from '@/api/types';
 import { Checkbox } from '@/components/Checkbox';
-import { InputField } from '@/components/InputField';
 import { KariButton } from '@/components/KariButton';
 import { RideMap } from '@/components/RideMap';
 import { errorMessage } from '@/lib/error';
@@ -62,6 +63,7 @@ export default function Book() {
   const [negotiate, setNegotiate] = useState(false);
   const [proposed, setProposed] = useState('');
   const [loading, setLoading] = useState(false);
+  const { inputAccessoryViewID, accessory } = useKeyboardDone('number-pad');
 
   // Redirect home if we landed here without a booking context — never navigate during render.
   useEffect(() => {
@@ -143,11 +145,20 @@ export default function Book() {
     }
   };
 
+  // Negotiate = a focused "name your price" mode: prefill the selected fare, then
+  // adjust with the steppers or by typing directly.
+  const toggleNegotiate = (on: boolean) => {
+    setNegotiate(on);
+    if (on) setProposed(String(fare?.amount ?? ''));
+  };
+  const adjustOffer = (delta: number) =>
+    setProposed((p) => String(Math.max(500, (Number(p) || 0) + delta)));
+
   const ctaLabel =
     rideType === 'carpool'
       ? `Start carpool · ${naira(fare?.amount ?? 0)}`
       : negotiate
-        ? `Request · offer ₦${proposed || '…'}`
+        ? `Request · offer ${naira(Number(proposed) || 0)}`
         : `Select ride · ${naira(fare?.amount ?? 0)}`;
 
   return (
@@ -186,6 +197,9 @@ export default function Book() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
         >
+          {/* Standard mode: route + ride options + payment. Hidden in negotiate mode. */}
+          {!negotiate ? (
+            <>
           {/* Route summary */}
           <View className="rounded-input bg-surface p-4">
             <View className="flex-row items-center">
@@ -302,24 +316,64 @@ export default function Book() {
                   ) : null}
                 </View>
               ) : null}
-              {quote?.negotiable ? (
-                <View className="mt-3">
-                  <Checkbox checked={negotiate} onChange={setNegotiate}>
-                    <Text className="font-sans text-muted">Negotiate the fare</Text>
-                  </Checkbox>
-                </View>
-              ) : null}
-              {negotiate ? (
-                <InputField
-                  label="Your offer (₦)"
-                  value={proposed}
-                  onChangeText={setProposed}
-                  keyboardType="number-pad"
-                  placeholder={`e.g. ${Math.round((fare?.amount ?? 1000) * 0.8)}`}
-                />
-              ) : null}
             </>
           )}
+            </>
+          ) : null}
+
+          {/* Negotiate toggle — solo + negotiable quotes; stays visible in both modes */}
+          {rideType === 'solo' && quote?.negotiable ? (
+            <View className={negotiate ? '' : 'mt-3'}>
+              <Checkbox checked={negotiate} onChange={toggleNegotiate}>
+                <Text className="font-sans text-muted">Negotiate the fare</Text>
+              </Checkbox>
+            </View>
+          ) : null}
+
+          {/* Negotiate mode: name your price */}
+          {negotiate ? (
+            <View className="mt-4">
+              <View className="items-center rounded-card border border-hairline bg-surface px-5 py-6">
+                <Text className="font-sans text-xs text-subtle">Your offer</Text>
+                <View className="mt-2 flex-row items-center justify-center">
+                  <Text className="font-pbold text-3xl text-white">₦</Text>
+                  <TextInput
+                    value={proposed}
+                    onChangeText={(t) => setProposed(t.replace(/[^0-9]/g, ''))}
+                    keyboardType="number-pad"
+                    inputAccessoryViewID={inputAccessoryViewID}
+                    selectionColor={colors.brand}
+                    style={{
+                      minWidth: 120,
+                      textAlign: 'center',
+                      color: '#ffffff',
+                      fontSize: 34,
+                      fontFamily: 'HankenGrotesk_700Bold',
+                      paddingVertical: 2,
+                    }}
+                  />
+                </View>
+              </View>
+              <View className="mt-3 flex-row gap-3">
+                <Pressable
+                  onPress={() => adjustOffer(-500)}
+                  className="flex-1 items-center rounded-pill border border-brand bg-surface py-3"
+                >
+                  <Text className="font-psemibold text-base text-white">− ₦500</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => adjustOffer(500)}
+                  className="flex-1 items-center rounded-pill border border-brand bg-surface py-3"
+                >
+                  <Text className="font-psemibold text-base text-white">+ ₦500</Text>
+                </Pressable>
+              </View>
+              <Text className="mt-3 text-center font-sans text-xs text-subtle">
+                Drivers see your offer and can accept or counter it.
+              </Text>
+              {accessory}
+            </View>
+          ) : null}
         </ScrollView>
 
         {/* CTA */}
@@ -328,7 +382,7 @@ export default function Book() {
             label={ctaLabel}
             onPress={request}
             loading={loading}
-            disabled={quoting || !quote || (negotiate && !proposed)}
+            disabled={quoting || !quote || (negotiate && Number(proposed) <= 0)}
           />
         </View>
       </View>

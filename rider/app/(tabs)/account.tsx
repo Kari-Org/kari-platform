@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { type ComponentProps } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { authApi, ridersApi } from '@/api/endpoints';
 import { KariButton } from '@/components/KariButton';
 import { Screen } from '@/components/Screen';
@@ -18,6 +18,11 @@ export default function Account() {
 
   return (
     <Screen className="px-5">
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 16 }}
+      >
       <Text className="mb-6 mt-4 font-pbold text-2xl text-white">Account</Text>
       <View className="rounded-card bg-card p-5">
         <Text className="font-psemibold text-xl text-white">{name}</Text>
@@ -44,9 +49,10 @@ export default function Account() {
       </View>
 
       <View className="flex-1" />
-      <View className="pb-8">
+      <View className="p-8">
         <KariButton label="Log out" variant="outline" onPress={() => void logout()} />
       </View>
+      </ScrollView>
     </Screen>
   );
 }

@@ -1,5 +1,6 @@
 import { Text, TextInput, View } from 'react-native';
 import { colors } from '../theme/tokens';
+import { useKeyboardDone } from './useKeyboardDone';
 
 interface Props {
   /** Full phone, e.g. +2348012345678. Parent owns the value. */
@@ -26,6 +27,7 @@ function formatLocal(digits: string): string {
 
 export function PhoneInput({ value, onChangeText, label }: Props) {
   const localDigits = toLocalDigits(value.startsWith(PREFIX) ? value.slice(PREFIX.length) : value);
+  const { inputAccessoryViewID, accessory } = useKeyboardDone('phone-pad');
   return (
     <View className="mb-4">
       {label ? <Text className="mb-2 font-pmedium text-sm text-muted">{label}</Text> : null}
@@ -41,8 +43,10 @@ export function PhoneInput({ value, onChangeText, label }: Props) {
           placeholder="803 123 4567"
           placeholderTextColor={colors.subtle}
           className="flex-1 px-4 py-4 font-sans text-base text-white"
+          inputAccessoryViewID={inputAccessoryViewID}
         />
       </View>
+      {accessory}
     </View>
   );
 }

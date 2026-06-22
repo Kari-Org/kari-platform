@@ -8,3 +8,4 @@ export * from './StepDots';
 export * from './SuccessBadge';
 export * from './ScreenHeader';
 export * from './PhoneInput';
+export * from './useKeyboardDone';

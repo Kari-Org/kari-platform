@@ -23,7 +23,7 @@ import { colors } from '@/theme/tokens';
 
 const { width } = Dimensions.get('window');
 const PAGE = 18; // horizontal page padding (Figma left-18)
-const CARD_W = width - PAGE * 2;
+const CARD_W = width - PAGE * 2.25
 const BLOB_RATIO = 477 / 1179; // header-blob.png aspect
 
 type Promo = {
@@ -158,7 +158,7 @@ export default function Home() {
               <View
                 key={p.title}
                 style={{ width: CARD_W, height: 148 }}
-                className="justify-center overflow-hidden rounded-[10px] bg-brand pl-3"
+                className="justify-center overflow-hidden rounded-[10px] bg-brand pl-3 mr-1.5"
               >
                 <View style={{ width: CARD_W * 0.58 }}>
                   <Text className="font-psemibold text-xl text-black">{p.title}</Text>
@@ -250,10 +250,10 @@ export default function Home() {
         {/* Limited-time discount (full-bleed) */}
         <Pressable
           onPress={() => router.push('/carpools')}
-          className="mt-7 h-[104px] justify-center overflow-hidden rounded-lg bg-brand px-[18px]"
+          className="mt-7 h-[110px] justify-center overflow-hidden rounded-lg bg-brand px-[18px]"
         >
           <Text className="font-psemibold text-xl text-black">Limited Time Discount</Text>
-          <Text className="mt-1 text-black">
+          <Text className="mt-2 pt-2 text-black">
             <Text className="font-pmedium text-sm text-black">Earn </Text>
             <Text className="font-pbold text-2xl text-black">₦500</Text>
             <Text className="font-pmedium text-sm text-black"> off by Carpooling</Text>
