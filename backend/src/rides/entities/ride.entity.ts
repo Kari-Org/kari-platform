@@ -103,6 +103,14 @@ export class Ride extends BaseEntity {
   @Column({ type: 'timestamptz', nullable: true })
   settledAt: Date | null;
 
+  /** Rider tip to the driver, in naira (set after completion). */
+  @Column({ type: 'int', nullable: true })
+  tipAmount: number | null;
+
+  /** How the tip was paid — WALLET (ledger-settled) or CASH (recorded only). */
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  tipMethod: PaymentMethod | null;
+
   /** Optimistic-lock guard: concurrent accepts of the same ride — first wins. */
   @VersionColumn()
   version: number;

@@ -355,6 +355,36 @@ export class RidesService {
     return this.view(saved, UserRole.DRIVER);
   }
 
+  // ─── tip (rider → driver, after completion) ─────────────────────────────────
+  async tip(riderId: string, rideId: string, amountNaira: number, method: PaymentMethod) {
+    const ride = await this.load(rideId);
+    if (ride.riderId !== riderId) {
+      throw new ForbiddenException('not your ride');
+    }
+    if (ride.status !== RideStatus.COMPLETED) {
+      throw new BadRequestException('you can only tip after the ride is complete');
+    }
+    if (!ride.driverId) {
+      throw new BadRequestException('this ride had no driver to tip');
+    }
+    if (!Number.isFinite(amountNaira) || amountNaira <= 0) {
+      throw new BadRequestException('tip must be greater than zero');
+    }
+    // WALLET tips move money through the ledger; CASH tips are recorded + notified only.
+    if (method === PaymentMethod.WALLET) {
+      await this.payments.tipDriver({ rideId, riderId, driverId: ride.driverId, amountNaira });
+    }
+    ride.tipAmount = Math.round(amountNaira);
+    ride.tipMethod = method;
+    const saved = await this.rides.save(ride);
+    this.realtime.emitToUser(ride.driverId, 'ride:tip', {
+      rideId,
+      amountNaira: Math.round(amountNaira),
+      method,
+    });
+    return this.view(saved, UserRole.RIDER);
+  }
+
   // ─── cancel / rate / read ──────────────────────────────────────────────────
   async cancel(userId: string, role: UserRole, rideId: string, dto: CancelRideDto) {
     const ride = await this.load(rideId);

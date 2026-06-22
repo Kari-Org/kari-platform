@@ -60,13 +60,12 @@ export default function VerifyMethod() {
         <Text className="font-pmedium text-white">{draft.phone}</Text>
       </Text>
 
-      <View className="mt-10 items-start gap-2.5">
+      <View className="mt-10 gap-3">
         <MethodPill
           icon="chatbubble-ellipses-outline"
           label="Get code via SMS"
           loading={loading === OtpChannel.SMS}
           onPress={() => choose(OtpChannel.SMS)}
-          extraPadRight
         />
         <MethodPill
           icon="logo-whatsapp"
@@ -84,28 +83,24 @@ function MethodPill({
   label,
   loading,
   onPress,
-  extraPadRight,
 }: {
   icon: ComponentProps<typeof Ionicons>['name'];
   label: string;
   loading: boolean;
   onPress: () => void;
-  extraPadRight?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
       disabled={loading}
-      className={`flex-row items-center gap-1.5 rounded-pill bg-card py-4 pl-3 ${
-        extraPadRight ? 'pr-10' : 'pr-4'
-      }`}
+      className="w-full flex-row items-center justify-center gap-2 rounded-pill bg-card py-4"
     >
       {loading ? (
         <ActivityIndicator color={colors.brand} size="small" />
       ) : (
-        <Ionicons name={icon} size={22} color="#ffffff" />
+        <Ionicons name={icon} size={24} color="#ffffff" />
       )}
-      <Text className="font-pmedium text-xs text-white">{label}</Text>
+      <Text className="font-pmedium text-base text-white">{label}</Text>
     </Pressable>
   );
 }

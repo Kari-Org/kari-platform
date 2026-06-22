@@ -203,6 +203,36 @@ export class PaymentsService {
     return { settled: true, paymentMethod, rateBps, fareKobo, commissionKobo: commission, driverNetKobo: driverNet };
   }
 
+  // ─── tip (rider → driver, wallet-funded, no commission) ──────────────────────
+  async tipDriver(input: { rideId: string; riderId: string; driverId: string | null; amountNaira: number }) {
+    const { rideId, riderId, driverId, amountNaira } = input;
+    if (!driverId) throw new BadRequestException('this ride had no driver to tip');
+    const tipKobo = toKobo(amountNaira);
+    if (tipKobo <= 0) throw new BadRequestException('tip must be greater than zero');
+
+    const riderWallet = await this.ledger.getOrCreateUserWallet(riderId);
+    if (riderWallet.balance < tipKobo) {
+      throw new BadRequestException('insufficient wallet balance for this tip');
+    }
+    const driverWallet = await this.ledger.getOrCreateUserWallet(driverId);
+    // Idempotent: one wallet tip per ride (unique reference). The full amount goes
+    // to the driver — tips are not commissioned.
+    await this.ledger.post({
+      type: TransactionType.TIP,
+      reference: `tip_${rideId}`,
+      amount: tipKobo,
+      legs: [
+        { walletId: riderWallet.id, direction: LedgerDirection.DEBIT, amount: tipKobo },
+        { walletId: driverWallet.id, direction: LedgerDirection.CREDIT, amount: tipKobo },
+      ],
+      userId: riderId,
+      rideId,
+      paymentMethod: PaymentMethod.WALLET,
+      metadata: { tipKobo },
+    });
+    return { tippedKobo: tipKobo };
+  }
+
   // ─── cancellation penalty ────────────────────────────────────────────────────
   async applyCancellationPenalty(input: RideCancellation): Promise<Transaction | null> {
     const { rideId, riderId, driverId, cancelledBy, secondsSinceAccept } = input;

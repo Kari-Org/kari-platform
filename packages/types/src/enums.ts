@@ -139,6 +139,8 @@ export enum TransactionType {
   SUBSCRIPTION = 'SUBSCRIPTION',
   /** Referral bonus credited to referrer/referee (Phase 4). */
   REFERRAL = 'REFERRAL',
+  /** Rider tip to the driver — wallet-funded, no commission. */
+  TIP = 'TIP',
 }
 
 export enum SubscriptionStatus {

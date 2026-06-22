@@ -156,6 +156,8 @@ export const ridesApi = {
     apiFetch<Ride>(`/rides/${id}/cancel`, { method: 'POST', body: { reason } }),
   rate: (id: string, body: { stars: number; comment?: string }) =>
     apiFetch(`/rides/${id}/rate`, { method: 'POST', body }),
+  tip: (id: string, body: { amount: number; method?: PaymentMethod }) =>
+    apiFetch<Ride>(`/rides/${id}/tip`, { method: 'POST', body }),
   acceptOffer: (id: string, offerId: string) =>
     apiFetch<Ride>(`/rides/${id}/offers/${offerId}/accept`, { method: 'POST' }),
 };

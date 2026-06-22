@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { UserRole } from '@kari/types';
+import { PaymentMethod, UserRole } from '@kari/types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -12,6 +12,7 @@ import { QuoteDto } from './dto/quote.dto';
 import { RateRideDto } from './dto/rate-ride.dto';
 import { RequestRideDto } from './dto/request-ride.dto';
 import { StartRideDto } from './dto/start-ride.dto';
+import { TipRideDto } from './dto/tip-ride.dto';
 import { RidesService } from './rides.service';
 
 @ApiTags('rides')
@@ -125,5 +126,14 @@ export class RidesController {
   @ResponseMessage('Rating saved')
   rate(@CurrentUser() user: AuthUser, @Param('id') rideId: string, @Body() dto: RateRideDto) {
     return this.rides.rate(user.id, user.role, rideId, dto);
+  }
+
+  @HttpCode(200)
+  @Roles(UserRole.RIDER)
+  @Post(':id/tip')
+  @ApiOperation({ summary: 'Tip the driver after a completed ride' })
+  @ResponseMessage('Tip sent')
+  tip(@CurrentUser('id') id: string, @Param('id') rideId: string, @Body() dto: TipRideDto) {
+    return this.rides.tip(id, rideId, dto.amount, dto.method ?? PaymentMethod.WALLET);
   }
 }

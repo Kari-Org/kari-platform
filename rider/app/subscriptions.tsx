@@ -1,153 +1,129 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
-import { SubscriptionStatus } from '@kari/types';
-import { subscriptionsApi } from '@/api/endpoints';
-import type { Subscription, SubscriptionPlan } from '@/api/types';
+import type { ComponentProps } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { KariButton } from '@/components/KariButton';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { errorMessage } from '@/lib/error';
+import { type CommuteSubscription, daysSummary, formatTime12, naira } from '@/lib/subscription';
+import { useSubscriptions } from '@/stores/subscription.store';
 import { colors } from '@/theme/tokens';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-const cycle = (days: number) => (days === 7 ? 'week' : days === 30 ? 'month' : `${days} days`);
-const ridesLabel = (n: number | null) => (n == null ? 'Unlimited rides' : `${n} rides`);
+type IconName = ComponentProps<typeof Ionicons>['name'];
 
 export default function SubscriptionsScreen() {
-  const qc = useQueryClient();
   const router = useRouter();
-  const [busy, setBusy] = useState<string | null>(null);
+  const subs = useSubscriptions((s) => s.subscriptions);
+  const cancel = useSubscriptions((s) => s.cancel);
 
-  const { data: plans, isLoading } = useQuery({ queryKey: ['sub-plans'], queryFn: subscriptionsApi.plans });
-  const { data: mine } = useQuery({ queryKey: ['sub-mine'], queryFn: subscriptionsApi.mine });
-  const active = mine?.find((s) => s.status === SubscriptionStatus.ACTIVE) ?? null;
-
-  const refetch = () =>
-    Promise.all([
-      qc.invalidateQueries({ queryKey: ['sub-mine'] }),
-      qc.invalidateQueries({ queryKey: ['wallet'] }),
-    ]);
-
-  const subscribe = async (plan: SubscriptionPlan) => {
-    setBusy(plan.id);
-    try {
-      await subscriptionsApi.subscribe(plan.id);
-      await refetch();
-      Alert.alert('Subscribed', `${plan.name} is now active — your dedicated driver will stick with you.`);
-    } catch (e) {
-      const msg = errorMessage(e);
-      if (/top up|balance/i.test(msg)) {
-        Alert.alert('Top up to subscribe', msg, [
-          { text: 'Top up wallet', onPress: () => router.push('/wallet') },
-          { text: 'Not now', style: 'cancel' },
-        ]);
-      } else {
-        Alert.alert('Could not subscribe', msg);
-      }
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const cancel = (sub: Subscription) => {
-    Alert.alert('Cancel subscription?', `End your ${sub.planName} plan?`, [
+  const confirmCancel = (sub: CommuteSubscription) =>
+    Alert.alert('Cancel subscription?', `End your “${sub.label}” route subscription?`, [
       { text: 'Keep it', style: 'cancel' },
-      {
-        text: 'Cancel plan',
-        style: 'destructive',
-        onPress: async () => {
-          setBusy(sub.id);
-          try {
-            await subscriptionsApi.cancel(sub.id);
-            await refetch();
-          } catch (e) {
-            Alert.alert('Could not cancel', errorMessage(e));
-          } finally {
-            setBusy(null);
-          }
-        },
-      },
+      { text: 'Cancel', style: 'destructive', onPress: () => cancel(sub.id) },
     ]);
-  };
 
   return (
     <Screen className="px-5">
-      <ScreenHeader title="Subscriptions" />
+      <ScreenHeader title="Subscription Routes" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-        {/* Active subscription */}
-        {active ? (
-          <View className="mt-4 rounded-card border border-brand bg-brand/10 p-5">
-            <View className="flex-row items-center justify-between">
-              <Text className="font-psemibold text-lg text-white">{active.planName}</Text>
-              <View className="rounded-pill bg-brand px-3 py-1">
-                <Text className="font-pmedium text-xs text-bg">ACTIVE</Text>
-              </View>
-            </View>
-            <Text className="mt-1 font-sans text-sm text-muted">
-              Renews {new Date(active.currentPeriodEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-              {active.includedRides != null ? ` · ${active.ridesUsed}/${active.includedRides} rides used` : ' · unlimited rides'}
-            </Text>
-            <View className="mt-2 flex-row items-center">
-              <Ionicons
-                name={active.assignedDriverId ? 'person-circle' : 'person-circle-outline'}
-                size={16}
-                color={colors.brand}
-              />
-              <Text className="ml-1.5 font-sans text-xs text-subtle">
-                {active.assignedDriverId ? 'Dedicated driver assigned' : 'Dedicated driver assigned on first ride'}
-              </Text>
-            </View>
-            <View className="mt-4">
-              <KariButton label="Cancel plan" variant="outline" onPress={() => cancel(active)} loading={busy === active.id} />
-            </View>
-          </View>
-        ) : null}
-
-        {/* Plans */}
-        <Text className="mb-3 mt-6 font-psemibold text-lg text-white">
-          {active ? 'Other plans' : 'Choose a plan'}
+        <Text className="mt-2 font-sans text-sm text-muted">
+          Lock in a recurring route and ride at a fixed weekly or monthly price — guaranteed pickups on
+          your schedule.
         </Text>
-        {isLoading ? (
-          <ActivityIndicator color={colors.brand} className="mt-4 self-start" />
+
+        {subs.length === 0 ? (
+          <View className="mt-10 items-center">
+            <Ionicons name="repeat" size={40} color={colors.subtle} />
+            <Text className="mt-3 text-center font-sans text-sm text-subtle">
+              No subscriptions yet. Set one up for your daily commute.
+            </Text>
+          </View>
         ) : (
-          plans?.map((p) => (
-            <View key={p.id} className="mb-3 rounded-card bg-card p-5">
-              <View className="flex-row items-baseline justify-between">
-                <Text className="font-psemibold text-base text-white">{p.name}</Text>
-                <Text className="font-pbold text-lg text-brand">
-                  {naira(p.priceNaira)}
-                  <Text className="font-sans text-xs text-subtle"> /{cycle(p.billingCycleDays)}</Text>
-                </Text>
+          subs.map((s) => (
+            <View key={s.id} className="mt-4 rounded-card bg-card p-5">
+              <View className="flex-row items-center justify-between">
+                <Text className="font-psemibold text-base text-white">{s.label}</Text>
+                <View className="rounded-pill bg-brand px-3 py-1">
+                  <Text className="font-pmedium text-xs text-bg">
+                    {s.status === 'active' ? 'ACTIVE' : 'PAUSED'}
+                  </Text>
+                </View>
               </View>
-              <Text className="mt-1 font-sans text-sm text-muted">{p.description}</Text>
-              <View className="mt-2 flex-row items-center">
-                <Ionicons name="ticket-outline" size={14} color={colors.subtle} />
-                <Text className="ml-1.5 font-sans text-xs text-subtle">{ridesLabel(p.includedRides)}</Text>
-                {p.sameDriver ? (
-                  <>
-                    <Ionicons name="person-outline" size={14} color={colors.subtle} style={{ marginLeft: 12 }} />
-                    <Text className="ml-1.5 font-sans text-xs text-subtle">Same driver</Text>
-                  </>
-                ) : null}
+
+              {/* Route */}
+              <View className="mt-3">
+                <Stop icon="ellipse" tint={colors.brand} text={s.pickupAddress} />
+                <View className="ml-[6px] h-3 w-px bg-hairline" />
+                <Stop icon="location" tint={colors.danger} text={s.dropoffAddress} />
               </View>
-              <View className="mt-4">
-                <KariButton
-                  label={active ? 'Switch (cancel current first)' : `Subscribe · ${naira(p.priceNaira)}`}
-                  onPress={() => subscribe(p)}
-                  loading={busy === p.id}
-                  disabled={!!active}
+
+              {/* Schedule */}
+              <View className="mt-4 flex-row flex-wrap gap-x-4 gap-y-1.5">
+                <Meta icon="calendar-outline" text={daysSummary(s.days)} />
+                <Meta
+                  icon="swap-horizontal-outline"
+                  text={s.tripType === 'roundtrip' ? 'Round trip' : 'One-way'}
                 />
+                <Meta
+                  icon="time-outline"
+                  text={
+                    s.tripType === 'roundtrip' && s.returnTime
+                      ? `${formatTime12(s.pickupTime)} · ${formatTime12(s.returnTime)}`
+                      : formatTime12(s.pickupTime)
+                  }
+                />
+              </View>
+
+              {/* Pricing */}
+              <View className="mt-4 flex-row rounded-input bg-bg p-4">
+                <View className="flex-1">
+                  <Text className="font-sans text-xs text-subtle">Weekly</Text>
+                  <Text className="mt-0.5 font-pbold text-lg text-white">{naira(s.weeklyNaira)}</Text>
+                </View>
+                <View className="w-px bg-hairline" />
+                <View className="flex-1 pl-4">
+                  <Text className="font-sans text-xs text-subtle">Monthly</Text>
+                  <Text className="mt-0.5 font-pbold text-lg text-brand">{naira(s.monthlyNaira)}</Text>
+                </View>
+              </View>
+
+              <View className="mt-3 flex-row items-center justify-between">
+                <Text className="font-sans text-xs text-subtle">Renews in {s.renewsInDays} days</Text>
+                <Pressable onPress={() => confirmCancel(s)}>
+                  <Text className="font-pmedium text-xs text-danger">Cancel</Text>
+                </Pressable>
               </View>
             </View>
           ))
         )}
-        <Text className="mt-2 font-sans text-xs text-subtle">
-          Plan fees are charged from your Kari wallet.
+
+        <View className="mt-6">
+          <KariButton label="Create a subscription" onPress={() => router.push('/subscription-new')} />
+        </View>
+        <Text className="mt-3 text-center font-sans text-xs text-subtle">
+          Subscriptions are billed from your Kari wallet.
         </Text>
       </ScrollView>
     </Screen>
+  );
+}
+
+function Stop({ icon, tint, text }: { icon: IconName; tint: string; text: string }) {
+  return (
+    <View className="flex-row items-center">
+      <Ionicons name={icon} size={13} color={tint} />
+      <Text numberOfLines={1} className="ml-2.5 flex-1 font-sans text-sm text-white">
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+function Meta({ icon, text }: { icon: IconName; text: string }) {
+  return (
+    <View className="flex-row items-center">
+      <Ionicons name={icon} size={13} color={colors.subtle} />
+      <Text className="ml-1.5 font-sans text-xs text-muted">{text}</Text>
+    </View>
   );
 }
