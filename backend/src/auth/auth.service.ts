@@ -104,6 +104,15 @@ export class AuthService {
     if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException('account not verified — confirm the OTP first');
     }
+
+    // Admins sign in from the trusted internal console (its own httpOnly session)
+    // and their accounts carry no real phone for an SMS OTP, so skip 2FA and issue
+    // tokens directly. Riders/drivers still go through the login OTP below.
+    if (user.role === UserRole.ADMIN) {
+      const tokens = await this.token.issue(user);
+      return { user: toPublic(user), tokens };
+    }
+
     // 2FA: a valid password mints a LOGIN-purpose OTP, but tokens are only issued
     // once it's verified (confirmLogin). Because the LOGIN OTP can only be minted
     // after the password check, the OTP step can't be used to bypass the password.
