@@ -1,7 +1,14 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, MoreThanOrEqual, Repository } from 'typeorm';
 import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, MoreThanOrEqual, Not, Repository } from 'typeorm';
+import {
+  AdminRole,
   CarCategory,
   DriverAvailability,
   DriverType,
@@ -29,6 +36,7 @@ import { TicketsService } from '../tickets/tickets.service';
 import { TicketStatus } from '../tickets/entities/ticket.entity';
 import type { UpdateTicketDto } from '../tickets/dto/update-ticket.dto';
 import { AuditService } from './audit/audit.service';
+import type { CreateAdminDto } from './dto/create-admin.dto';
 import type { CreateDedicatedDriverDto } from './dto/create-dedicated-driver.dto';
 
 const ACTIVE_DRIVING = [RideStatus.ACCEPTED, RideStatus.DRIVER_ARRIVED, RideStatus.IN_PROGRESS];
@@ -435,6 +443,101 @@ export class AdminService {
 
   updateTicket(id: string, adminId: string, dto: UpdateTicketDto) {
     return this.tickets.update(id, adminId, dto);
+  }
+
+  // ─── System · Admins & roles ─────────────────────────────────────────────────
+  /** All admin accounts with their sub-role + status (identified by email). */
+  async listAdmins() {
+    const admins = await this.userRepo.find({
+      where: { role: UserRole.ADMIN },
+      order: { createdAt: 'ASC' },
+    });
+    return admins.map((a) => this.adminView(a));
+  }
+
+  /**
+   * Create an admin account with a sub-role. The account is active + verified
+   * (staff are vetted off-platform; there is no email invite flow). The creator
+   * shares the initial password out-of-band.
+   */
+  async createAdmin(dto: CreateAdminDto) {
+    const existing = await this.users.findByEmailOrPhone(dto.email, dto.phone);
+    if (existing) {
+      throw new ConflictException('email or phone already registered');
+    }
+    const passwordHash = await this.password.hash(dto.password);
+    const user = await this.users.createActive({
+      email: dto.email,
+      phone: dto.phone,
+      passwordHash,
+      role: UserRole.ADMIN,
+    });
+    user.adminRole = dto.adminRole;
+    await this.userRepo.save(user);
+    return this.adminView(user);
+  }
+
+  /** Change an admin's sub-role. Guards against self-edit + removing the last super admin. */
+  async setAdminRole(actorId: string, id: string, adminRole: AdminRole) {
+    if (id === actorId) {
+      throw new BadRequestException('you cannot change your own role');
+    }
+    const user = await this.requireAdmin(id);
+    if (user.adminRole === AdminRole.SUPER_ADMIN && adminRole !== AdminRole.SUPER_ADMIN) {
+      await this.assertNotLastSuperAdmin(user.id);
+    }
+    user.adminRole = adminRole;
+    await this.userRepo.save(user);
+    return this.adminView(user);
+  }
+
+  /** Activate / deactivate an admin. Guards against self-edit + disabling the last super admin. */
+  async setAdminStatus(actorId: string, id: string, status: UserStatus) {
+    if (id === actorId) {
+      throw new BadRequestException('you cannot change your own status');
+    }
+    const user = await this.requireAdmin(id);
+    if (user.adminRole === AdminRole.SUPER_ADMIN && status !== UserStatus.ACTIVE) {
+      await this.assertNotLastSuperAdmin(user.id);
+    }
+    user.status = status;
+    await this.userRepo.save(user);
+    return this.adminView(user);
+  }
+
+  private async requireAdmin(id: string): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user || user.role !== UserRole.ADMIN) {
+      throw new NotFoundException('admin not found');
+    }
+    return user;
+  }
+
+  /** Throws if no *other* active super admin would remain. */
+  private async assertNotLastSuperAdmin(excludeId: string): Promise<void> {
+    const others = await this.userRepo.count({
+      where: {
+        role: UserRole.ADMIN,
+        adminRole: AdminRole.SUPER_ADMIN,
+        status: UserStatus.ACTIVE,
+        id: Not(excludeId),
+      },
+    });
+    if (others === 0) {
+      throw new BadRequestException('cannot remove the last active super admin');
+    }
+  }
+
+  private adminView(u: User) {
+    return {
+      id: u.id,
+      email: u.email,
+      phone: u.phone,
+      adminRole: u.adminRole ?? null,
+      status: u.status,
+      emailVerified: u.emailVerified,
+      createdAt: u.createdAt,
+    };
   }
 
   // ─── A3 · Audit log ──────────────────────────────────────────────────────────

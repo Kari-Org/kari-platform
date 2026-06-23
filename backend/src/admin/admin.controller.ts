@@ -24,7 +24,9 @@ import { AuditInterceptor } from './audit/audit.interceptor';
 import { TicketStatus } from '../tickets/entities/ticket.entity';
 import { UpdateTicketDto } from '../tickets/dto/update-ticket.dto';
 import { AdminCancelRideDto } from './dto/cancel-ride.dto';
+import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateDedicatedDriverDto } from './dto/create-dedicated-driver.dto';
+import { UpdateAdminRoleDto } from './dto/update-admin-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { VerifyDriverDto } from './dto/verify-driver.dto';
 
@@ -198,6 +200,50 @@ export class AdminController {
     @Body() dto: UpdateTicketDto,
   ) {
     return this.admin.updateTicket(id, adminId, dto);
+  }
+
+  // ─── System · Admins & roles ─────────────────────────────────────────────────
+  @Get('admins')
+  @RequirePermissions('admins:read')
+  @ApiOperation({ summary: 'List admin accounts + their sub-roles' })
+  @ResponseMessage('Admins')
+  listAdmins() {
+    return this.admin.listAdmins();
+  }
+
+  @Post('admins')
+  @RequirePermissions('admins:manage')
+  @Audit('admin.create')
+  @ApiOperation({ summary: 'Create an admin account with a sub-role' })
+  @ResponseMessage('Admin created')
+  createAdmin(@Body() dto: CreateAdminDto) {
+    return this.admin.createAdmin(dto);
+  }
+
+  @Patch('admins/:id/role')
+  @RequirePermissions('admins:manage')
+  @Audit('admin.role')
+  @ApiOperation({ summary: "Change an admin's sub-role" })
+  @ResponseMessage('Admin role updated')
+  setAdminRole(
+    @CurrentUser('id') actorId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminRoleDto,
+  ) {
+    return this.admin.setAdminRole(actorId, id, dto.adminRole);
+  }
+
+  @Patch('admins/:id/status')
+  @RequirePermissions('admins:manage')
+  @Audit('admin.status')
+  @ApiOperation({ summary: 'Activate / deactivate an admin account' })
+  @ResponseMessage('Admin status updated')
+  setAdminStatus(
+    @CurrentUser('id') actorId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateUserStatusDto,
+  ) {
+    return this.admin.setAdminStatus(actorId, id, dto.status);
   }
 
   // ─── A3 · Audit log ──────────────────────────────────────────────────────────

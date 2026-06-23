@@ -31,7 +31,7 @@ Pages under `app/(dash)/` (App Router). Each is gated by a **permission** (`lib/
 ## System
 | Page | Permission | adminApi | Renders / status |
 |---|---|---|---|
-| `/admins` | `admins:manage` | — | **`ComingSoon` stub** — invite/assign-role not built |
+| `/admins` | `admins:manage` | `admins`, `createAdmin`, `setAdminRole`, `setAdminStatus` | Admin list + invite form, inline role change, activate/deactivate |
 | `/audit` | `audit:read` | `audit` | DataTable |
 | `/settings` | `settings:manage` | — | Session info + **RBAC matrix view** (client-side from `@kari/types`) |
 
@@ -39,4 +39,5 @@ Pages under `app/(dash)/` (App Router). Each is gated by a **permission** (`lib/
 - `app/(auth)/login/page.tsx` — login form → `POST /api/admin/login`.
 - `app/layout.tsx` (root layout) · `app/page.tsx` (root).
 
-> A2–A6 are committed but **not runtime-verified**; the only true stub is **Admins & Roles**. See context/progress-tracker.md.
+> A2–A6 are committed but **not runtime-verified**. **Admins & Roles is now built** (list / invite /
+> inline role change / activate-deactivate) over `GET|POST /admin/admins` + `PATCH /admin/admins/:id/{role,status}`.

@@ -1,3 +1,4 @@
+import type { AdminRole } from '@kari/types';
 import { apiFetch } from './api';
 
 export interface Stats {
@@ -162,6 +163,24 @@ export interface FareConfig {
   wallet: { minTopup: number; minPayout: number };
 }
 
+// ─── System · Admins & roles ─────────────────────────────────────────────────
+export interface AdminAccount {
+  id: string;
+  email: string;
+  phone: string;
+  adminRole: AdminRole | null;
+  status: string;
+  emailVerified: boolean;
+  createdAt: string;
+}
+
+export interface CreateAdminBody {
+  email: string;
+  phone: string;
+  password: string;
+  adminRole: AdminRole;
+}
+
 export interface CreateDedicatedDriverBody {
   email: string;
   phone: string;
@@ -217,4 +236,13 @@ export const adminApi = {
   payouts: (q: { page?: number; limit?: number }) =>
     apiFetch<Paginated<Payout>>('/admin/finance/payouts', { query: q }),
   fareConfig: () => apiFetch<FareConfig>('/admin/fare-config'),
+
+  // System — admins & roles
+  admins: () => apiFetch<AdminAccount[]>('/admin/admins'),
+  createAdmin: (body: CreateAdminBody) =>
+    apiFetch<AdminAccount>('/admin/admins', { method: 'POST', body }),
+  setAdminRole: (id: string, adminRole: AdminRole) =>
+    apiFetch<AdminAccount>(`/admin/admins/${id}/role`, { method: 'PATCH', body: { adminRole } }),
+  setAdminStatus: (id: string, status: string) =>
+    apiFetch<AdminAccount>(`/admin/admins/${id}/status`, { method: 'PATCH', body: { status } }),
 };

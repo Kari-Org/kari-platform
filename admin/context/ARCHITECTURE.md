@@ -2,7 +2,7 @@
 
 The internal operations console for Kari staff. Five jobs: **(1)** real-time visibility into trips + system health, **(2)** rider/driver lifecycle + KYC verification, **(3)** financial oversight + fare config, **(4)** dedicated-driver onboarding, **(5)** a support-ticket inbox. Next.js app, `ADMIN`-role-gated, built on the **same backend + `@kari/types`** as the rider/driver apps so there is zero contract drift.
 
-> Status: **A0–A6 built** (only *Admins & Roles* is a `ComingSoon` stub). **Reconciled with code: 2026-06-08.**
+> Status: **A0–A6 built** (incl. *Admins & Roles* as of 2026-06-23). **Reconciled with code: 2026-06-08.**
 >
 > **As-built reconciliation:** several "locked" choices below were never implemented — **auth is a custom
 > httpOnly-cookie flow, not Auth.js**; **Live Rides is a `DataTable`, not a Mapbox map**; **Revenue is
@@ -83,8 +83,8 @@ Each item declares the permission that gates it; the sidebar renders only what t
 
 > **As-built note:** Live Rides ships as a `DataTable` (no Mapbox); Financials ship as StatCards/tables —
 > Revenue (StatCards, no Recharts), Payouts (table), **Promotions = placeholder** (no backend endpoint),
-> **Fare Config = read-only** display (the editor is unbuilt). **Admins & Roles** is a `ComingSoon` stub;
-> the rest of A2–A6 are built. Full page list: [page-catalog.md](page-catalog.md).
+> **Fare Config = read-only** display (the editor is unbuilt). **Admins & Roles** is now built (list /
+> invite / role change / activate-deactivate). The rest of A2–A6 are built. Full page list: [page-catalog.md](page-catalog.md).
 
 ---
 
@@ -134,8 +134,9 @@ middleware.ts        # cookie-presence route gate
 - **A5 — Tickets** (entities + 3 intake sources + inbox).
 - **A6 — Financials** (Fare Config now; revenue/payouts/promo gated on Phase 3).
 
-> **Status (2026-06-08):** A0–A6 are all built and committed; **only A3's *Admins & Roles* page remains a
-> `ComingSoon` stub.** Phase 3 (money) IS built, so revenue/payouts show real data (StatCards/tables). Not yet runtime-verified.
+> **Status (2026-06-23):** A0–A6 are all built and committed, **including *Admins & Roles*** (the last
+> `ComingSoon` stub — now list / invite / role change / activate-deactivate). Phase 3 (money) IS built, so
+> revenue/payouts show real data (StatCards/tables). Not yet runtime-verified.
 
 ## Local dev
 
