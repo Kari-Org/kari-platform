@@ -1,8 +1,9 @@
 # Project Overview
 
-> The product story and the "why." For the full technical picture see [architecture.md](architecture.md);
-> for what's built vs. pending see [progress-tracker.md](progress-tracker.md). This file is vision first,
-> grounding second.
+> The product story and the "why" — **summary only; [foundation.md](foundation.md) is the complete,
+> authoritative source, and if they ever disagree, foundation wins.** For the full technical picture see
+> [architecture.md](architecture.md); for what's built see [progress-log.md](progress-log.md); for what's
+> buildable next see [build-graph.md](build-graph.md). This file is vision first, grounding second.
 
 ---
 
@@ -103,7 +104,7 @@ audit-logged**.
 
 The four ride types, rider + driver perspective. This is the **target spec** — items marked *(gap)* are
 not built yet or are built differently today; the gaps are tracked in
-[progress-tracker.md](progress-tracker.md), and the per-type contract is in
+[build-graph.md](build-graph.md), and the per-type contract is in
 [architecture.md](architecture.md) → Ride Type Matrix.
 
 ### 1. Solo — freelance drivers only (for now)
@@ -176,7 +177,7 @@ freelance** drivers. The driver arrives **5–10 minutes early**.
 # Technical Grounding (the trailer)
 
 A quick orientation — [architecture.md](architecture.md) has the full detail, and
-[progress-tracker.md](progress-tracker.md) has live status.
+[progress-log.md](progress-log.md) has live status.
 
 Kari is a **monorepo, TypeScript end-to-end**, consolidating **8 legacy repositories** (dual backends
 NestJS + Java, dual mobile stacks RN + Flutter, plus separate web and admin) into one codebase. The legacy
@@ -197,11 +198,11 @@ split was a hiring artifact (different contractors), not a design choice.
 
 ### Build status at a glance
 - **Backend:** P0–P6 done; **P7 (hardening)** is the only phase left.
-- **Rider + Driver apps:** P0–P6 done (P0–P2 device-verified, P3–P6 committed but **not yet runtime-verified**); P7 left.
-- **Admin:** A0–A6 done **except** the *Admins & Roles* management page (a stub).
+- **Rider + Driver apps:** P0–P6 done (P0–P2 device-verified, P3–P6 committed but **not yet runtime-verified**); rider visually redesigned to Figma; P7 left.
+- **Admin:** A0–A6 done, including the *Admins & Roles* management page.
 - **Web:** built single-page marketing site (8 sections, its own light design system); not backend-wired (by design).
 
-→ Full breakdown, verification history, and known gaps live in [progress-tracker.md](progress-tracker.md).
+→ Full breakdown and verification history live in [progress-log.md](progress-log.md); known gaps and what's buildable next in [build-graph.md](build-graph.md).
 
 ### Key domain concepts (the vocabulary)
 - **Driver types:** `FREELANCE` (self-onboarded) vs `DEDICATED` (admin-onboarded, salaried).
@@ -220,11 +221,8 @@ crypto payments · third-party delivery/logistics · an in-app driver-training p
 training is an ops process) · scheduled rides · multiple active rides per rider (enforced: one at a time).
 
 ### Current priorities
-- **P7 hardening** across backend + both mobile apps (a11y, offline, error states, perf, e2e, store builds).
-- **Runtime-verify** the built-but-unverified phases (mobile P3–P6, admin A2–A6).
-- Build the admin **Admins & Roles** management page.
-- Build out the **web** marketing/product site.
-- Swap in **real provider implementations** (push, email, WhatsApp in the notification fan-out).
+What's buildable next, ranked with dependencies, lives in [build-graph.md](build-graph.md). The broad
+strokes: runtime verification, P7 hardening, real provider implementations, and the ride-variant v2 gaps.
 
 ### Roadmap (post-MVP)
 Full **Spotify** account integration + playlist sharing · "Kari Wrapped" · watchlist address + push ·

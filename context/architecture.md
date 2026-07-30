@@ -1,5 +1,8 @@
 # Architecture
 
+> How the pieces fit. For *why* any of this was chosen see [foundation.md](foundation.md) — it wins on
+> conflict (cite decisions as `foundation.md §7 #N`).
+
 ## Stack
 
 | Layer | Tool | Purpose |
@@ -243,7 +246,7 @@ Admin page fetches data
 ## Ride Type Matrix
 
 The contract governing matching, state machine, and settlement per ride type. Narrative flows live in
-[project-overview.md](project-overview.md) → Ride Flows; gaps in [progress-tracker.md](progress-tracker.md).
+[project-overview.md](project-overview.md) → Ride Flows; gaps in [build-graph.md](build-graph.md).
 
 | Type | Driver eligibility | Pricing | Payment | Start PIN | Status vs vision |
 |------|--------------------|---------|---------|-----------|------------------|

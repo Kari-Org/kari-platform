@@ -4,7 +4,8 @@ Design tokens for KariPlatform mobile and admin apps. Use these exact values —
 
 > **This file is ground truth — the repo must comply with it.** Where code diverges (e.g. the rider splash
 > referencing an unloaded Poppins font → system-font fallback), the *code* is the bug to fix, not this doc.
-> Known compliance gaps are tracked in progress-tracker.md.
+> Known compliance gaps are tracked in progress-log.md. (For design *decisions* and their reasoning,
+> foundation.md §7 #20 wins on conflict.)
 
 ---
 

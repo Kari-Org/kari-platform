@@ -10,6 +10,9 @@ Project-specific usage patterns for key libraries in KariPlatform. Read the rele
 Actual code (contracts.ts, *.service.ts) → this file + the context/ system → per-app ARCHITECTURE.md (design intent) → general training knowledge
 ```
 
+For *decisions* (which library, and why), [foundation.md](foundation.md) §7 is authoritative — the order
+above governs implementation-level *usage detail*, where the code embodies the decision.
+
 The per-app `ARCHITECTURE.md` files are **design intent and can lag the code** (they describe Argon2id, Auth.js, and ride-scoped socket rooms — none of which match the implementation). When they disagree with the source, **the code wins**. This file documents cross-cutting library usage, verified against the code.
 
 ---

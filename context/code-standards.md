@@ -8,7 +8,8 @@ Implementation rules and conventions for the entire KariPlatform monorepo. Follo
 
 - Think before implementing — understand what is being built and why before writing a single line
 - Read the relevant ARCHITECTURE.md before touching any app (backend/, rider/, driver/, admin/ each have one)
-- Read this context system before any session — especially progress-tracker.md for current state
+- Read this context system before any session — especially progress-log.md for current state and
+  build-graph.md for what depends on what; foundation.md wins on any conflict
 - Scope is sacred — only build what the current feature requires
 - Every feature must be testable — if it cannot be verified, it is incomplete
 - Clean over clever — simple readable code that any developer can understand

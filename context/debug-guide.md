@@ -6,9 +6,20 @@ Patterns for diagnosing and fixing issues in KariPlatform. This file replaces th
 
 ## Before Debugging Anything
 
-1. Check `progress-tracker.md` — is this feature actually implemented yet?
+1. Check `progress-log.md` (what's built) and `build-graph.md` (what's still a gap) — is this feature
+   actually implemented yet?
 2. Check the relevant `ARCHITECTURE.md` (backend/, rider/, driver/, admin/) for the intended design
 3. Reproduce the issue — never fix what you can't reproduce
+
+### Known non-bugs (documented to avoid re-investigation)
+- Figma frames scoped OUT of the build: standalone Chat, multi-screen Payment, light-themed Account redesign.
+- Pricing formula (`base + ₦120/km + ₦15/min`) yields absurd fares for test locations **outside Nigeria**
+  — correct math, wrong test location.
+
+### Environment prerequisites (user steps, not agent steps)
+- Google SSO needs the user's own OAuth client IDs in app config (`extra.googleWebClientId` / `googleIosClientId`).
+- EAS dev build needs the user's Expo account (`eas login && eas build --profile development --platform ios`)
+  — required for driver background location + push.
 
 ---
 
