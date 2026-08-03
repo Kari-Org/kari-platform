@@ -103,6 +103,10 @@ export class Ride extends BaseEntity {
   @Column({ type: 'timestamptz', nullable: true })
   settledAt: Date | null;
 
+  /** True when an active route subscription paid for this ride (spec 0004) — no cash due. */
+  @Column({ type: 'boolean', default: false })
+  coveredBySubscription: boolean;
+
   /** Rider tip to the driver, in naira (set after completion). */
   @Column({ type: 'int', nullable: true })
   tipAmount: number | null;

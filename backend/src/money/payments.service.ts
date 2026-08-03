@@ -32,6 +32,14 @@ export interface RideSettlement {
   driverId: string | null;
   fareNaira: number; // agreedPrice
   paymentMethod: PaymentMethod;
+  /**
+   * Who funds the ride (spec 0004): 'rider' (default) is the normal path;
+   * 'subscription' means the rider's prepaid month covers it — the driver's net
+   * is paid FROM the platform REVENUE wallet and the rider pays nothing.
+   */
+  source?: 'rider' | 'subscription';
+  /** Set when source is 'subscription' — recorded in the transaction metadata. */
+  subscriptionId?: string;
 }
 
 export interface RideCancellation {
@@ -144,7 +152,7 @@ export class PaymentsService {
 
   // ─── ride settlement (money earned) ─────────────────────────────────────────
   async settleRide(input: RideSettlement): Promise<SettlementResult> {
-    const { rideId, riderId, driverId, fareNaira, paymentMethod } = input;
+    const { rideId, riderId, driverId, fareNaira, paymentMethod, source = 'rider' } = input;
     const fareKobo = toKobo(fareNaira);
     const base: SettlementResult = {
       settled: false,
@@ -162,6 +170,33 @@ export class PaymentsService {
     const revenue = await this.ledger.systemWallet(SystemAccount.REVENUE);
     const reference = `ride_${rideId}`;
     const metadata = { rateBps, fareKobo, commission, driverNet };
+
+    if (source === 'subscription') {
+      // Free at point of use (spec 0004): the prepaid month (already sitting in
+      // REVENUE) funds the driver's normal net; the rider pays nothing and the
+      // commission simply stays in REVENUE. Same fare/commission math as 'rider'.
+      await this.ledger.post({
+        type: TransactionType.RIDE_CHARGE,
+        reference,
+        amount: driverNet,
+        legs: [
+          { walletId: revenue.id, direction: LedgerDirection.DEBIT, amount: driverNet },
+          { walletId: driverWallet.id, direction: LedgerDirection.CREDIT, amount: driverNet },
+        ].filter((l) => l.amount > 0),
+        userId: riderId,
+        rideId,
+        paymentMethod: PaymentMethod.WALLET,
+        metadata: { ...metadata, coveredBySubscription: input.subscriptionId ?? true },
+      });
+      return {
+        settled: true,
+        paymentMethod: PaymentMethod.WALLET,
+        rateBps,
+        fareKobo,
+        commissionKobo: commission,
+        driverNetKobo: driverNet,
+      };
+    }
 
     if (isCashlike(paymentMethod)) {
       // Platform collects the full fare from the rider, pays the driver their net,

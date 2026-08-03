@@ -5,7 +5,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
-import { SubscribeDto } from './dto/subscribe.dto';
+import { PreviewSubscriptionDto, SubscribeDto } from './dto/subscribe.dto';
 import { SubscriptionsService } from './subscriptions.service';
 
 @ApiTags('subscriptions')
@@ -24,11 +24,21 @@ export class SubscriptionsController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.RIDER)
   @HttpCode(200)
+  @Post('preview')
+  @ApiOperation({ summary: 'Preview the monthly fee for a route quote (no charge)' })
+  @ResponseMessage('Subscription preview')
+  preview(@Body() dto: PreviewSubscriptionDto) {
+    return this.subscriptions.preview(dto.quoteRef);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.RIDER)
+  @HttpCode(200)
   @Post()
-  @ApiOperation({ summary: 'Subscribe to a plan (charges the fee from your wallet)' })
+  @ApiOperation({ summary: 'Subscribe to your route (monthly fee charged from your wallet)' })
   @ResponseMessage('Subscribed')
   subscribe(@CurrentUser('id') id: string, @Body() dto: SubscribeDto) {
-    return this.subscriptions.subscribe(id, dto.planId);
+    return this.subscriptions.subscribeRoute(id, dto);
   }
 
   @UseGuards(RolesGuard)

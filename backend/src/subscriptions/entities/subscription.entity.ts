@@ -13,8 +13,34 @@ export class Subscription extends BaseEntity {
   @Column({ type: 'uuid' })
   riderId: string;
 
-  @Column({ type: 'varchar', length: 32 })
-  planId: string;
+  /** Static-catalog plan (v1); null for route-priced subscriptions (spec 0004). */
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  planId: string | null;
+
+  // Route-priced subscription (spec 0004): the rider's own commute route + fee
+  @Column({ type: 'double precision', nullable: true })
+  pickupLat: number | null;
+
+  @Column({ type: 'double precision', nullable: true })
+  pickupLng: number | null;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  pickupAddress: string | null;
+
+  @Column({ type: 'double precision', nullable: true })
+  dropoffLat: number | null;
+
+  @Column({ type: 'double precision', nullable: true })
+  dropoffLng: number | null;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  dropoffAddress: string | null;
+
+  @Column({ type: 'int', nullable: true })
+  monthlyFeeNaira: number | null;
+
+  @Column({ type: 'varchar', length: 60, nullable: true })
+  label: string | null;
 
   @Index()
   @Column({ type: 'varchar', length: 16, default: SubscriptionStatus.ACTIVE })

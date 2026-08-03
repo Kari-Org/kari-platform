@@ -35,6 +35,7 @@ import type {
   ShuttleTrip,
   Subscription,
   SubscriptionPlan,
+  SubscriptionPreview,
   SupportTicket,
   TopupInit,
   TxnView,
@@ -185,8 +186,10 @@ export const referralsApi = {
 export const subscriptionsApi = {
   plans: () => apiFetch<SubscriptionPlan[]>('/subscriptions/plans'),
   mine: () => apiFetch<Subscription[]>('/subscriptions/mine'),
-  subscribe: (planId: string) =>
-    apiFetch<Subscription>('/subscriptions', { method: 'POST', body: { planId } }),
+  preview: (quoteRef: string) =>
+    apiFetch<SubscriptionPreview>('/subscriptions/preview', { method: 'POST', body: { quoteRef } }),
+  subscribe: (body: { quoteRef: string; label?: string }) =>
+    apiFetch<Subscription>('/subscriptions', { method: 'POST', body }),
   cancel: (id: string) => apiFetch<Subscription>(`/subscriptions/${id}/cancel`, { method: 'POST' }),
 };
 

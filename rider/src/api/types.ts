@@ -201,7 +201,7 @@ export interface SubscriptionPlan {
 
 export interface Subscription {
   id: string;
-  planId: string;
+  planId: string | null;
   planName: string;
   status: SubscriptionStatus;
   assignedDriverId: string | null;
@@ -209,6 +209,22 @@ export interface Subscription {
   currentPeriodEnd: string;
   ridesUsed: number;
   includedRides: number | null;
+  /** Route-priced fields (spec 0004); null on legacy plan subscriptions. */
+  monthlyFeeNaira: number | null;
+  label: string | null;
+  route: {
+    pickup: { lat: number; lng: number; address: string | null };
+    dropoff: { lat: number; lng: number; address: string | null };
+  } | null;
+}
+
+export interface SubscriptionPreview {
+  monthlyFeeNaira: number;
+  soloFare: number;
+  route: {
+    pickup: { lat: number; lng: number; address: string | null };
+    dropoff: { lat: number; lng: number; address: string | null };
+  };
 }
 
 export interface LeaderboardEntry {

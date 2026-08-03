@@ -326,6 +326,20 @@ export class RidesService {
     if (ride.status !== RideStatus.IN_PROGRESS) {
       throw new BadRequestException('ride must be in progress to complete');
     }
+    // Free-at-use (spec 0004): an active route subscription covering this SOLO
+    // ride's endpoints pays the driver from prepaid REVENUE; the rider pays 0.
+    let coveringSubId: string | undefined;
+    if (ride.type === RideType.SOLO) {
+      const covering = await this.subscriptions
+        .coverRide(ride.riderId, {
+          pickupLat: ride.pickupLat,
+          pickupLng: ride.pickupLng,
+          dropoffLat: ride.dropoffLat,
+          dropoffLng: ride.dropoffLng,
+        })
+        .catch(() => null);
+      coveringSubId = covering?.id;
+    }
     // Settle the fare first (idempotent by ride id). If this throws, the ride
     // stays IN_PROGRESS so the driver can safely retry completing it.
     const settlement = await this.payments.settleRide({
@@ -333,8 +347,14 @@ export class RidesService {
       riderId: ride.riderId,
       driverId: ride.driverId,
       fareNaira: ride.agreedPrice ?? ride.quotedPrice,
-      paymentMethod: ride.paymentMethod,
+      paymentMethod: coveringSubId ? PaymentMethod.WALLET : ride.paymentMethod,
+      source: coveringSubId ? 'subscription' : 'rider',
+      subscriptionId: coveringSubId,
     });
+    if (coveringSubId) {
+      ride.coveredBySubscription = true;
+      ride.paymentMethod = PaymentMethod.WALLET; // a covered ride must never read as CASH
+    }
     ride.status = RideStatus.COMPLETED;
     ride.completedAt = new Date();
     if (settlement.settled) {

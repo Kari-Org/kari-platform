@@ -247,4 +247,52 @@ race inheritance, wrong-keyed share lookup, unpinned label strings) — all fold
   code (expired-token 401s masked it at first). Runtime verification caught the environment lie;
   no graph would have.
 
-_(A2 follows)_
+## Slice A2 — Subscription v2: route pricing + free-at-use (AFTER, graph-first)
+
+### Explore step — measured
+
+**Graph queries: 3. Files opened before writing the spec: 2 full + 3 grep-peeks. All graph-directed.**
+1. `explain "SubscriptionsService"` — the complete service map (7 methods with line numbers) + both
+   consumers (`rides.service.ts` imports it — the sticky-driver AND future settlement seam;
+   `subscriptions.controller.ts`) in ONE query. Baseline equivalent: 2–3 file reads.
+2. `explain "rider_src_api_endpoints_subscriptionsapi"` — **the study's single best moment: degree 1,
+   zero importers.** The graph said no rider screen imports the subscriptions API. Grep confirmed:
+   `subscriptions.tsx` + `subscription-new.tsx` run on a SAMPLE-seeded local Zustand store — the
+   entire rider subscription surface was never wired to the backend, despite the progress tracker
+   listing rider P4 as complete. My curated context could not know this (it records intent, not
+   wiring); manual explore might have found it only when something broke at runtime. **A one-second
+   structural query exposed a false "done."**
+3. `query` for the settlement path — pointed into `money/payments.service.ts` (`settleRide`,
+   `SettlementResult`), the single seam where free-at-use hooks in.
+
+### Design outcome
+
+Spec 0004 (8 ACs): route-priced subscription from a real quote (fee formula over the ECONOMY fare),
+free-at-use at the settlement seam with the driver paid their normal net from REVENUE, rider screens
+wired to the real API (placeholder store deleted). Cross-check caught 7 issues pre-build — the
+standout: **cash double-pay** (a covered ride left as CASH lets the driver collect cash AND the funded
+net) — plus fare-basis ambiguity, UI pickers for settings the backend ignores, min-vs-ECONOMY fare
+pinning, a drift-prone parallel settlement path (collapsed into `settleRide(source)`), the unshared
+haversine, and a too-weak Σ-invariant test.
+
+### Develop + verify — measured
+
+- **Develop re-exploration: ~7 rounds** — more than A1 because the slice touched 5 areas (subscriptions,
+  money, rides, rider screens ×3) and required precise DTO/controller/entity reads. The graph located
+  everything; the reads were for exact code shapes (a thing the graph doesn't carry).
+- **A structural save mid-build:** injecting `PricingService` into `SubscriptionsService` would have
+  created a module cycle (`RidesModule → SubscriptionsModule → RidesModule`). I caught it from
+  session knowledge of module imports — but this is precisely a `shortest_path`/edge query; logged as
+  a **missed opportunity to use the graph** (honesty cuts both ways).
+- **Another consumer catch:** deleting the placeholder store surfaced a third consumer — rider
+  `home.tsx` line 77 — via grep. The graph's store-node importers would have listed it up front had I
+  queried before deleting.
+- **Files changed:** 13 across 2 workspaces (backend 8: subscriptions entity/service/controller/DTO,
+  payments, rides service + entity, new common/geo.ts, carpools import swap · rider 5: two screens
+  rewritten, home tab, types, endpoints; 2 files deleted).
+- **Verify: PASS (calibrated).** Real top-up → formula-exact fee (₦59,500 from ₦2,250 solo) → covered
+  reverse-direction ride with rider balance untouched, driver paid ₦1,800 net from a REVENUE debit
+  (ledger legs shown), CASH request forced to WALLET (the cross-check's double-pay hole, proven
+  closed), ridesUsed metered, far ride charged normally, **Σ(all wallets)=0 across every wallet**.
+  Two FAILs in the run were my harness's kobo-vs-naira unit bugs — the DB ledger showed the product
+  correct. Runtime verification catches harness lies too.

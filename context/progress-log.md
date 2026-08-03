@@ -27,6 +27,20 @@ must never drift from what was decided.
 
 ## Entries
 
+### feature · backend+rider · Subscription v2: route pricing + free-at-use (spec 0004) — 2026-08-03
+**What:** Subscriptions are now priced from the rider's own route (formula over the ECONOMY quote fare;
+preview endpoint so clients never compute money) and charged upfront; SOLO rides matching the route
+(≤1km endpoints, either direction) are free at use — rider pays nothing, driver's normal net is funded
+from prepaid REVENUE (`settleRide` gains `source: 'subscription'`), covered rides forced to WALLET
+(cash double-pay hole closed), `ridesUsed` metered, `coveredBySubscription` on the ride view. Rider
+subscription screens were discovered to be running on a local placeholder store — now wired to the real
+API (store + dead lib deleted; home tab card included). Shared `common/geo.ts` haversine (carpools
+switched to it).
+**Notes:** Runtime-verified end-to-end incl. ledger legs and Σ(wallets)=0. Static plan catalog still
+listed but unoffered (cleanup follow-up). Scheduler/fallback/frequency are later slices. Fee constants
+and 1km radius are founder-tunable (spec 0004 follow-ups). Graphify study slice A2 — the unwired
+screen was found by a graph degree-1 query.
+
 ### feature · backend+rider · Carpool v2: discounted ride-share fares (spec 0003) — 2026-08-03
 **What:** Equal split replaced by occupancy-discounted own fares (1.0/0.8/0.7/0.65 of solo fare;
 alone = full). `recompute` prices per member; settlement charges stored shares with commission on the

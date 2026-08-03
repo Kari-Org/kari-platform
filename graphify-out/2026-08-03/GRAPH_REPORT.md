@@ -1,16 +1,16 @@
 # Graph Report - kari-platform  (2026-08-03)
 
 ## Corpus Check
-- 466 files · ~723,752 words
+- 466 files · ~724,073 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3525 nodes · 7072 edges · 277 communities (197 shown, 80 thin omitted)
+- 3526 nodes · 7073 edges · 282 communities (203 shown, 79 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 8 edges (avg confidence: 0.73)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f5876fb8`
+- Built from commit: `5c019218`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -36,26 +36,26 @@
 - app.module.ts
 - devDependencies
 - errorMessage
-- admin.controller.ts
+- SetShuttleAssignmentDto
 - admin.service.ts
 - subscription-new.tsx
-- AuthService
+- OtpService
 - Code Standards
 - devDependencies
-- Column
+- ride.tsx
 - dependencies
 - ride/[id].tsx
-- identity.service.ts
+- IdentityService
 - AdminService
 - rides.service.ts
-- notifications.module.ts
+- Index
 - mobile-core/src/index.ts
 - .book
-- ride.tsx
+- IncomingRequest.tsx
 - mobile-core/package.json
 - Roles
 - PaymentProvider
-- rider/src/stores/auth.store.ts
+- rider/src/theme/tokens.ts
 - admin-api.ts
 - compilerOptions
 - colors
@@ -67,8 +67,8 @@
 - WalletController
 - compilerOptions
 - [...path]/route.ts
-- app.controller.ts
-- PaymentsService
+- app.e2e-spec.ts
+- LedgerService
 - GamificationService
 - noop.providers.ts
 - DriverController
@@ -80,10 +80,10 @@
 - CarpoolsController
 - .subscribe
 - Library Docs
-- Public
-- pricing.service.ts
-- LedgerService
-- PlacesController
+- AuthService
+- QuoteDto
+- TicketsService
+- MapsProvider
 - SafetyController
 - tasks
 - API Inventory
@@ -112,16 +112,16 @@
 - compilerOptions
 - compilerOptions
 - scripts
-- MapsProvider
+- driver/app/(auth)/verify-method.tsx
 - SubscriptionsService
 - Provider Docs
-- Slice B1 — Carpool v2: driver carpool-mode toggle (BEFORE, no graph)
+- Graphify before/after study — running log
 - carpool.tsx
 - include
 - include
 - configuration.ts
-- GamificationController
-- LivenessProvider
+- RiderProfileDto
+- UpdateTicketDto
 - Architecture
 - By group (entity → its FK columns → target)
 - CreateCarpoolDto
@@ -129,17 +129,17 @@
 - driver/package.json
 - rider/package.json
 - .webhook
-- SafetyService
+- NotificationsService
 - RealtimeGateway
-- .share
+- SafetyService
 - Build Graph
 - deploy
-- rider/src/theme/tokens.ts
+- CreateAdminDto
 - rider/context/README.md
 - admins/page.tsx
 - CreateDedicatedDriverDto
-- payments.service.ts
-- WalletService
+- RegisterDeviceDto
+- rider/app/support.tsx
 - exclude
 - earnings.tsx
 - devDependencies
@@ -152,22 +152,22 @@
 - Driver App Context
 - rider/app/(tabs)/_layout.tsx
 - live/page.tsx
-- public.decorator.ts
+- Public
 - LoginDto
 - EmergencyContactDto
 - PanicDto
-- TripShareController
+- AdminCancelRideDto
 - Technical Grounding (the trailer)
-- driver/app/rewards.tsx
+- SendOtpDto
 - driver/app/support.tsx
 - devDependencies
-- rider/app/shuttle.tsx
+- GoogleAuthService
 - wallet.tsx
 - Kari — Agent context
 - nest-cli.json
 - .fleet
-- ForgotPasswordDto
-- IdentityProvider
+- SignUpDto
+- JwtStrategy
 - Deploying the Kari backend (Railway)
 - Screen Catalog
 - Zustand Stores
@@ -191,13 +191,13 @@
 - plugins
 - splash
 - web/app/layout.tsx
-- QueueModule
-- RedisModule
+- queue.module.ts
+- pricing.service.ts
 - rider/src/stores/ride.store.ts
 - admin/next.config.ts
 - admin/postcss.config.mjs
 - admin/tailwind.config.ts
-- bullmq
+- CancelRideDto
 - helmet
 - ioredis
 - @kari/types
@@ -214,7 +214,7 @@
 - typeorm
 - CLAUDE.md
 - runtimeVersion
-- expo-camera
+- CounterOfferDto
 - expo-constants
 - expo-dev-client
 - @expo-google-fonts/hanken-grotesk
@@ -241,7 +241,7 @@
 - @tanstack/react-query
 - zustand
 - expo-web-browser
-- expo
+- trips.tsx
 - expo-constants
 - @expo-google-fonts/geist-mono
 - @expo-google-fonts/hanken-grotesk
@@ -269,6 +269,11 @@
 - web/next.config.ts
 - web/postcss.config.mjs
 - web/tailwind.config.ts
+- ConfigModule
+- ProvidersModule
+- google-auth-library
+- expo-status-bar
+- expo-auth-session
 
 ## God Nodes (most connected - your core abstractions)
 1. `ResponseMessage()` - 138 edges
@@ -287,41 +292,41 @@
   backend/src/admin/audit/entities/audit-log.entity.ts → admin/components/ui/data-table.tsx
 - `Carpool` --references--> `Column`  [EXTRACTED]
   backend/src/carpools/entities/carpool.entity.ts → admin/components/ui/data-table.tsx
-- `CarpoolMember` --references--> `Column`  [EXTRACTED]
-  backend/src/carpools/entities/carpool-member.entity.ts → admin/components/ui/data-table.tsx
 - `ChatMessage` --references--> `Column`  [EXTRACTED]
   backend/src/comms/entities/chat-message.entity.ts → admin/components/ui/data-table.tsx
 - `DriverProfile` --references--> `Column`  [EXTRACTED]
   backend/src/driver/entities/driver-profile.entity.ts → admin/components/ui/data-table.tsx
+- `Vehicle` --references--> `Column`  [EXTRACTED]
+  backend/src/driver/entities/vehicle.entity.ts → admin/components/ui/data-table.tsx
 
 ## Import Cycles
 - None detected.
 
-## Communities (277 total, 80 thin omitted)
+## Communities (282 total, 79 thin omitted)
 
 ### Community 0 - "RidesService"
 Cohesion: 0.06
 Nodes (23): CarpoolsService, haversineKm(), JOINABLE, Injectable, RateRideDto, ApiProperty, ApiPropertyOptional, IsInt (+15 more)
 
 ### Community 1 - "errorMessage"
-Cohesion: 0.12
-Nodes (25): InputField(), KariButton(), expo-web-browser, ForgotPassword(), extra, extra, SignUp(), VerifyMethod() (+17 more)
+Cohesion: 0.13
+Nodes (23): InputField(), KariButton(), expo-web-browser, ForgotPassword(), extra, extra, SignUp(), VerifyMethod() (+15 more)
 
 ### Community 2 - "RiderProfile"
-Cohesion: 0.07
-Nodes (32): RiderPreferencesDto, ApiPropertyOptional, IsBoolean, IsEnum, IsOptional, IsString, MaxLength, RiderProfileDto (+24 more)
+Cohesion: 0.09
+Nodes (24): RiderPreferencesDto, ApiPropertyOptional, IsBoolean, IsEnum, IsOptional, IsString, MaxLength, SavedAddressDto (+16 more)
 
 ### Community 3 - "rider/src/api/endpoints.ts"
 Cohesion: 0.07
-Nodes (43): QUICK_REPLIES, naira(), RideHistory(), Coords, { height: H }, RidesBooking(), TERMINAL, commsApi (+35 more)
+Nodes (45): Addresses(), iconFor(), LABELS, titleCase(), QUICK_REPLIES, naira(), RideHistory(), commsApi (+37 more)
 
 ### Community 4 - "expo"
 Cohesion: 0.04
 Nodes (47): backgroundColor, foregroundImage, adaptiveIcon, package, permissions, projectId, typedRoutes, expo (+39 more)
 
 ### Community 5 - "CreateTicketDto"
-Cohesion: 0.07
-Nodes (31): CreateTicketDto, ApiProperty, ApiPropertyOptional, IsEnum, IsOptional, IsString, IsUUID, MaxLength (+23 more)
+Cohesion: 0.18
+Nodes (13): CreateTicketDto, ApiProperty, ApiPropertyOptional, IsEnum, IsOptional, IsString, IsUUID, MaxLength (+5 more)
 
 ### Community 6 - "enums.ts"
 Cohesion: 0.04
@@ -332,24 +337,24 @@ Cohesion: 0.04
 Nodes (44): dependencies, class-variance-authority, clsx, @kari/types, lucide-react, next, react, react-dom (+36 more)
 
 ### Community 8 - "AppConfig"
-Cohesion: 0.09
-Nodes (23): AppModule, Module, JwtStrategy, Inject, Injectable, GoogleProfile, TokenPair, JwtPayload (+15 more)
+Cohesion: 0.16
+Nodes (13): AppModule, Module, GoogleProfile, TokenPair, Inject, JwtPayload, LoggerModule, Module (+5 more)
 
 ### Community 9 - "icons.tsx"
 Cohesion: 0.08
 Nodes (30): NAV, NavGroup, NavItem, Route(), ArrowRight(), ArrowRightUp(), Bus(), CalendarMark() (+22 more)
 
 ### Community 10 - "CurrentUser"
-Cohesion: 0.12
-Nodes (18): CurrentUser, ROLES_KEY, RolesGuard, Injectable, AuthUser, NinDto, ApiProperty, Matches (+10 more)
+Cohesion: 0.10
+Nodes (20): ApiProperty, IsEnum, UpdateAdminRoleDto, ApiProperty, IsEnum, UpdateUserStatusDto, ApiProperty, IsBoolean (+12 more)
 
 ### Community 11 - "DriverService"
-Cohesion: 0.10
-Nodes (18): DriverOnboardingService, scorePersonality(), Injectable, DriverService, Injectable, InjectRepository, DriverPersonalDto, ApiProperty (+10 more)
+Cohesion: 0.12
+Nodes (13): DriverOnboardingService, scorePersonality(), Injectable, DriverService, Injectable, InjectRepository, DriverProfile, Entity (+5 more)
 
 ### Community 12 - "Screen"
 Cohesion: 0.08
-Nodes (27): SLIDES, { width }, OptionRow(), Props, Screen(), ScreenHeader(), CarpoolScreen(), naira() (+19 more)
+Nodes (26): OptionRow(), Props, Screen(), ScreenHeader(), SuccessBadge(), CarpoolScreen(), naira(), TERMINAL (+18 more)
 
 ### Community 13 - "Kari Admin Console — ARCHITECTURE.md"
 Cohesion: 0.05
@@ -357,47 +362,47 @@ Nodes (36): Audit logging, Information architecture (collapsible sidebar), Kari 
 
 ### Community 14 - "driver/src/api/endpoints.ts"
 Cohesion: 0.09
-Nodes (33): ICON, SafetyScreen(), day(), time(), TripCard(), notificationsApi, safetyApi, shuttleApi (+25 more)
+Nodes (31): ICON, day(), time(), TripCard(), notificationsApi, shuttleApi, AchievementView, AppNotification (+23 more)
 
 ### Community 15 - "ResponseMessage"
 Cohesion: 0.20
 Nodes (17): AdminController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, HttpCode (+9 more)
 
 ### Community 16 - "auth.service.ts"
-Cohesion: 0.10
-Nodes (23): GoogleAuthDto, ApiProperty, IsString, MinLength, RefreshDto, ApiProperty, IsString, ResetPasswordDto (+15 more)
+Cohesion: 0.14
+Nodes (14): GoogleAuthDto, ApiProperty, IsString, MinLength, RefreshDto, ApiProperty, IsString, ResetPasswordDto (+6 more)
 
 ### Community 17 - "BaseEntity"
-Cohesion: 0.11
-Nodes (25): BaseEntity, bigintNumber, LedgerEntry, Entity, Entity, VersionColumn, Wallet, PostArgs (+17 more)
+Cohesion: 0.06
+Nodes (45): Column, CarpoolMember, Entity, BaseEntity, bigintNumber, Achievement, Entity, DriverScore (+37 more)
 
 ### Community 18 - "app.module.ts"
-Cohesion: 0.11
-Nodes (30): AdminModule, Module, AuthModule, Module, CarpoolsModule, Module, DriverModule, Module (+22 more)
+Cohesion: 0.09
+Nodes (37): AdminModule, Module, AuthModule, Module, CarpoolsModule, Module, CommsModule, Module (+29 more)
 
 ### Community 19 - "devDependencies"
 Cohesion: 0.05
 Nodes (37): devDependencies, eslint, eslint-config-prettier, jest, @nestjs/cli, @nestjs/schematics, @nestjs/testing, pino-pretty (+29 more)
 
 ### Community 20 - "errorMessage"
-Cohesion: 0.10
-Nodes (20): Otp(), SignIn(), SignUp(), VerifyMethod(), CATEGORIES, Onboarding(), QUIZ, SCALE (+12 more)
+Cohesion: 0.11
+Nodes (20): Otp(), SignIn(), CATEGORIES, Onboarding(), QUIZ, SCALE, STATES, BADGE_META (+12 more)
 
-### Community 21 - "admin.controller.ts"
-Cohesion: 0.07
-Nodes (25): AdminCancelRideDto, ApiPropertyOptional, IsOptional, IsString, MaxLength, SetShuttleAssignmentDto, ApiProperty, ApiPropertyOptional (+17 more)
+### Community 21 - "SetShuttleAssignmentDto"
+Cohesion: 0.22
+Nodes (8): SetShuttleAssignmentDto, ApiProperty, ApiPropertyOptional, IsOptional, IsString, IsUUID, MaxLength, ValidateIf
 
 ### Community 22 - "admin.service.ts"
-Cohesion: 0.10
-Nodes (19): ACTIVE_DRIVING, ACTIVE_RIDE_STATUSES, Page, Inject, InjectRepository, CommsModule, Module, Inject (+11 more)
+Cohesion: 0.11
+Nodes (17): ACTIVE_DRIVING, ACTIVE_RIDE_STATUSES, Page, Inject, InjectRepository, Inject, InjectRepository, ChatMessage (+9 more)
 
 ### Community 23 - "subscription-new.tsx"
-Cohesion: 0.11
-Nodes (24): Coords, NewSubscription(), TimeChips(), IconName, SubscriptionsScreen(), Home(), Promo, PROMOS (+16 more)
-
-### Community 24 - "AuthService"
 Cohesion: 0.10
-Nodes (14): AuthService, toPublic(), Injectable, SignUpDto, ApiProperty, ApiPropertyOptional, IsEmail, IsEnum (+6 more)
+Nodes (25): Coords, NewSubscription(), TimeChips(), IconName, SubscriptionsScreen(), Home(), Promo, PROMOS (+17 more)
+
+### Community 24 - "OtpService"
+Cohesion: 0.20
+Nodes (5): ApiProperty, Matches, VerifyOtpDto, OtpService, Injectable
 
 ### Community 25 - "Code Standards"
 Cohesion: 0.06
@@ -407,45 +412,45 @@ Nodes (33): Admin (Next.js), Admin (Next.js), API Client, API Response Envelope,
 Cohesion: 0.06
 Nodes (33): dependencies, @kari/types, next, react, react-dom, devDependencies, autoprefixer, postcss (+25 more)
 
-### Community 27 - "Column"
-Cohesion: 0.11
-Nodes (21): Column, Document, Entity, ShuttleBooking, Entity, ShuttleRoute, Entity, ShuttleStop (+13 more)
+### Community 27 - "ride.tsx"
+Cohesion: 0.17
+Nodes (13): ChatScreen(), DriverRideScreen(), naira(), TERMINAL, commsApi, safetyApi, DRIVER_EVENTS, useDispatchChannel() (+5 more)
 
 ### Community 28 - "dependencies"
 Cohesion: 0.06
-Nodes (33): dependencies, class-transformer, class-validator, dotenv, google-auth-library, @nestjs/core, @nestjs/swagger, @nestjs/throttler (+25 more)
+Nodes (33): dependencies, bullmq, class-transformer, class-validator, dotenv, @nestjs/core, @nestjs/swagger, @nestjs/throttler (+25 more)
 
 ### Community 29 - "ride/[id].tsx"
-Cohesion: 0.09
-Nodes (24): Checkbox(), Book(), CAR, CLASS_META, formatTrip(), { height: SCREEN_H }, naira(), PAYMENTS (+16 more)
+Cohesion: 0.07
+Nodes (31): Checkbox(), Book(), CAR, CLASS_META, formatTrip(), { height: SCREEN_H }, naira(), PAYMENTS (+23 more)
 
-### Community 30 - "identity.service.ts"
+### Community 30 - "IdentityService"
 Cohesion: 0.09
-Nodes (17): ApiBody, ApiConsumes, IdentityController, ApiBearerAuth, ApiOperation, ApiTags, Controller, Get (+9 more)
+Nodes (16): ApiBody, ApiConsumes, IdentityController, ApiBearerAuth, ApiOperation, ApiTags, Controller, Get (+8 more)
 
 ### Community 31 - "AdminService"
-Cohesion: 0.08
-Nodes (11): AdminService, startOfToday(), stripPin(), Injectable, CreateAdminDto, ApiProperty, IsEmail, IsEnum (+3 more)
+Cohesion: 0.11
+Nodes (4): AdminService, startOfToday(), stripPin(), Injectable
 
 ### Community 32 - "rides.service.ts"
-Cohesion: 0.09
-Nodes (19): CARPOOL_MAX_SEATS, InjectDataSource, InjectRepository, Carpool, Entity, VersionColumn, CarpoolMember, Entity (+11 more)
+Cohesion: 0.10
+Nodes (17): CARPOOL_MAX_SEATS, InjectDataSource, InjectRepository, Carpool, Entity, VersionColumn, Rating, Entity (+9 more)
 
-### Community 33 - "notifications.module.ts"
-Cohesion: 0.11
-Nodes (19): DeviceToken, Entity, Notification, Entity, NotificationsModule, Module, NotificationsProcessor, Inject (+11 more)
+### Community 33 - "Index"
+Cohesion: 0.14
+Nodes (14): DeviceToken, Entity, Notification, Entity, NotificationsProcessor, Inject, InjectRepository, JOB_OPTS (+6 more)
 
 ### Community 34 - "mobile-core/src/index.ts"
-Cohesion: 0.10
-Nodes (15): ChatScreen(), commsApi, ApiError, apiFetch(), refreshTokens(), RequestOptions, ApiConfig, config (+7 more)
+Cohesion: 0.13
+Nodes (8): ApiError, apiFetch(), refreshTokens(), RequestOptions, ApiConfig, config, configureApi(), session
 
 ### Community 35 - ".book"
 Cohesion: 0.10
 Nodes (20): BookShuttleDto, ApiProperty, ApiPropertyOptional, IsInt, IsOptional, IsUUID, Max, Min (+12 more)
 
-### Community 36 - "ride.tsx"
-Cohesion: 0.14
-Nodes (16): DriverRideScreen(), naira(), TERMINAL, TabsLayout(), Ride, IncomingRequest(), naira(), SwipeToAccept() (+8 more)
+### Community 36 - "IncomingRequest.tsx"
+Cohesion: 0.26
+Nodes (9): TabsLayout(), Ride, IncomingRequest(), naira(), SwipeToAccept(), registerForPush(), useDriverDispatch(), RideState (+1 more)
 
 ### Community 37 - "mobile-core/package.json"
 Cohesion: 0.07
@@ -459,7 +464,7 @@ Nodes (15): Roles(), StartRideDto, ApiProperty, Matches, RidesController, ApiBea
 Cohesion: 0.11
 Nodes (10): ChargeInput, ChargeResult, ChargeStatus, PaymentProvider, TransferInput, TransferResult, NoopPaymentProvider, mapStatus() (+2 more)
 
-### Community 40 - "rider/src/stores/auth.store.ts"
+### Community 40 - "rider/src/theme/tokens.ts"
 Cohesion: 0.10
 Nodes (16): Otp(), SignIn(), styles, RootLayout(), Account(), IconName, RowItem, queryClient (+8 more)
 
@@ -472,8 +477,8 @@ Cohesion: 0.07
 Nodes (26): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+18 more)
 
 ### Community 43 - "colors"
-Cohesion: 0.15
-Nodes (16): Props, Props, Props, formatLocal(), PhoneInput(), Props, toLocalDigits(), Props (+8 more)
+Cohesion: 0.11
+Nodes (19): SLIDES, { width }, Props, Props, Props, formatLocal(), PhoneInput(), Props (+11 more)
 
 ### Community 44 - ".send"
 Cohesion: 0.11
@@ -496,7 +501,7 @@ Cohesion: 0.20
 Nodes (11): FareConfigPage(), naira(), naira(), RevenuePage(), ROLES, PageHeader(), Card(), CardContent() (+3 more)
 
 ### Community 49 - "WalletController"
-Cohesion: 0.11
+Cohesion: 0.10
 Nodes (19): PayoutDto, ApiProperty, IsInt, Min, TopupDto, ApiProperty, IsInt, Min (+11 more)
 
 ### Community 50 - "compilerOptions"
@@ -507,29 +512,29 @@ Nodes (24): compilerOptions, allowJs, incremental, isolatedModules, jsx, lib, mo
 Cohesion: 0.14
 Nodes (14): Ctx, DELETE(), forward(), GET(), PATCH(), POST(), PUT(), ADMIN_COOKIE (+6 more)
 
-### Community 52 - "app.controller.ts"
-Cohesion: 0.11
-Nodes (13): AppController, ApiTags, Controller, Get, RESPONSE_MESSAGE_KEY, AllExceptionsFilter, codeForStatus(), STATUS_CODE (+5 more)
+### Community 52 - "app.e2e-spec.ts"
+Cohesion: 0.16
+Nodes (9): RESPONSE_MESSAGE_KEY, AllExceptionsFilter, codeForStatus(), STATUS_CODE, ResponseEnvelopeInterceptor, Injectable, HttpPipelineTestModule, Module (+1 more)
 
-### Community 53 - "PaymentsService"
-Cohesion: 0.21
-Nodes (3): PaymentsService, toKobo(), Injectable
+### Community 53 - "LedgerService"
+Cohesion: 0.06
+Nodes (24): CommissionService, CommissionSplit, Injectable, Transaction, Entity, LedgerService, PostLeg, Injectable (+16 more)
 
 ### Community 54 - "GamificationService"
-Cohesion: 0.15
-Nodes (10): Achievement, Entity, DriverScore, Entity, GamificationService, RIDE_MILESTONES, Inject, Injectable (+2 more)
+Cohesion: 0.14
+Nodes (10): GamificationController, ApiBearerAuth, ApiOperation, ApiTags, Controller, Get, UseGuards, GamificationService (+2 more)
 
 ### Community 55 - "noop.providers.ts"
-Cohesion: 0.13
-Nodes (14): Inject, DeliveryResult, MaskedCallInput, MaskedCallResult, PushInput, SendEmailInput, SendMessageInput, VoiceProvider (+6 more)
+Cohesion: 0.10
+Nodes (18): Inject, DeliveryResult, MaskedCallInput, MaskedCallResult, PushInput, SendEmailInput, SendMessageInput, TripEstimate (+10 more)
 
 ### Community 56 - "DriverController"
-Cohesion: 0.18
-Nodes (13): DriverController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, HttpCode (+5 more)
+Cohesion: 0.13
+Nodes (18): DriverController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, HttpCode (+10 more)
 
 ### Community 57 - "NotificationsController"
-Cohesion: 0.10
-Nodes (16): RegisterDeviceDto, ApiProperty, ApiPropertyOptional, IsOptional, IsString, NotificationsController, ApiBearerAuth, ApiOperation (+8 more)
+Cohesion: 0.16
+Nodes (10): NotificationsController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, HttpCode (+2 more)
 
 ### Community 58 - "compilerOptions"
 Cohesion: 0.09
@@ -559,24 +564,24 @@ Nodes (14): SubscribeDto, ApiProperty, IsString, SubscriptionsController, ApiBea
 Cohesion: 0.10
 Nodes (21): Authority Order, Backend — emit via `RealtimeService` (not the gateway directly), Backend (MapsProvider — full contract in provider-docs.md), BullMQ (Backend), Entity Definition, Expo Router v6 (Mobile), File-based Routing, Google Maps (Backend + Mobile) (+13 more)
 
-### Community 65 - "Public"
-Cohesion: 0.30
-Nodes (10): AuthController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, HttpCode (+2 more)
+### Community 65 - "AuthService"
+Cohesion: 0.14
+Nodes (12): AuthController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, HttpCode (+4 more)
 
-### Community 66 - "pricing.service.ts"
+### Community 66 - "QuoteDto"
+Cohesion: 0.20
+Nodes (8): QuoteDto, ApiProperty, ApiPropertyOptional, IsNumber, IsOptional, IsString, Max, Min
+
+### Community 67 - "TicketsService"
 Cohesion: 0.12
-Nodes (13): OtpSendResult, REDIS_CLIENT, QuoteDto, ApiProperty, ApiPropertyOptional, IsNumber, IsOptional, IsString (+5 more)
+Nodes (12): TicketsController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, HttpCode (+4 more)
 
-### Community 67 - "LedgerService"
-Cohesion: 0.13
-Nodes (9): Transaction, Entity, LedgerService, Injectable, InjectDataSource, InjectRepository, Inject, InjectRepository (+1 more)
-
-### Community 68 - "PlacesController"
-Cohesion: 0.16
-Nodes (12): PlacesController, ApiBearerAuth, ApiOperation, ApiTags, Controller, Get, Query, PlacesModule (+4 more)
+### Community 68 - "MapsProvider"
+Cohesion: 0.11
+Nodes (14): PlacesController, ApiBearerAuth, ApiOperation, ApiTags, Controller, Get, Query, PlacesModule (+6 more)
 
 ### Community 69 - "SafetyController"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (11): SafetyController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, Get, HttpCode (+3 more)
 
 ### Community 70 - "tasks"
@@ -592,20 +597,20 @@ Cohesion: 0.15
 Nodes (10): AUDIT_ACTION, AuditInterceptor, REDACT, sanitize(), Injectable, AuditService, Injectable, InjectRepository (+2 more)
 
 ### Community 73 - "AvailabilityController"
-Cohesion: 0.18
-Nodes (14): AvailabilityController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, HttpCode, Post (+6 more)
+Cohesion: 0.14
+Nodes (16): AvailabilityController, ApiBearerAuth, ApiOperation, ApiTags, Body, Controller, HttpCode, Post (+8 more)
 
 ### Community 74 - "tickets/page.tsx"
 Cohesion: 0.15
 Nodes (14): DedicatedDriversPage(), ShuttlePage(), FILTERS, STATUS_TONE, TicketsPage(), ACTIVE, naira(), STATUS_TONE (+6 more)
 
 ### Community 75 - "PasswordService"
-Cohesion: 0.13
-Nodes (9): GoogleAuthService, Inject, Injectable, PasswordService, scrypt, Injectable, TokenService, Inject (+1 more)
+Cohesion: 0.24
+Nodes (5): PasswordService, scrypt, Injectable, TokenService, Injectable
 
 ### Community 76 - "contracts.ts"
-Cohesion: 0.18
-Nodes (16): EMAIL_PROVIDER, IDENTITY_PROVIDER, LIVENESS_PROVIDER, MAPS_PROVIDER, PAYMENT_PROVIDER, PUSH_PROVIDER, SMS_PROVIDER, STORAGE_PROVIDER (+8 more)
+Cohesion: 0.08
+Nodes (26): OtpSendResult, Inject, InjectRepository, EMAIL_PROVIDER, IDENTITY_PROVIDER, IdentityProvider, LIVENESS_PROVIDER, LivenessProvider (+18 more)
 
 ### Community 77 - "Entries"
 Cohesion: 0.11
@@ -621,11 +626,11 @@ Nodes (17): 10. Maps & Location (the defining driver concern), 11. Design System
 
 ### Community 80 - "dependencies"
 Cohesion: 0.12
-Nodes (17): dependencies, expo, expo-font, @expo-google-fonts/geist-mono, expo-router, expo-status-bar, nativewind, react-native-otp-entry (+9 more)
+Nodes (17): dependencies, expo, expo-camera, expo-font, @expo-google-fonts/geist-mono, expo-router, nativewind, react-native-otp-entry (+9 more)
 
 ### Community 81 - "dependencies"
 Cohesion: 0.12
-Nodes (17): expo-auth-session, dependencies, expo-auth-session, expo-camera, expo-font, expo-notifications, @kari/types, react-native-otp-entry (+9 more)
+Nodes (17): dependencies, expo, expo-camera, expo-font, expo-notifications, @kari/types, react-native-otp-entry, tailwindcss (+9 more)
 
 ### Community 82 - "compilerOptions"
 Cohesion: 0.12
@@ -672,8 +677,8 @@ Cohesion: 0.13
 Nodes (14): typedRoutes, expo, backgroundColor, experiments, icon, name, newArchEnabled, orientation (+6 more)
 
 ### Community 93 - "driver/app/(tabs)/home.tsx"
-Cohesion: 0.24
-Nodes (12): ACTIVE, Home(), LAGOS, naira(), naira(), Trips(), availabilityApi, ridesApi (+4 more)
+Cohesion: 0.30
+Nodes (11): ACTIVE, Home(), LAGOS, naira(), availabilityApi, pushFix(), requestLocationPermission(), startTracking() (+3 more)
 
 ### Community 94 - "compilerOptions"
 Cohesion: 0.13
@@ -687,21 +692,21 @@ Nodes (14): compilerOptions, declaration, emitDecoratorMetadata, esModuleInterop
 Cohesion: 0.15
 Nodes (13): scripts, build, dev, lint, migration:generate, migration:revert, migration:run, start (+5 more)
 
-### Community 97 - "MapsProvider"
-Cohesion: 0.17
-Nodes (6): Inject, MapsProvider, TripEstimate, TripQuery, haversineMetres(), NoopMapsProvider
+### Community 97 - "driver/app/(auth)/verify-method.tsx"
+Cohesion: 0.36
+Nodes (5): SignUp(), VerifyMethod(), BrandMark(), SignupDraft, useSignupDraft
 
 ### Community 98 - "SubscriptionsService"
-Cohesion: 0.32
-Nodes (5): planById(), SUBSCRIPTION_PLANS, SubscriptionPlan, SubscriptionsService, Injectable
+Cohesion: 0.24
+Nodes (8): Subscription, Entity, planById(), SUBSCRIPTION_PLANS, SubscriptionPlan, SubscriptionsService, Injectable, InjectRepository
 
 ### Community 99 - "Provider Docs"
 Cohesion: 0.15
 Nodes (13): AWS Rekognition (Liveness), AWS S3 (Storage), AWS SES (Email) — planned, Dojah (Identity / NIN), Expo Push / FCM (Push) — planned, Google Maps (Maps), Paystack (Payments) — the only live provider, Provider Architecture (+5 more)
 
-### Community 100 - "Slice B1 — Carpool v2: driver carpool-mode toggle (BEFORE, no graph)"
-Cohesion: 0.15
-Nodes (12): Design outcome, Design outcome, Develop step — measured, Develop step — measured, Explore step (architect phase) — measured, Explore step (architect phase) — measured, Graphify before/after study — running log, Phase 0 — Orientation & baseline setup (2026-08-03) (+4 more)
+### Community 100 - "Graphify before/after study — running log"
+Cohesion: 0.14
+Nodes (13): Design outcome, Design outcome, Develop step — measured, Develop step — measured, Explore step (architect phase) — measured, Explore step (architect phase) — measured, Graphify before/after study — running log, Phase 0 — Orientation & baseline setup (2026-08-03) (+5 more)
 
 ### Community 101 - "carpool.tsx"
 Cohesion: 0.23
@@ -719,13 +724,13 @@ Nodes (12): compilerOptions, baseUrl, paths, strict, extends, include, expo-env.
 Cohesion: 0.23
 Nodes (6): loadConfiguration(), Env, envSchema, AppDataSource, config, main()
 
-### Community 105 - "GamificationController"
-Cohesion: 0.24
-Nodes (7): GamificationController, ApiBearerAuth, ApiOperation, ApiTags, Controller, Get, UseGuards
+### Community 105 - "RiderProfileDto"
+Cohesion: 0.22
+Nodes (8): RiderProfileDto, ApiProperty, ApiPropertyOptional, IsEnum, IsOptional, IsString, MaxLength, MinLength
 
-### Community 106 - "LivenessProvider"
-Cohesion: 0.17
-Nodes (6): Inject, InjectRepository, LivenessProvider, PutObjectInput, StorageProvider, NoopStorageProvider
+### Community 106 - "UpdateTicketDto"
+Cohesion: 0.29
+Nodes (6): ApiPropertyOptional, IsEnum, IsOptional, IsString, MaxLength, UpdateTicketDto
 
 ### Community 107 - "Architecture"
 Cohesion: 0.17
@@ -755,13 +760,17 @@ Nodes (10): main, name, private, scripts, android, eas-build-post-install, ios, 
 Cohesion: 0.20
 Nodes (8): ApiExcludeEndpoint, PaymentsController, ApiTags, Controller, HttpCode, Post, Headers, Req
 
+### Community 114 - "NotificationsService"
+Cohesion: 0.22
+Nodes (4): NotificationsService, Injectable, InjectRepository, InjectQueue
+
 ### Community 115 - "RealtimeGateway"
 Cohesion: 0.22
 Nodes (4): RealtimeGateway, Inject, WebSocketGateway, WebSocketServer
 
-### Community 116 - ".share"
-Cohesion: 0.29
-Nodes (5): ApiOperation, Get, HttpCode, Param, Post
+### Community 116 - "SafetyService"
+Cohesion: 0.15
+Nodes (12): SafetyService, Injectable, SharedTripController, TripShareController, ApiBearerAuth, ApiOperation, ApiTags, Controller (+4 more)
 
 ### Community 117 - "Build Graph"
 Cohesion: 0.20
@@ -771,9 +780,9 @@ Nodes (10): Build Graph, Capabilities & dependency edges, Explicitly out of scop
 Cohesion: 0.20
 Nodes (9): build, builder, dockerfilePath, deploy, healthcheckPath, healthcheckTimeout, restartPolicyMaxRetries, restartPolicyType (+1 more)
 
-### Community 119 - "rider/src/theme/tokens.ts"
-Cohesion: 0.33
-Nodes (7): Addresses(), iconFor(), LABELS, titleCase(), PlaceSuggestion, AddressAutocomplete(), Props
+### Community 119 - "CreateAdminDto"
+Cohesion: 0.29
+Nodes (7): CreateAdminDto, ApiProperty, IsEmail, IsEnum, IsString, Matches, MinLength
 
 ### Community 120 - "rider/context/README.md"
 Cohesion: 0.27
@@ -787,13 +796,13 @@ Nodes (8): AdminsPage(), EMPTY, genPassword(), Input(), ROLES, Select(), AdminAc
 Cohesion: 0.22
 Nodes (9): CreateDedicatedDriverDto, ApiProperty, ApiPropertyOptional, IsEmail, IsEnum, IsOptional, IsString, Matches (+1 more)
 
-### Community 123 - "payments.service.ts"
-Cohesion: 0.22
-Nodes (7): CommissionService, Injectable, PostLeg, isCashlike(), RideCancellation, RideSettlement, SettlementResult
+### Community 123 - "RegisterDeviceDto"
+Cohesion: 0.29
+Nodes (6): RegisterDeviceDto, ApiProperty, ApiPropertyOptional, IsOptional, IsString, IsIn
 
-### Community 124 - "WalletService"
-Cohesion: 0.28
-Nodes (3): toNaira(), Injectable, WalletService
+### Community 124 - "rider/app/support.tsx"
+Cohesion: 0.33
+Nodes (5): CATEGORIES, label(), STATUS_COLOR, SupportScreen(), ticketsApi
 
 ### Community 125 - "exclude"
 Cohesion: 0.22
@@ -836,16 +845,16 @@ Cohesion: 0.25
 Nodes (8): API & socket wiring, App shell & gate, Background location (`src/location/tracker.ts`), Dispatch architecture (the core driver loop), Driver App Context, Files, How the driver app differs from rider, Stack
 
 ### Community 136 - "rider/app/(tabs)/_layout.tsx"
-Cohesion: 0.36
-Nodes (5): TabsLayout(), notificationsApi, DotTabBar(), TABS, registerForPush()
+Cohesion: 0.43
+Nodes (4): TabsLayout(), DotTabBar(), TABS, registerForPush()
 
 ### Community 137 - "live/page.tsx"
 Cohesion: 0.33
 Nodes (6): AVAIL_TONE, BOUNDS, clamp01(), LiveRidesPage(), Row, FleetDriver
 
-### Community 138 - "public.decorator.ts"
-Cohesion: 0.33
-Nodes (3): IS_PUBLIC_KEY, JwtAuthGuard, Injectable
+### Community 138 - "Public"
+Cohesion: 0.17
+Nodes (8): AppController, ApiTags, Controller, Get, IS_PUBLIC_KEY, Public(), JwtAuthGuard, Injectable
 
 ### Community 139 - "LoginDto"
 Cohesion: 0.29
@@ -859,17 +868,17 @@ Nodes (7): EmergencyContactDto, ApiProperty, ApiPropertyOptional, IsOptional, Is
 Cohesion: 0.29
 Nodes (6): PanicDto, ApiProperty, ApiPropertyOptional, IsNumber, IsOptional, IsUUID
 
-### Community 142 - "TripShareController"
+### Community 142 - "AdminCancelRideDto"
 Cohesion: 0.33
-Nodes (5): SharedTripController, TripShareController, ApiBearerAuth, ApiTags, Controller
+Nodes (5): AdminCancelRideDto, ApiPropertyOptional, IsOptional, IsString, MaxLength
 
 ### Community 143 - "Technical Grounding (the trailer)"
 Cohesion: 0.29
 Nodes (7): Build status at a glance, Current priorities, Key domain concepts (the vocabulary), Out of scope (current phase), Products, Roadmap (post-MVP), Technical Grounding (the trailer)
 
-### Community 144 - "driver/app/rewards.tsx"
+### Community 144 - "SendOtpDto"
 Cohesion: 0.33
-Nodes (6): BADGE_META, MEDAL, naira(), RewardsScreen(), gamificationApi, referralsApi
+Nodes (6): SendOtpDto, ApiProperty, ApiPropertyOptional, IsEnum, IsOptional, Matches
 
 ### Community 145 - "driver/app/support.tsx"
 Cohesion: 0.33
@@ -879,9 +888,9 @@ Nodes (5): CATEGORIES, label(), STATUS_COLOR, SupportScreen(), ticketsApi
 Cohesion: 0.29
 Nodes (7): devDependencies, @babel/core, @types/react, typescript, @babel/core, @types/react, typescript
 
-### Community 147 - "rider/app/shuttle.tsx"
-Cohesion: 0.38
-Nodes (5): naira(), ShuttleScreen(), when(), shuttleApi, ShuttleStop
+### Community 147 - "GoogleAuthService"
+Cohesion: 0.40
+Nodes (3): GoogleAuthService, Inject, Injectable
 
 ### Community 148 - "wallet.tsx"
 Cohesion: 0.38
@@ -895,13 +904,13 @@ Nodes (5): Agent skills, Authority, Context files (read before you build), Kari 
 Cohesion: 0.33
 Nodes (5): collection, compilerOptions, deleteOutDir, $schema, sourceRoot
 
-### Community 152 - "ForgotPasswordDto"
-Cohesion: 0.33
-Nodes (6): ForgotPasswordDto, ApiProperty, ApiPropertyOptional, IsEnum, IsOptional, Matches
+### Community 152 - "SignUpDto"
+Cohesion: 0.12
+Nodes (15): ForgotPasswordDto, ApiProperty, ApiPropertyOptional, IsEnum, IsOptional, Matches, SignUpDto, ApiProperty (+7 more)
 
-### Community 153 - "IdentityProvider"
-Cohesion: 0.33
-Nodes (3): IdentityProvider, NinVerificationResult, NoopIdentityProvider
+### Community 153 - "JwtStrategy"
+Cohesion: 0.40
+Nodes (3): JwtStrategy, Inject, Injectable
 
 ### Community 154 - "Deploying the Kari backend (Railway)"
 Cohesion: 0.33
@@ -987,33 +996,53 @@ Nodes (4): plugins, expo-font, expo-router, expo-secure-store
 Cohesion: 0.50
 Nodes (4): splash, backgroundColor, image, resizeMode
 
-### Community 179 - "QueueModule"
-Cohesion: 0.67
-Nodes (3): QueueModule, Global, Module
+### Community 179 - "queue.module.ts"
+Cohesion: 0.21
+Nodes (6): bootstrap(), QueueModule, Global, Module, RedisIoAdapter, redisConnectionFromUrl()
 
-### Community 180 - "RedisModule"
+### Community 180 - "pricing.service.ts"
+Cohesion: 0.20
+Nodes (8): REDIS_CLIENT, RedisModule, redisProvider, Global, Module, Fare, Quote, TIER_MULTIPLIER
+
+### Community 186 - "CancelRideDto"
+Cohesion: 0.40
+Nodes (4): CancelRideDto, ApiPropertyOptional, IsOptional, IsString
+
+### Community 206 - "CounterOfferDto"
+Cohesion: 0.40
+Nodes (4): CounterOfferDto, ApiProperty, IsInt, IsPositive
+
+### Community 238 - "trips.tsx"
 Cohesion: 0.67
-Nodes (3): RedisModule, Global, Module
+Nodes (3): naira(), Trips(), ridesApi
+
+### Community 277 - "ConfigModule"
+Cohesion: 0.67
+Nodes (3): ConfigModule, Global, Module
+
+### Community 278 - "ProvidersModule"
+Cohesion: 0.67
+Nodes (3): ProvidersModule, Global, Module
 
 ## Knowledge Gaps
-- **1056 isolated node(s):** `ROLES`, `EMPTY`, `ACTIONS`, `EMPTY`, `BOUNDS` (+1051 more)
+- **1057 isolated node(s):** `Authority`, `Context files (read before you build)`, `Agent skills`, `Standing instructions`, `graphify` (+1052 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **80 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **79 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Index()` connect `Column` to `rides.service.ts`, `notifications.module.ts`, `RiderProfile`, `LedgerService`, `CreateTicketDto`, `audit.interceptor.ts`, `DriverService`, `BaseEntity`, `errorMessage`, `GamificationService`, `admin.service.ts`?**
-  _High betweenness centrality (0.138) - this node is a cross-community bridge._
-- **Why does `colors` connect `colors` to `errorMessage`, `rider/src/api/endpoints.ts`, `rider/app/(tabs)/_layout.tsx`, `Screen`, `driver/src/api/endpoints.ts`, `driver/app/rewards.tsx`, `driver/app/support.tsx`, `rider/app/shuttle.tsx`, `errorMessage`, `wallet.tsx`, `subscription-new.tsx`, `ride/[id].tsx`, `mobile-core/src/index.ts`, `ride.tsx`, `rider/src/stores/auth.store.ts`, `driver/src/stores/auth.store.ts`, `driver/app/(tabs)/home.tsx`, `carpool.tsx`, `rider/src/theme/tokens.ts`, `earnings.tsx`?**
-  _High betweenness centrality (0.087) - this node is a cross-community bridge._
-- **Why does `Column` connect `Column` to `rides.service.ts`, `notifications.module.ts`, `RiderProfile`, `LedgerService`, `CreateTicketDto`, `audit.interceptor.ts`, `live/page.tsx`, `admin-api.ts`, `tickets/page.tsx`, `DriverService`, `cn`, `shuttle/page.tsx`, `BaseEntity`, `admin.service.ts`, `GamificationService`, `admins/page.tsx`?**
-  _High betweenness centrality (0.064) - this node is a cross-community bridge._
-- **What connects `ROLES`, `EMPTY`, `ACTIONS` to the rest of the system?**
-  _1056 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `Index()` connect `Index` to `rides.service.ts`, `RiderProfile`, `SubscriptionsService`, `CreateTicketDto`, `audit.interceptor.ts`, `DriverService`, `BaseEntity`, `app.module.ts`, `errorMessage`, `LedgerService`, `admin.service.ts`?**
+  _High betweenness centrality (0.152) - this node is a cross-community bridge._
+- **Why does `colors` connect `colors` to `errorMessage`, `rider/src/api/endpoints.ts`, `rider/app/(tabs)/_layout.tsx`, `Screen`, `driver/src/api/endpoints.ts`, `driver/app/support.tsx`, `errorMessage`, `wallet.tsx`, `subscription-new.tsx`, `ride.tsx`, `ride/[id].tsx`, `IncomingRequest.tsx`, `rider/src/theme/tokens.ts`, `driver/src/stores/auth.store.ts`, `driver/app/(tabs)/home.tsx`, `driver/app/(auth)/verify-method.tsx`, `carpool.tsx`, `trips.tsx`, `rider/app/support.tsx`, `earnings.tsx`?**
+  _High betweenness centrality (0.097) - this node is a cross-community bridge._
+- **Why does `Column` connect `BaseEntity` to `rides.service.ts`, `Index`, `RiderProfile`, `SubscriptionsService`, `CreateTicketDto`, `audit.interceptor.ts`, `live/page.tsx`, `admin-api.ts`, `tickets/page.tsx`, `DriverService`, `cn`, `shuttle/page.tsx`, `app.module.ts`, `LedgerService`, `admin.service.ts`, `admins/page.tsx`?**
+  _High betweenness centrality (0.072) - this node is a cross-community bridge._
+- **What connects `Authority`, `Context files (read before you build)`, `Agent skills` to the rest of the system?**
+  _1057 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `RidesService` be split into smaller, more focused modules?**
   _Cohesion score 0.062004662004662 - nodes in this community are weakly interconnected._
 - **Should `errorMessage` be split into smaller, more focused modules?**
-  _Cohesion score 0.12408163265306123 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1332099907493062 - nodes in this community are weakly interconnected._
 - **Should `RiderProfile` be split into smaller, more focused modules?**
-  _Cohesion score 0.06717687074829932 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08717948717948718 - nodes in this community are weakly interconnected._
