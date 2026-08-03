@@ -71,6 +71,10 @@ export class DriverProfile extends BaseEntity {
   @Column({ type: 'varchar', length: 16, default: DriverAvailability.OFFLINE })
   availability: DriverAvailability;
 
+  // Carpool opt-in (freelance only) — carpool dispatch skips drivers with this off
+  @Column({ type: 'boolean', default: false })
+  carpoolMode: boolean;
+
   @Column({ type: 'boolean', default: false })
   onboardingComplete: boolean;
 

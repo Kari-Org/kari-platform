@@ -27,6 +27,16 @@ must never drift from what was decided.
 
 ## Entries
 
+### feature · backend+driver · Carpool v2: driver carpool-mode toggle (spec 0001) — 2026-08-03
+**What:** `carpoolMode` on `driver_profiles`; `POST /availability/carpool-mode` (403 for dedicated);
+`findCandidates` gains an `opts` eligibility filter (`requireCarpoolMode`, `driverType`) with a widened
+GEO over-fetch window; carpool dispatch now targets only opted-in freelance drivers; driver home tab
+gets the opt-in switch (freelance only, optimistic, hydrated from `/drivers/me`).
+**Notes:** Runtime-verified AC-1–AC-6 against a live backend (dispatch counts observed); driver-app UI
+device pass pending per convention. Also enforces the first piece of the ride-type-matrix eligibility
+rule in code — solo dispatch still has no driverType filter (follow-up in spec 0001). Part of the
+Graphify before/after study (docs/graphify-study/log.md).
+
 ### docs · context · Context system rebuilt around foundation.md — 2026-07-30
 **What:** Derived `foundation.md` (v1, converged) from the codebase; added `build-graph.md` +
 `progress-log.md`; retired `progress-tracker.md` (gaps → build-graph, history → below); repointed all

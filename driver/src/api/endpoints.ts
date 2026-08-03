@@ -111,6 +111,8 @@ export const availabilityApi = {
   location: (body: { lat: number; lng: number }) =>
     apiFetch<{ ok: boolean }>('/availability/location', { method: 'POST', body }),
   offline: () => apiFetch<{ availability: string }>('/availability/offline', { method: 'POST' }),
+  carpoolMode: (body: { enabled: boolean }) =>
+    apiFetch<{ carpoolMode: boolean }>('/availability/carpool-mode', { method: 'POST', body }),
 };
 
 export const ridesApi = {

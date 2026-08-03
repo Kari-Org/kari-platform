@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { DriverAvailability } from '@kari/types';
+import { DriverAvailability, DriverType } from '@kari/types';
 import { DriverProfile } from './entities/driver-profile.entity';
 import { Vehicle } from './entities/vehicle.entity';
 
@@ -38,6 +38,17 @@ export class DriverService {
 
   async setAvailability(userId: string, availability: DriverAvailability): Promise<void> {
     await this.profiles.update({ userId }, { availability });
+  }
+
+  /** Carpool opt-in — freelance only; dedicated drivers never serve carpools (spec 0001). */
+  async setCarpoolMode(userId: string, enabled: boolean): Promise<boolean> {
+    const profile = await this.getOrCreate(userId);
+    if (profile.driverType !== DriverType.FREELANCE) {
+      throw new ForbiddenException('Carpool mode is only available to freelance drivers');
+    }
+    profile.carpoolMode = enabled;
+    await this.profiles.save(profile);
+    return profile.carpoolMode;
   }
 
   /** Loads profiles (with vehicle, eager) for a set of user ids — used by matching. */

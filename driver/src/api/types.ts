@@ -71,6 +71,7 @@ export interface DriverProfile {
   spotifyInstalled: boolean;
   appleMusicInstalled: boolean;
   availability: DriverAvailability;
+  carpoolMode: boolean;
   onboardingComplete: boolean;
   ratingAvg: number;
   ratingCount: number;

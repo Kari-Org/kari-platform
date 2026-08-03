@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { DriverAvailability, RideStatus } from '@kari/types';
+import { DriverAvailability, DriverType, RideStatus } from '@kari/types';
 import { colors } from '@kari/mobile-core';
 import { availabilityApi, driversApi, ridesApi, walletApi } from '@/api/endpoints';
 import { errorMessage } from '@/lib/error';
@@ -24,6 +24,7 @@ const ACTIVE: RideStatus[] = [
 
 export default function Home() {
   const router = useRouter();
+  const qc = useQueryClient();
   const online = useAvailabilityStore((s) => s.online);
   const setOnline = useAvailabilityStore((s) => s.setOnline);
   const here = useAvailabilityStore((s) => s.lastFix);
@@ -77,6 +78,21 @@ export default function Home() {
       Alert.alert('Could not go online', errorMessage(e));
     } finally {
       setBusy(false);
+    }
+  };
+
+  // Carpool opt-in: server-backed (hydrated from /drivers/me), optimistic flip with rollback.
+  const toggleCarpoolMode = async (enabled: boolean) => {
+    const previous = me;
+    if (previous) {
+      qc.setQueryData(['driver-me'], { ...previous, carpoolMode: enabled });
+    }
+    try {
+      await availabilityApi.carpoolMode({ enabled });
+      void qc.invalidateQueries({ queryKey: ['driver-me'] });
+    } catch (e) {
+      if (previous) qc.setQueryData(['driver-me'], previous);
+      Alert.alert('Could not update carpool mode', errorMessage(e));
     }
   };
 
@@ -165,6 +181,26 @@ export default function Home() {
                 <Text className="font-psemibold text-bg">{busy ? 'Going online…' : 'Go online'}</Text>
               </Pressable>
             </>
+          )}
+
+          {/* carpool opt-in — freelance drivers only (spec 0001) */}
+          {me?.driverType === DriverType.FREELANCE && (
+            <View className="mt-4 flex-row items-center border-t border-hairline pt-4">
+              <Ionicons name="people" size={18} color={me.carpoolMode ? colors.brand : colors.subtle} />
+              <View className="ml-3 flex-1">
+                <Text className="font-pmedium text-sm text-white">Accept carpool requests</Text>
+                <Text className="font-sans text-xs text-subtle">
+                  {me.carpoolMode ? 'Shared trips can be offered to you' : 'You won’t get shared-trip offers'}
+                </Text>
+              </View>
+              <Switch
+                value={me.carpoolMode}
+                onValueChange={toggleCarpoolMode}
+                trackColor={{ false: colors.hairline, true: colors.brand }}
+                thumbColor={colors.text}
+                ios_backgroundColor={colors.hairline}
+              />
+            </View>
           )}
         </View>
       </SafeAreaView>

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Redis } from 'ioredis';
-import { BehaviorPreference, type CarCategory, DriverAvailability } from '@kari/types';
+import { BehaviorPreference, type CarCategory, DriverAvailability, type DriverType } from '@kari/types';
 import { DriverService } from '../driver/driver.service';
 import { REDIS_CLIENT } from '../redis/redis.constants';
 
@@ -57,7 +57,13 @@ export class MatchingService {
     preferredDriverId: string | null = null,
     radiusMeters = DEFAULT_RADIUS_METERS,
     limit = DEFAULT_LIMIT,
+    opts: { requireCarpoolMode?: boolean; driverType?: DriverType } = {},
   ): Promise<string[]> {
+    // Selective filters (carpool mode / driver type) shrink the eligible pool, so
+    // widen the over-fetch window when they're active (spec 0001) — a fixed window
+    // could return zero eligible drivers while eligible ones sit just outside it.
+    const hasExtraFilters = opts.requireCarpoolMode || opts.driverType !== undefined;
+    const overFetch = limit * (hasExtraFilters ? 6 : 3);
     const nearby = (await this.redis.call(
       'GEOSEARCH',
       GEO_KEY,
@@ -69,7 +75,7 @@ export class MatchingService {
       'm',
       'ASC',
       'COUNT',
-      String(limit * 3),
+      String(overFetch),
     )) as string[];
 
     if (!nearby || nearby.length === 0) {
@@ -83,6 +89,12 @@ export class MatchingService {
     for (const id of nearby) {
       const p = byId.get(id);
       if (!p || !p.onboardingComplete || p.availability !== DriverAvailability.ONLINE) {
+        continue;
+      }
+      if (opts.driverType !== undefined && p.driverType !== opts.driverType) {
+        continue;
+      }
+      if (opts.requireCarpoolMode && !p.carpoolMode) {
         continue;
       }
       if (!p.vehicle || p.vehicle.category !== category) {

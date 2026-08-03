@@ -5,6 +5,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { DriverService } from '../driver/driver.service';
+import { CarpoolModeDto } from './dto/carpool-mode.dto';
 import { DriverLocationDto } from './dto/driver-location.dto';
 import { MatchingService } from './matching.service';
 
@@ -14,7 +16,10 @@ import { MatchingService } from './matching.service';
 @Roles(UserRole.DRIVER)
 @Controller('availability')
 export class AvailabilityController {
-  constructor(private readonly matching: MatchingService) {}
+  constructor(
+    private readonly matching: MatchingService,
+    private readonly drivers: DriverService,
+  ) {}
 
   @HttpCode(200)
   @Post('online')
@@ -41,5 +46,14 @@ export class AvailabilityController {
   async offline(@CurrentUser('id') id: string) {
     await this.matching.setOffline(id);
     return { availability: 'OFFLINE' };
+  }
+
+  @HttpCode(200)
+  @Post('carpool-mode')
+  @ApiOperation({ summary: 'Opt in/out of carpool requests (freelance only)' })
+  @ResponseMessage('Carpool mode updated')
+  async carpoolMode(@CurrentUser('id') id: string, @Body() dto: CarpoolModeDto) {
+    const carpoolMode = await this.drivers.setCarpoolMode(id, dto.enabled);
+    return { carpoolMode };
   }
 }

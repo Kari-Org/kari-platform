@@ -11,6 +11,7 @@ import { DataSource, type EntityManager, OptimisticLockVersionMismatchError, Rep
 import {
   BehaviorPreference,
   CarpoolStatus,
+  DriverType,
   KycStatus,
   LedgerDirection,
   SystemAccount,
@@ -110,12 +111,17 @@ export class CarpoolsService {
       }),
     );
 
-    // Dispatch to nearby drivers (reuse ride matching).
+    // Dispatch to nearby drivers (reuse ride matching). Carpools only go to
+    // freelance drivers who opted in to carpool mode (spec 0001, AC-2).
     const candidates = await this.matching.findCandidates(
       quote.pickup.lat,
       quote.pickup.lng,
       dto.carCategory as Carpool['carCategory'],
       BehaviorPreference.NO_PREFERENCE,
+      null,
+      undefined,
+      undefined,
+      { requireCarpoolMode: true, driverType: DriverType.FREELANCE },
     );
     const offer = await this.view(carpool.id);
     for (const driverId of candidates) {
