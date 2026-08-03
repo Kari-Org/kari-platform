@@ -36,3 +36,7 @@ coverage/
 
 # expo local state
 .expo/
+
+# Graphify derived artifacts (advisory; not source of truth)
+graphify-out/graph.json
+graphify-out/graph.html

@@ -25,6 +25,10 @@ Per-product deep dives: `backend/context/`, `rider/context/`, `driver/context/`,
 `web/context/` (each has code-verified catalogs; per-app `ARCHITECTURE.md` files are design intent
 and can lag the code).
 
+`graphify-out/` is a DERIVED, ADVISORY code graph (symbols/files/call edges, rebuilt post-commit) —
+use it to *find* code, never to *decide*; `context/foundation.md` wins on conflict, and it is NOT
+`context/build-graph.md` (that is the capability plan, a different altitude).
+
 ## Agent skills
 Skills installed for this build (open a skill's `SKILL.md` on demand; paths are `.claude/skills/<name>/`
 or `.agents/skills/<name>/`, user- or project-level):

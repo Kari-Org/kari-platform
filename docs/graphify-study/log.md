@@ -158,3 +158,37 @@ Runtime evidence (real admin login; dedicated driver onboarded through the real 
 **B2 slice total: ~26 files touched/read across 4 workspaces (3 changed) to change 11. The two
 code-contradictions the cross-check caught (module wiring, seeder behavior) are the strongest baseline
 evidence: manual explore missed real dependency edges that had to be recovered by a second full read.**
+
+---
+
+## Phase 1 — Graphify integration (2026-08-03)
+
+**Commands (verified against the README first — worth doing: the package is `graphifyy`, double-y):**
+- `brew install uv` (machine had no uv/pipx) → `uv tool install graphifyy` → later
+  `uv tool install --force "graphifyy[mcp]"` because the HTTP MCP transport needs an extra
+  (`mcp + starlette + uvicorn`) the base install omits. **Friction logged: two installs.**
+- `graphify install --platform claude` (registers the `/graphify` skill — it hot-registered into the
+  running session), `graphify claude install` (always-use directive), `graphify hook install`
+  (post-commit + post-checkout hooks + a git merge driver for graph.json).
+
+**Index build (`graphify update .`):** 466 files → **3,525 nodes, 7,072 edges, 277 communities in
+6.9 seconds**, 100% AST-extracted, **token cost 0** — the "LLM cost to index" worry was wrong for code
+(LLM is only used for docs/community-labeling, both optional). It also indexed `context/*.md` and
+`docs/specs/*.md` as first-class nodes. 4 config files produced zero nodes (known issue, logged by the
+tool itself).
+
+**MCP server:** `graphify-mcp graphify-out/graph.json --transport http --port 8199` exposes
+`query_graph, get_node, get_neighbors, get_community, god_nodes, graph_stats, shortest_path` (+ PR
+tools). Verified over HTTP. In-session queries also available via the identical CLI
+(`graphify query/affected/path/explain/god-nodes`).
+
+**Guardrails:** `graph.json`/`graph.html` gitignored; one fence added to `AGENTS.md` — derived,
+advisory, foundation wins, and explicitly NOT `context/build-graph.md` (different altitude).
+
+**Sanity replay of the two baseline near-misses:**
+- B1 ("who calls `findCandidates`?"): `graphify query` returned BOTH callers as explicit edges with
+  file:line — `carpools.service.ts:L116` and `rides.service.ts:L192`. In the baseline this took a
+  deliberate late grep that almost didn't happen.
+- First-try friction: bare symbol names (`affected "findCandidates"`) failed with "no unique node
+  match" — node labels are qualified (`.findCandidates()`); natural-language `query` works better than
+  exact-match `affected` until you know the label format.
