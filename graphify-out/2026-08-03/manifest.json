@@ -2125,8 +2125,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1785792454.2260525,
-    "ast_hash": "13aa0c77e9dcc169268eba101c263c09",
+    "mtime": 1785443700.1443367,
+    "ast_hash": "d9922cd3fb0cdf101289df47ffad332d",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -2265,8 +2265,8 @@
     "semantic_hash": ""
   },
   "docs/graphify-study/log.md": {
-    "mtime": 1785792543.294565,
-    "ast_hash": "58b7ca4add704b274165101a3b68d87f",
+    "mtime": 1785792307.4056063,
+    "ast_hash": "11798c2742dbe0286b6e231f742deb04",
     "semantic_hash": ""
   },
   "docs/specs/0001-driver-carpool-mode-toggle.md": {

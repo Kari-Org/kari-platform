@@ -74,7 +74,7 @@ export default function CarpoolsScreen() {
                 </Text>
                 <Text className="font-sans text-xs text-subtle">
                   {active.status.replace('_', ' ')} · {active.seatsTaken}/{active.maxSeats} seats · your share {naira(
-                    active.members.find((m) => m.isCreator && m.riderId === active.creatorId)?.shareAmount ?? Math.round(active.totalFare / Math.max(active.seatsTaken, 1)),
+                    active.members.find((m) => m.riderId === profile?.userId)?.shareAmount ?? 0,
                   )}
                 </Text>
               </View>
@@ -97,7 +97,7 @@ export default function CarpoolsScreen() {
                 → {c.dropoffAddress ?? 'Destination'}
               </Text>
               <Text className="mt-0.5 font-sans text-xs text-subtle">
-                {c.seatsAvailable} seat{c.seatsAvailable === 1 ? '' : 's'} left · ~{naira(Math.round(c.totalFare / (c.seatsTaken + 1)))} each
+                {c.seatsAvailable} seat{c.seatsAvailable === 1 ? '' : 's'} left · you&apos;d pay {naira(c.projectedShare ?? c.totalFare)}
               </Text>
               <View className="mt-3 self-start">
                 <Pressable

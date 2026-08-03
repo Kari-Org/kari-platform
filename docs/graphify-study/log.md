@@ -192,3 +192,59 @@ advisory, foundation wins, and explicitly NOT `context/build-graph.md` (differen
 - First-try friction: bare symbol names (`affected "findCandidates"`) failed with "no unique node
   match" — node labels are qualified (`.findCandidates()`); natural-language `query` works better than
   exact-match `affected` until you know the label format.
+
+---
+
+## Slice A1 — Carpool v2: discounted ride-share fares (AFTER, graph-first)
+
+### Explore step (architect phase) — measured
+
+**Contamination note (honest):** `carpools.service.ts` was fully read during B1 this same session, so
+the backend half of this slice cost me nothing *this time* — but that's session memory, not the graph.
+The clean comparison is the RIDER side, untouched all session.
+
+**Graph queries run (6 total, ~40s wall):**
+1. `query "where is carpool shareAmount computed…"` — **WEAK**: generic terms (backend, Rider) seeded a
+   394-node BFS of noise. Lesson: NL queries need distinctive anchors.
+2. `explain "recompute"` — **CRISP**: the full caller set of the split function in one shot —
+   `.join()` L156, `.leave()` L181, nothing else. This is the entire blast radius of the pricing
+   change, enumerated mechanically. Baseline equivalent: reading the whole 300-line service.
+3. `query` for rider carpool surfaces (NL) — weak again.
+4. `explain "carpoolsApi"` → ambiguous (2 matches, driver + rider) → **the disambiguation error itself
+   was informative** (told me the driver app also has a carpoolsApi).
+5. `explain "rider_src_api_endpoints_carpoolsapi"` — **CRISP + the money result**: every rider-side
+   consumer enumerated: `carpools.tsx`, `carpool/[id].tsx`, **and `book.tsx`** — the third one I would
+   plausibly have missed by name-based file guessing (booking creates carpools). One query replaced
+   opening/grepping the rider app's 76 files.
+6. Targeted grep over exactly those 3 files (graph-directed) → found the headline defect: `carpools.tsx`
+   **duplicates the equal-split formula inline in 2 places** — client-side drift the slice must kill.
+   The graph pointed at the files; the *judgment* that inline math = duplicated business rule is still
+   human/model work. Honest boundary of the tool.
+
+**Files opened: 3 (all graph-named). Baseline B1 for the same phase: 6 rounds, 5 full reads + 9 peeks
+across guessed locations.** Explore cost roughly halved, and the miss risk (book.tsx) went to zero for
+the enumerable part.
+
+### Design outcome
+
+Spec: `docs/specs/0003-carpool-discounted-rideshare-fares.md` (7 ACs) — occupancy multiplier table
+(1.0/0.8/0.7/0.65), server-computed `projectedShare`, client split-math removal. Cross-check caught 6
+more issues (untestable AC-7 remainder clause, CANCELLED display, commission-base rise, settle/leave
+race inheritance, wrong-keyed share lookup, unpinned label strings) — all folded in.
+
+### Develop + verify — measured
+
+- **Develop re-exploration: 3 tool rounds** (rider type shape, the two edit sites, the "how does this
+  screen know who I am" lookup — `rider-me` vs `auth-me`, an in-file fact no graph carries). Compare
+  B1 develop's 3 reads / B2's ~9: A1 is the lightest so far, partly graph, partly session memory.
+- **Files changed:** 5 across 2 workspaces (backend: carpools.service · rider: types, carpools.tsx,
+  carpool/[id].tsx — plus a mid-build improvement: `collectedTotal` moved server-side when I caught
+  myself writing a client-side `reduce` over money).
+- **Verify: PASS (calibrated).** Live evidence: alone=₦2250 full fare; n=2 both ₦1800 (80%),
+  projected ₦1575 (70%); leave→₦2250; settle posted 360000 kobo = 2×180000 debits + 288000 driver +
+  72000 revenue; **Σ(all wallets)=0**; `grep 'totalFare /' rider/` clean.
+- **Ops friction worth logging:** a zombie nest process on :3000 nearly had me verifying against stale
+  code (expired-token 401s masked it at first). Runtime verification caught the environment lie;
+  no graph would have.
+
+_(A2 follows)_

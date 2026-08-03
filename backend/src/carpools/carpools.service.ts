@@ -30,6 +30,16 @@ export const CARPOOL_MAX_SEATS = 4;
 const JOINABLE = [CarpoolStatus.OPEN, CarpoolStatus.MATCHED];
 
 /**
+ * Discounted ride-share pricing (spec 0003): each rider pays their OWN fare,
+ * discounted by occupancy — full fare when alone. Invariant: n × multiplier(n) ≥ 1,
+ * so the collected total never falls below the solo fare.
+ */
+const CARPOOL_OCCUPANCY_MULTIPLIERS: Record<number, number> = { 1: 1.0, 2: 0.8, 3: 0.7, 4: 0.65 };
+function occupancyMultiplier(n: number): number {
+  return CARPOOL_OCCUPANCY_MULTIPLIERS[Math.min(Math.max(n, 1), CARPOOL_MAX_SEATS)];
+}
+
+/**
  * Carpooling: NIN-verified riders form a shared ride and split the fare. Seat
  * claims are optimistic-locked (first wins the last seat); the total fare is
  * settled across all members in a single balanced ledger transaction on
@@ -183,10 +193,13 @@ export class CarpoolsService {
     return this.view(carpoolId);
   }
 
-  /** Recompute every active member's share = totalFare / member-count. */
+  /**
+   * Recompute every active member's share = their OWN discounted fare:
+   * totalFare × occupancyMultiplier(n). Alone (n=1) that's the full fare (spec 0003).
+   */
   private async recompute(m: EntityManager, carpool: Carpool): Promise<void> {
     const active = await m.find(CarpoolMember, { where: { carpoolId: carpool.id, status: 'JOINED' } });
-    const share = Math.round(carpool.totalFare / Math.max(active.length, 1));
+    const share = Math.round(carpool.totalFare * occupancyMultiplier(active.length));
     for (const mem of active) {
       mem.shareAmount = share;
       await m.save(mem);
@@ -218,27 +231,31 @@ export class CarpoolsService {
     return this.view(carpoolId);
   }
 
-  /** Settle the whole fare across members in one balanced transaction. */
+  /**
+   * Settle: charge each active member exactly their own shareAmount (spec 0003).
+   * All active shares are equal by construction, so the kobo legs sum exactly —
+   * no remainder distribution needed. Commission is taken on the collected total.
+   */
   private async settle(cp: Carpool): Promise<void> {
     if (!cp.driverId) return;
     const active = await this.members.find({ where: { carpoolId: cp.id, status: 'JOINED' } });
     const n = active.length;
-    const totalKobo = cp.totalFare * 100;
-    if (n === 0 || totalKobo <= 0) return;
+    if (n === 0) return;
 
-    const rateBps = await this.commission.resolveRateBps(cp.driverId);
-    const commission = Math.round((totalKobo * rateBps) / 10_000);
-    const driverNet = totalKobo - commission;
-
-    // Distribute the total across members so the legs sum exactly to totalKobo.
-    const base = Math.floor(totalKobo / n);
-    let remainder = totalKobo - base * n;
     const legs = [] as Array<{ walletId: string; direction: LedgerDirection; amount: number }>;
+    let collectedKobo = 0;
     for (const mem of active) {
-      const amount = base + (remainder-- > 0 ? 1 : 0);
+      const amount = mem.shareAmount * 100;
+      collectedKobo += amount;
       const wallet = await this.ledger.getOrCreateUserWallet(mem.riderId);
       legs.push({ walletId: wallet.id, direction: LedgerDirection.DEBIT, amount });
     }
+    if (collectedKobo <= 0) return;
+
+    const rateBps = await this.commission.resolveRateBps(cp.driverId);
+    const commission = Math.round((collectedKobo * rateBps) / 10_000);
+    const driverNet = collectedKobo - commission;
+
     const driverWallet = await this.ledger.getOrCreateUserWallet(cp.driverId);
     const revenue = await this.ledger.systemWallet(SystemAccount.REVENUE);
     legs.push({ walletId: driverWallet.id, direction: LedgerDirection.CREDIT, amount: driverNet });
@@ -247,10 +264,10 @@ export class CarpoolsService {
     await this.ledger.post({
       type: TransactionType.RIDE_CHARGE,
       reference: `carpool_${cp.id}`,
-      amount: totalKobo,
+      amount: collectedKobo,
       legs,
       rideId: cp.id,
-      metadata: { members: n, rateBps, commission, driverNet },
+      metadata: { members: n, rateBps, commission, driverNet, soloFareKobo: cp.totalFare * 100 },
     });
   }
 
@@ -294,10 +311,17 @@ export class CarpoolsService {
   private async view(carpoolId: string) {
     const cp = await this.load(carpoolId);
     const members = await this.members.find({ where: { carpoolId, status: 'JOINED' }, order: { createdAt: 'ASC' } });
+    const seatsAvailable = cp.maxSeats - cp.seatsTaken;
     return {
       ...cp,
       members: members.map((m) => ({ riderId: m.riderId, shareAmount: m.shareAmount, isCreator: m.isCreator })),
-      seatsAvailable: cp.maxSeats - cp.seatsTaken,
+      seatsAvailable,
+      // Server-computed money figures — clients never compute fares (spec 0003).
+      collectedTotal: members.reduce((sum, m) => sum + m.shareAmount, 0),
+      projectedShare:
+        seatsAvailable > 0
+          ? Math.round(cp.totalFare * occupancyMultiplier(Math.min(members.length + 1, cp.maxSeats)))
+          : null,
     };
   }
 }

@@ -98,23 +98,25 @@ export default function CarpoolScreen() {
           </View>
         </View>
 
-        {/* Split */}
-        <View className="mt-4 rounded-card bg-card p-4">
-          <View className="flex-row justify-between">
-            <Text className="font-sans text-muted">Your share</Text>
-            <Text className="font-pbold text-lg text-brand">{naira(mine?.shareAmount)}</Text>
+        {/* Split — hidden when cancelled (nobody is charged, spec 0003) */}
+        {cp.status !== CarpoolStatus.CANCELLED && (
+          <View className="mt-4 rounded-card bg-card p-4">
+            <View className="flex-row justify-between">
+              <Text className="font-sans text-muted">You pay</Text>
+              <Text className="font-pbold text-lg text-brand">{naira(mine?.shareAmount)}</Text>
+            </View>
+            <View className="mt-1 flex-row justify-between">
+              <Text className="font-sans text-muted">Trip total (collected)</Text>
+              <Text className="font-psemibold text-white">{naira(cp.collectedTotal)}</Text>
+            </View>
+            <View className="mt-1 flex-row justify-between">
+              <Text className="font-sans text-muted">Seats filled</Text>
+              <Text className="font-psemibold text-white">
+                {cp.seatsTaken} / {cp.maxSeats}
+              </Text>
+            </View>
           </View>
-          <View className="mt-1 flex-row justify-between">
-            <Text className="font-sans text-muted">Whole trip</Text>
-            <Text className="font-psemibold text-white">{naira(cp.totalFare)}</Text>
-          </View>
-          <View className="mt-1 flex-row justify-between">
-            <Text className="font-sans text-muted">Seats filled</Text>
-            <Text className="font-psemibold text-white">
-              {cp.seatsTaken} / {cp.maxSeats}
-            </Text>
-          </View>
-        </View>
+        )}
 
         {/* Members */}
         <Text className="mb-2 mt-6 font-psemibold text-base text-white">Riders</Text>

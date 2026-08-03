@@ -27,6 +27,16 @@ must never drift from what was decided.
 
 ## Entries
 
+### feature · backend+rider · Carpool v2: discounted ride-share fares (spec 0003) — 2026-08-03
+**What:** Equal split replaced by occupancy-discounted own fares (1.0/0.8/0.7/0.65 of solo fare;
+alone = full). `recompute` prices per member; settlement charges stored shares with commission on the
+collected total (remainder loop deleted); view adds server-computed `projectedShare` + `collectedTotal`;
+rider app renders server values only (inline split math removed, share keyed by own membership,
+CANCELLED hides the split card).
+**Notes:** Runtime-verified end-to-end incl. ledger legs and Σ(wallets)=0. Discount curve values are
+founder-tunable defaults (spec 0003 follow-up). Wallet→card fallback still out of scope. Graphify study
+slice A1.
+
 ### feature · types+backend+admin · Shuttle v2: ops route assignment (spec 0002) — 2026-08-03
 **What:** New `shuttle:assign` permission in `@kari/types` (OPS + SUPER_ADMIN); `shuttle_routes` gains
 `assignedDriverId`/`busPlateNumber`/`busLabel`; `PATCH /admin/shuttle/routes/:id/assignment` (assign or

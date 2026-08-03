@@ -251,6 +251,10 @@ export interface Carpool {
   departAt: string | null;
   members: CarpoolMember[];
   seatsAvailable: number;
+  /** What the NEXT joiner would pay (server-computed, spec 0003); null when full. */
+  projectedShare: number | null;
+  /** Sum of all active members' own fares (server-computed, spec 0003). */
+  collectedTotal: number;
 }
 
 export interface CarpoolCreateResult {
