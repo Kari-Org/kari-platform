@@ -30,6 +30,7 @@ import { RealtimeService } from '../realtime/realtime.service';
 import { RiderProfile } from '../rider/entities/rider-profile.entity';
 import { Ride } from '../rides/entities/ride.entity';
 import { MatchingService } from '../rides/matching.service';
+import { ShuttleService } from '../shuttle/shuttle.service';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { TicketsService } from '../tickets/tickets.service';
@@ -83,6 +84,7 @@ export class AdminService {
     private readonly realtime: RealtimeService,
     private readonly audit: AuditService,
     private readonly tickets: TicketsService,
+    private readonly shuttle: ShuttleService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(Ride) private readonly rideRepo: Repository<Ride>,
@@ -131,6 +133,52 @@ export class AdminService {
 
   listDrivers() {
     return this.drivers.list();
+  }
+
+  // ─── Shuttle ops assignment (spec 0002) ────────────────────────────────────
+
+  /** All shuttle routes with assignment state, driver names joined for the admin table. */
+  async listShuttleRoutes() {
+    const routes = await this.shuttle.listRoutesWithAssignments();
+    const driverIds = routes.map((r) => r.assignedDriverId).filter((id): id is string => !!id);
+    const profiles = driverIds.length
+      ? await this.driverRepo.find({ where: { userId: In(driverIds) } })
+      : [];
+    const nameById = new Map(profiles.map((p) => [p.userId, fullName(p)]));
+    return routes.map((r) => ({
+      ...r,
+      assignedDriverName: r.assignedDriverId ? (nameById.get(r.assignedDriverId) ?? '—') : null,
+    }));
+  }
+
+  /**
+   * Assign or clear a route's dedicated driver + bus. Driver eligibility lives
+   * here (admin owns driver/user data): DEDICATED profile + ACTIVE account.
+   * Exclusivity + trip stamping live in ShuttleService.
+   */
+  async setShuttleAssignment(
+    routeId: string,
+    dto: { driverId: string | null; busPlateNumber?: string; busLabel?: string },
+  ) {
+    if (dto.driverId) {
+      const profile = await this.driverRepo.findOne({ where: { userId: dto.driverId } });
+      if (!profile) throw new NotFoundException('driver not found');
+      if (profile.driverType !== DriverType.DEDICATED) {
+        throw new BadRequestException('only dedicated drivers can be assigned to shuttle routes');
+      }
+      const user = await this.userRepo.findOne({ where: { id: dto.driverId } });
+      if (!user || user.status !== UserStatus.ACTIVE) {
+        throw new BadRequestException('driver account is not active');
+      }
+      if (!dto.busPlateNumber) {
+        throw new BadRequestException('busPlateNumber is required when assigning');
+      }
+    }
+    return this.shuttle.setRouteAssignment(routeId, {
+      driverId: dto.driverId,
+      busPlateNumber: dto.busPlateNumber ?? null,
+      busLabel: dto.busLabel ?? null,
+    });
   }
 
   /** Dashboard KPIs — counts + today's gross merchandise value. */

@@ -27,6 +27,16 @@ must never drift from what was decided.
 
 ## Entries
 
+### feature · types+backend+admin · Shuttle v2: ops route assignment (spec 0002) — 2026-08-03
+**What:** New `shuttle:assign` permission in `@kari/types` (OPS + SUPER_ADMIN); `shuttle_routes` gains
+`assignedDriverId`/`busPlateNumber`/`busLabel`; `PATCH /admin/shuttle/routes/:id/assignment` (assign or
+clear, DEDICATED+ACTIVE validation, one-driver-one-route 409, transactional stamping of future
+SCHEDULED trips, audit-logged) + `GET /admin/shuttle/routes`; seeder now stamps new trips from the
+route assignment; admin gets a Shuttle page (assign/clear, `<Can>` gated).
+**Notes:** Runtime-verified 9/10 ACs incl. reseed inheritance via live-schema queries; admin page
+browser pass pending per convention. ShuttleModule now exports ShuttleService (AdminModule imports it).
+Part of the Graphify study.
+
 ### feature · backend+driver · Carpool v2: driver carpool-mode toggle (spec 0001) — 2026-08-03
 **What:** `carpoolMode` on `driver_profiles`; `POST /availability/carpool-mode` (403 for dedicated);
 `findCandidates` gains an `opts` eligibility filter (`requireCarpoolMode`, `driverType`) with a widened

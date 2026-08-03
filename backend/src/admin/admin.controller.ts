@@ -26,6 +26,7 @@ import { UpdateTicketDto } from '../tickets/dto/update-ticket.dto';
 import { AdminCancelRideDto } from './dto/cancel-ride.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateDedicatedDriverDto } from './dto/create-dedicated-driver.dto';
+import { SetShuttleAssignmentDto } from './dto/set-shuttle-assignment.dto';
 import { UpdateAdminRoleDto } from './dto/update-admin-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { VerifyDriverDto } from './dto/verify-driver.dto';
@@ -145,6 +146,24 @@ export class AdminController {
   @ResponseMessage('Drivers')
   listDrivers() {
     return this.admin.listDrivers();
+  }
+
+  // ─── Shuttle ops assignment (spec 0002) ─────────────────────────────────────
+  @Get('shuttle/routes')
+  @RequirePermissions('dedicated:read')
+  @ApiOperation({ summary: 'All shuttle routes with driver/bus assignment state' })
+  @ResponseMessage('Shuttle routes')
+  listShuttleRoutes() {
+    return this.admin.listShuttleRoutes();
+  }
+
+  @Patch('shuttle/routes/:id/assignment')
+  @RequirePermissions('shuttle:assign')
+  @Audit('shuttle.route.assignment')
+  @ApiOperation({ summary: 'Assign (or clear, driverId null) a dedicated driver + bus to a route' })
+  @ResponseMessage('Shuttle route assignment updated')
+  setShuttleAssignment(@Param('id') id: string, @Body() dto: SetShuttleAssignmentDto) {
+    return this.admin.setShuttleAssignment(id, dto);
   }
 
   // ─── A6 · Financials ─────────────────────────────────────────────────────────

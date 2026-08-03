@@ -1,4 +1,5 @@
 import {
+  Bus,
   IdCard,
   LayoutDashboard,
   type LucideIcon,
@@ -43,6 +44,7 @@ export const NAV: NavGroup[] = [
       { href: '/trips', label: 'Trips', icon: Route, permission: 'trips:read' },
       { href: '/users', label: 'Users', icon: Users, permission: 'riders:read' },
       { href: '/dedicated-drivers', label: 'Dedicated Drivers', icon: IdCard, permission: 'dedicated:read' },
+      { href: '/shuttle', label: 'Shuttle', icon: Bus, permission: 'dedicated:read' },
       { href: '/tickets', label: 'Tickets', icon: Ticket, permission: 'tickets:read' },
     ],
   },

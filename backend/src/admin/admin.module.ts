@@ -9,6 +9,7 @@ import { RealtimeModule } from '../realtime/realtime.module';
 import { RiderProfile } from '../rider/entities/rider-profile.entity';
 import { Ride } from '../rides/entities/ride.entity';
 import { RidesModule } from '../rides/rides.module';
+import { ShuttleModule } from '../shuttle/shuttle.module';
 import { TicketsModule } from '../tickets/tickets.module';
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
@@ -26,6 +27,7 @@ import { AuditLog } from './audit/entities/audit-log.entity';
     RidesModule,
     RealtimeModule,
     MoneyModule,
+    ShuttleModule,
     TicketsModule,
     TypeOrmModule.forFeature([User, Ride, RiderProfile, DriverProfile, AuditLog, Transaction]),
   ],

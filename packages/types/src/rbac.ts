@@ -26,6 +26,7 @@ export const PERMISSIONS = [
   'drivers:verify', // approve/reject KYC (NIN + liveness)
   'dedicated:read',
   'dedicated:onboard',
+  'shuttle:assign', // assign a dedicated driver + bus to a shuttle route
   'trips:read',
   'trips:override', // cancel / reassign an active trip
   'disputes:manage',
@@ -58,6 +59,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
     'drivers:verify',
     'dedicated:read',
     'dedicated:onboard',
+    'shuttle:assign',
     'trips:read',
     'trips:override',
     'disputes:manage',

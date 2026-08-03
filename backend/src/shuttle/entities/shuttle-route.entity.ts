@@ -14,4 +14,14 @@ export class ShuttleRoute extends BaseEntity {
 
   @Column({ type: 'boolean', default: true })
   active: boolean;
+
+  // Ops assignment (spec 0002): dedicated driver + bus for this route
+  @Column({ type: 'uuid', nullable: true })
+  assignedDriverId: string | null;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  busPlateNumber: string | null;
+
+  @Column({ type: 'varchar', length: 60, nullable: true })
+  busLabel: string | null;
 }

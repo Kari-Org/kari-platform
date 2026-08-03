@@ -7,7 +7,7 @@ import {
   type OnModuleInit,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, MoreThan, OptimisticLockVersionMismatchError, Repository } from 'typeorm';
+import { DataSource, In, MoreThan, Not, OptimisticLockVersionMismatchError, Repository } from 'typeorm';
 import {
   LedgerDirection,
   ShuttleBookingStatus,
@@ -102,10 +102,75 @@ export class ShuttleService implements OnModuleInit {
       for (let i = upcoming; i < TRIP_OFFSETS_HOURS.length; i++) {
         const departAt = new Date(Date.now() + TRIP_OFFSETS_HOURS[i] * 3_600_000);
         await this.trips.save(
-          this.trips.create({ routeId: route.id, departAt, capacity: TRIP_CAPACITY, seatsBooked: 0 }),
+          this.trips.create({
+            routeId: route.id,
+            departAt,
+            capacity: TRIP_CAPACITY,
+            seatsBooked: 0,
+            // New trips inherit the route's standing assignment (spec 0002, AC-8)
+            driverId: route.assignedDriverId ?? null,
+          }),
         );
       }
     }
+  }
+
+  // ─── ops assignment (spec 0002) ─────────────────────────────────────────────
+
+  /** ALL routes (incl. inactive) with assignment + upcoming SCHEDULED trip counts — admin read. */
+  async listRoutesWithAssignments() {
+    const routes = await this.routes.find({ order: { name: 'ASC' } });
+    return Promise.all(
+      routes.map(async (r) => ({
+        ...r,
+        upcomingTrips: await this.trips.count({
+          where: { routeId: r.id, status: ShuttleTripStatus.SCHEDULED, departAt: MoreThan(new Date()) },
+        }),
+      })),
+    );
+  }
+
+  /**
+   * Assign (driverId set) or clear (driverId null) a route's standing driver+bus.
+   * Enforces one-driver-one-route; stamps future SCHEDULED trips in the same
+   * transaction. Driver eligibility (DEDICATED + ACTIVE) is validated by the
+   * admin layer, which owns driver/user data.
+   */
+  async setRouteAssignment(
+    routeId: string,
+    assignment: { driverId: string | null; busPlateNumber: string | null; busLabel: string | null },
+  ) {
+    const route = await this.routes.findOne({ where: { id: routeId } });
+    if (!route) throw new NotFoundException('route not found');
+
+    if (assignment.driverId) {
+      const elsewhere = await this.routes.findOne({
+        where: { assignedDriverId: assignment.driverId, id: Not(routeId) },
+      });
+      if (elsewhere) {
+        throw new ConflictException(
+          `driver is already assigned to route "${elsewhere.name}" — unassign there first`,
+        );
+      }
+    }
+
+    await this.dataSource.transaction(async (m) => {
+      route.assignedDriverId = assignment.driverId;
+      route.busPlateNumber = assignment.driverId ? assignment.busPlateNumber : null;
+      route.busLabel = assignment.driverId ? assignment.busLabel : null;
+      await m.save(route);
+      // Future SCHEDULED trips follow the standing assignment; past/terminal trips never change.
+      await m.update(
+        ShuttleTrip,
+        { routeId, status: ShuttleTripStatus.SCHEDULED, departAt: MoreThan(new Date()) },
+        { driverId: assignment.driverId },
+      );
+    });
+
+    const upcomingTrips = await this.trips.count({
+      where: { routeId, status: ShuttleTripStatus.SCHEDULED, departAt: MoreThan(new Date()) },
+    });
+    return { ...route, upcomingTrips };
   }
 
   // ─── reads ─────────────────────────────────────────────────────────────────

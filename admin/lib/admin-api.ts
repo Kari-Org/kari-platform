@@ -72,6 +72,24 @@ export interface Fleet {
 }
 
 // ─── A3 · Users / drivers / audit ────────────────────────────────────────────
+export interface ShuttleRouteRow {
+  id: string;
+  name: string;
+  corridor: string;
+  active: boolean;
+  assignedDriverId: string | null;
+  assignedDriverName: string | null;
+  busPlateNumber: string | null;
+  busLabel: string | null;
+  upcomingTrips: number;
+}
+
+export interface SetShuttleAssignmentBody {
+  driverId: string | null;
+  busPlateNumber?: string;
+  busLabel?: string;
+}
+
 export interface AdminDriverRow {
   id: string;
   userId: string;
@@ -219,6 +237,14 @@ export const adminApi = {
 
   // A4 — dedicated drivers
   drivers: () => apiFetch<AdminDriverRow[]>('/admin/drivers'),
+
+  // Shuttle ops assignment (spec 0002)
+  shuttleRoutes: () => apiFetch<ShuttleRouteRow[]>('/admin/shuttle/routes'),
+  setShuttleAssignment: (routeId: string, body: SetShuttleAssignmentBody) =>
+    apiFetch<ShuttleRouteRow>(`/admin/shuttle/routes/${routeId}/assignment`, {
+      method: 'PATCH',
+      body,
+    }),
   createDedicated: (body: CreateDedicatedDriverBody) =>
     apiFetch<{ userId: string; email: string }>('/admin/drivers/dedicated', {
       method: 'POST',

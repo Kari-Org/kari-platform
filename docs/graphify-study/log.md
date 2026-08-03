@@ -97,3 +97,64 @@ the code. Runtime verification finds this class of thing; grepping never does.
 
 **B1 slice total: ~19 files touched/read across 3 workspaces to change 9. Explore share of the work:
 roughly a third of all tool rounds.**
+
+---
+
+## Slice B2 — Shuttle v2: ops route assignment (BEFORE, no graph)
+
+### Explore step (architect phase) — measured
+
+- **Workspaces opened:** 3 designed-for (backend, packages/types, admin) + 1 peeked (driver).
+- **Explore rounds:** 4 (each a multi-grep + read batch).
+- **Files fully read:** 3 (`shuttle-trip.entity.ts`, `shuttle-route.entity.ts`, rbac.ts §§).
+- **Files grep-peeked:** ~8 (`shuttle.controller/service`, `admin.controller`, `nav.ts`,
+  `admin-api.ts`, driver `shuttle.tsx`, dedicated-drivers page dir).
+- **Cross-package discovery that mattered:** the `PERMISSIONS` catalog in `@kari/types` is consumed by
+  THREE downstream surfaces (backend `PermissionsGuard`, admin `<Can>`, admin settings RBAC matrix). I
+  know this from having read the admin docs earlier — the curated context asserts it, but enumerating
+  the actual consumer files still required grep. "Who consumes this exported const?" is a one-query
+  graph question.
+- **What the cross-check subagent caught that MY explore missed (the headline for the piece):** 2
+  code-contradictions — (a) the shuttle **seeder creates trips without reading route assignment**, so
+  spec-as-drafted's AC-8 was unimplementable without a change I hadn't planned; (b) **`ShuttleModule`
+  exports nothing and `AdminModule` doesn't import it** — the admin controller literally cannot inject
+  the shuttle service today. Both are *edge queries* (module-import edges, call edges) that I failed to
+  derive by hand on the first pass, caught only by a second full read. A dependency graph answers both
+  mechanically. Plus 5 more design issues (audit payload shape, driver-status check, exclusivity,
+  active-filter ambiguity, a simpler single-endpoint shape — adopted).
+
+### Design outcome
+
+Spec: `docs/specs/0002-shuttle-ops-route-assignment.md` (10 ACs) — new `shuttle:assign` permission in
+`@kari/types` (a genuine shared-contract change rippling to 3 consumers), route-level standing
+assignment, PATCH endpoint, admin Shuttle page.
+
+### Develop step — measured
+
+- **Additional files opened beyond architect explore:** 6 full/partial reads (`shuttle.service.ts` full,
+  `shuttle.module.ts`, `admin.module.ts`, `admin.service.ts` header+section, `admin.controller.ts`
+  header, `dedicated-drivers/page.tsx` full, `nav.ts`, `admin-api.ts` sections, `create-admin.dto.ts`).
+  Develop re-exploration was HIGHER than B1 because the admin workspace's conventions (DataTable,
+  Can/useCan, PageHeader, admin-api types) all had to be absorbed by reading a sibling page.
+- **Files changed:** 11 across 3 workspaces (types: rbac.ts · backend: route entity, shuttle service,
+  shuttle module, admin module, admin service, admin controller, new DTO · admin: nav, admin-api, new
+  /shuttle page).
+- **Friction:** the `CreateAdminDto` field name (`adminRole`, not `role`) cost one failed verify leg +
+  one file read — an API-contract lookup a graph with DTO nodes could have answered.
+
+### Verify step (check verify) — result: PASS (calibrated)
+
+Runtime evidence (real admin login; dedicated driver onboarded through the real admin endpoint):
+- AC-1 ✅ `shuttle:assign` in built PERMISSIONS, OPS granted, SUPER_ADMIN inherits
+- AC-2 ✅ routes list with assignment + trip counts (200, 2 routes)
+- AC-3 ✅ assignment persisted; **all 3 future SCHEDULED trips stamped with driverId (live-schema query)**
+- AC-4 ✅ freelance target → 400 · AC-10 ✅ second route, same driver → 409 · AC-6 ✅ SUPPORT → 403
+- AC-5 ✅ `driverId:null` wipes driver + bus · AC-9 ✅ audit row for `shuttle.route.assignment`
+- AC-8 ✅ deleted a future trip, restarted backend → **reseeded trip inherited the assigned driver (3/3)**
+- AC-7 ⚠️ admin page code-verified (typecheck); browser pass pending per convention
+- Harness bug (mine, again instructive): wrong `POST /admin/admins` field name produced a false FAIL
+  first; the fix required reading the DTO — the "what is this endpoint's contract?" query class.
+
+**B2 slice total: ~26 files touched/read across 4 workspaces (3 changed) to change 11. The two
+code-contradictions the cross-check caught (module wiring, seeder behavior) are the strongest baseline
+evidence: manual explore missed real dependency edges that had to be recovered by a second full read.**

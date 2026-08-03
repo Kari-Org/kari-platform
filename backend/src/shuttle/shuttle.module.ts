@@ -20,5 +20,6 @@ import { ShuttleService } from './shuttle.service';
   ],
   controllers: [ShuttleController],
   providers: [ShuttleService],
+  exports: [ShuttleService],
 })
 export class ShuttleModule {}
