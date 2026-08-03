@@ -296,3 +296,96 @@ haversine, and a too-weak Σ-invariant test.
   closed), ridesUsed metered, far ride charged normally, **Σ(all wallets)=0 across every wallet**.
   Two FAILs in the run were my harness's kobo-vs-naira unit bugs — the DB ledger showed the product
   correct. Runtime verification catches harness lies too.
+
+---
+
+# Phase 3 — Synthesis (2026-08-03)
+
+## The before/after, side by side
+
+| Metric (explore/architect phase) | B1 (before) | B2 (before) | A1 (after) | A2 (after) |
+|---|---|---|---|---|
+| Explore rounds | 6 | 4 | 6 queries + 1 grep round | 3 queries + 2 reads + 3 peeks |
+| Files fully read to map the slice | 5 | 3 | 0 new (3 grep-peeks, graph-named) | 2 (graph-named) |
+| Files opened on guesses (not pointers) | ~14 | ~11 | 0 | 0 |
+| Consumers missed / near-missed | 1 near-miss (`rides.service` caller) + 2 caught only by cross-check (module wiring, seeder) | same 2 | 0 (book.tsx enumerated) | 0 (unwired screen FOUND) |
+| Workspaces swept by hand | 3 | 3–4 | 0 (queries crossed them) | 0 |
+
+The explore cost didn't just shrink — it changed shape. Before: sweep directories, grep names, read
+whole files to build a mental map, then *hope* the map is complete. After: ask for the map
+(`explain <symbol>` = callers/importers with file:line), then read only the 2–3 files whose exact
+*shapes* matter. Reading for shape is cheap and bounded; sweeping for structure was the expensive,
+error-prone part, and that's the part the graph deleted.
+
+## The single best moment
+
+**`explain "rider_src_api_endpoints_subscriptionsapi"` → Degree: 1 (zero importers).** One second of
+graph query revealed that the rider app's entire subscription surface — two screens plus a home-tab
+card — was running on a SAMPLE-seeded local store and had **never been wired to the backend**, while
+the progress tracker recorded rider P4 as complete. The curated context couldn't know (it records
+intent and decisions, not wiring); grepping wouldn't have flagged it (the screens *work*, on fake
+data); runtime testing would have found it only if someone thought to test that specific screen
+against the server. A structural absence — an edge that should exist and doesn't — is something only
+a graph surfaces cheaply. That finding reshaped slice A2's scope and is now shipped code.
+
+Runner-up: `explain "recompute"` returning the complete 2-caller blast set for the fare-split change —
+the exact query class whose manual version I *almost skipped* in B1 (the `findCandidates` near-miss).
+
+## Honest frictions (the piece needs these)
+
+1. **Natural-language queries are hit-or-miss.** Generic terms ("backend", "rider") seed noisy
+   394-node BFS traversals. The crisp tool is `explain` on a known symbol — which means you need a
+   name first. The graph is a *resolver*, not a search engine; you still need one grep or one guess
+   to get the first anchor.
+2. **Node naming needs learning.** Bare `affected "findCandidates"` fails ("no unique node match");
+   labels are qualified (`.findCandidates()`) and ambiguity errors want full node ids. ~3 failed
+   queries before the pattern stuck. (The ambiguity error listing both candidates was itself useful once.)
+3. **Install had a pothole.** HTTP MCP transport needs `graphifyy[mcp]`, a second install the README's
+   quickstart doesn't mention. And the package name's double-y will typo someone.
+4. **Two misses the graph can't take credit for fixing:** the A2 module cycle (RidesModule ↔
+   SubscriptionsModule) — a textbook `shortest_path` question I answered from session memory instead
+   of querying (tool habits lag tool availability); and the third store consumer (home.tsx) found by
+   grep after I'd already committed to deletion.
+5. **What the graph doesn't carry:** exact code shapes (DTO field names — `adminRole` not `role` cost
+   a failed verify leg), in-file facts (which query key a screen uses), semantics (that inline
+   `totalFare / n` math *duplicates a business rule* — the graph pointed at the file; the judgment was
+   still on me), and environment truth (the zombie process serving stale code — only runtime
+   verification caught that).
+6. **Index cost: a non-issue for code.** 6.9s, zero tokens, 466 files. The "LLM cost to index" worry
+   applied only to optional doc-labeling. Post-commit hook rebuilds are background and unnoticeable.
+
+## Where Graphify added value BEYOND the curated context (the thesis answer)
+
+The two memories turned out to be different *altitudes*, and the gap between them is exactly where
+the four slices' bugs lived:
+
+- `context/` (curated, authoritative) answers **why and what-should-be**: the eligibility rule exists
+  (§5), Redis is ephemeral (§7 #11), the ride-type matrix. It's the layer that told me carpool
+  dispatch filtering *ought* to exist — and it was right that the code violated it.
+- `graphify-out/` (derived, advisory) answers **what-is at the file/symbol level**: who actually
+  calls `findCandidates` (2 sites), who consumes `PERMISSIONS` (3 surfaces), whether
+  `subscriptionsApi` has any importers at all (none!), which module exports what (ShuttleModule
+  exported nothing — admin literally couldn't inject it).
+- **The failures of the baseline were precisely edge-enumeration failures**: B1's near-missed second
+  caller, B2's two cross-check catches (a missing module edge, a seeder that ignored a field). Every
+  one is a one-query graph answer. In the after-slices, that failure class went to zero — the
+  cross-checks still found real issues, but they were *semantic* (cash double-pay, fee-basis
+  ambiguity, untestable ACs), never structural. The graph took the structural class off the table
+  and left the reviewers free to catch the semantic class.
+- The tension resolution never needed invoking: the graph never *disagreed* with foundation.md —
+  it disagreed with the **progress tracker's optimism** (rider P4 "complete") and with **doc claims
+  about code** (the eligibility rule). In both cases the rule held: foundation states intent, the
+  graph states reality, and the delta between them is the work list.
+
+**Verdict for the piece:** the curated context made the graph *more* valuable, not redundant — the
+WHY layer told me which WHAT-IS queries mattered. And the graph's best trick isn't finding what's
+there; it's proving what *isn't* (no importers, no export, no filter). Absences are invisible to
+grep and to curated docs alike.
+
+## Ship record
+
+- B1 `7d374cc` carpool-mode toggle (spec 0001) · B2 `f5876fb` shuttle ops assignment (spec 0002)
+- Graphify integration `5c01921` · A1 `e14893b` discounted ride-share fares (spec 0003)
+- A2 `cc71661` subscription route pricing + free-at-use (spec 0004)
+- All four slices runtime-verified against a live backend with ledger-level evidence; mobile/admin UI
+  device passes pending per repo convention (tracked in each spec).

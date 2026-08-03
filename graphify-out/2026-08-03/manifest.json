@@ -480,8 +480,8 @@
     "semantic_hash": ""
   },
   "backend/src/carpools/carpools.service.ts": {
-    "mtime": 1785791176.8963187,
-    "ast_hash": "c1c3dea6795325e7a38d9a6d5affc9ac",
+    "mtime": 1785793014.695348,
+    "ast_hash": "81bf3087f4f253fee2f88fe24c267109",
     "semantic_hash": ""
   },
   "backend/src/carpools/dto/create-carpool.dto.ts": {
@@ -1705,8 +1705,8 @@
     "semantic_hash": ""
   },
   "rider/app/carpool/[id].tsx": {
-    "mtime": 1785443175.588971,
-    "ast_hash": "e3805f8708fb4e2bf511c383219d29ad",
+    "mtime": 1785793019.0357296,
+    "ast_hash": "e61970983451a028dd5fb7d68695d07a",
     "semantic_hash": ""
   },
   "rider/app/carpool/_layout.tsx": {
@@ -1715,8 +1715,8 @@
     "semantic_hash": ""
   },
   "rider/app/carpools.tsx": {
-    "mtime": 1785443175.5896976,
-    "ast_hash": "7fecaca14f4745ef267749e2a798fb6b",
+    "mtime": 1785792989.1871161,
+    "ast_hash": "3ca5af36e1449b77ca9cda2ea2c7f91f",
     "semantic_hash": ""
   },
   "rider/app/chat/[rideId].tsx": {
@@ -1865,8 +1865,8 @@
     "semantic_hash": ""
   },
   "rider/src/api/types.ts": {
-    "mtime": 1785443175.6095088,
-    "ast_hash": "27b985163bdc90dc98118826f3685ef8",
+    "mtime": 1785793016.982327,
+    "ast_hash": "9592a1ba7b61dedf182c5fbbc4e99e51",
     "semantic_hash": ""
   },
   "rider/src/components/AddressAutocomplete.tsx": {
@@ -2245,8 +2245,8 @@
     "semantic_hash": ""
   },
   "context/progress-log.md": {
-    "mtime": 1785792317.015726,
-    "ast_hash": "325a38cabe98c68a61f6a7ab2f10fd89",
+    "mtime": 1785793209.1942005,
+    "ast_hash": "04a61b6ba102d30e8dd6480925590061",
     "semantic_hash": ""
   },
   "context/project-overview.md": {
@@ -2265,8 +2265,8 @@
     "semantic_hash": ""
   },
   "docs/graphify-study/log.md": {
-    "mtime": 1785792543.294565,
-    "ast_hash": "58b7ca4add704b274165101a3b68d87f",
+    "mtime": 1785793200.5216248,
+    "ast_hash": "0695c9e598ce77bcdb6180237b5ae2f4",
     "semantic_hash": ""
   },
   "docs/specs/0001-driver-carpool-mode-toggle.md": {
@@ -2697,6 +2697,11 @@
   "web/public/maskable-512.png": {
     "mtime": 1785443175.6353931,
     "ast_hash": "ccdf326199cfbe49b0171a7d66ba3d0b",
+    "semantic_hash": ""
+  },
+  "docs/specs/0003-carpool-discounted-rideshare-fares.md": {
+    "mtime": 1785793187.7576058,
+    "ast_hash": "f296dbcbf7efc6579b2459dab19cfc5e",
     "semantic_hash": ""
   }
 }

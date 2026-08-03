@@ -480,8 +480,8 @@
     "semantic_hash": ""
   },
   "backend/src/carpools/carpools.service.ts": {
-    "mtime": 1785793014.695348,
-    "ast_hash": "81bf3087f4f253fee2f88fe24c267109",
+    "mtime": 1785793587.6360037,
+    "ast_hash": "04b1fb015a90a7d61f8ee1ef886756b5",
     "semantic_hash": ""
   },
   "backend/src/carpools/dto/create-carpool.dto.ts": {
@@ -745,8 +745,8 @@
     "semantic_hash": ""
   },
   "backend/src/money/payments.service.ts": {
-    "mtime": 1785443175.5345752,
-    "ast_hash": "def4dbbabaa377669d693f2719df3e10",
+    "mtime": 1785793732.5787263,
+    "ast_hash": "1bccd8ad63f0f5b81a4770a40cb3b828",
     "semantic_hash": ""
   },
   "backend/src/money/wallet.controller.ts": {
@@ -995,8 +995,8 @@
     "semantic_hash": ""
   },
   "backend/src/rides/entities/ride.entity.ts": {
-    "mtime": 1785443175.5522933,
-    "ast_hash": "754a88c5bdb43a72fd78bcde04d1b25a",
+    "mtime": 1785793755.9243593,
+    "ast_hash": "39a9a81f7f4206e5f08b232865a8761a",
     "semantic_hash": ""
   },
   "backend/src/rides/matching.service.ts": {
@@ -1020,8 +1020,8 @@
     "semantic_hash": ""
   },
   "backend/src/rides/rides.service.ts": {
-    "mtime": 1785443175.5529284,
-    "ast_hash": "2d5230d5b4dc111b6b00907b4f54fade",
+    "mtime": 1785793763.29195,
+    "ast_hash": "0ac946266ddf8a0763029bbd002da941",
     "semantic_hash": ""
   },
   "backend/src/safety/dto/emergency-contact.dto.ts": {
@@ -1110,13 +1110,13 @@
     "semantic_hash": ""
   },
   "backend/src/subscriptions/dto/subscribe.dto.ts": {
-    "mtime": 1785443175.5560434,
-    "ast_hash": "1238939fccfca3fb8a8bfac865c05713",
+    "mtime": 1785793703.0489228,
+    "ast_hash": "89d648dd1e69b164fdb238876de2ef73",
     "semantic_hash": ""
   },
   "backend/src/subscriptions/entities/subscription.entity.ts": {
-    "mtime": 1785443175.5562348,
-    "ast_hash": "1c72a695f8f03f51e0fbe56406159945",
+    "mtime": 1785793595.6648917,
+    "ast_hash": "42a813bee0a61776e09e761ef1aba8cd",
     "semantic_hash": ""
   },
   "backend/src/subscriptions/plans.ts": {
@@ -1125,8 +1125,8 @@
     "semantic_hash": ""
   },
   "backend/src/subscriptions/subscriptions.controller.ts": {
-    "mtime": 1785443175.556465,
-    "ast_hash": "275e8d123730bc61896b2ffd3d3443bb",
+    "mtime": 1785793694.6421893,
+    "ast_hash": "d0dac511ab395f2fdc607e3dc15f1118",
     "semantic_hash": ""
   },
   "backend/src/subscriptions/subscriptions.module.ts": {
@@ -1135,8 +1135,8 @@
     "semantic_hash": ""
   },
   "backend/src/subscriptions/subscriptions.service.ts": {
-    "mtime": 1785443175.5566998,
-    "ast_hash": "15249d5e59dff7bc983edb0745b4c12a",
+    "mtime": 1785793709.2564583,
+    "ast_hash": "73e86a476bcd69cceab50219bf6ea4bd",
     "semantic_hash": ""
   },
   "backend/src/tickets/dto/create-ticket.dto.ts": {
@@ -1680,8 +1680,8 @@
     "semantic_hash": ""
   },
   "rider/app/(tabs)/home.tsx": {
-    "mtime": 1785443175.5876975,
-    "ast_hash": "29c0a99412e7f0aec3de2d97bd92d0e8",
+    "mtime": 1785793873.7809422,
+    "ast_hash": "b58b9224af9657d383b513a18486f048",
     "semantic_hash": ""
   },
   "rider/app/(tabs)/rides.tsx": {
@@ -1790,13 +1790,13 @@
     "semantic_hash": ""
   },
   "rider/app/subscription-new.tsx": {
-    "mtime": 1785443175.5919616,
-    "ast_hash": "e5006831a2b4c21a220bedc48eab4ba0",
+    "mtime": 1785793805.341741,
+    "ast_hash": "cc4aef57d543b861b58c807ee320de48",
     "semantic_hash": ""
   },
   "rider/app/subscriptions.tsx": {
-    "mtime": 1785443175.592171,
-    "ast_hash": "4b927539e8a8109691acf917197a5142",
+    "mtime": 1785793824.3089135,
+    "ast_hash": "e0d8443afaff5532b4bfa451bab50959",
     "semantic_hash": ""
   },
   "rider/app/success.tsx": {
@@ -1850,8 +1850,8 @@
     "semantic_hash": ""
   },
   "rider/src/api/endpoints.ts": {
-    "mtime": 1785443175.6091647,
-    "ast_hash": "c67fcb022abcff81dc17bd414ff000eb",
+    "mtime": 1785793864.8502436,
+    "ast_hash": "ec980d4cc574f742d982cc4966de38a5",
     "semantic_hash": ""
   },
   "rider/src/api/queryClient.ts": {
@@ -1865,8 +1865,8 @@
     "semantic_hash": ""
   },
   "rider/src/api/types.ts": {
-    "mtime": 1785793016.982327,
-    "ast_hash": "9592a1ba7b61dedf182c5fbbc4e99e51",
+    "mtime": 1785793842.6320543,
+    "ast_hash": "ba0052ee6623f42d1ff96d870149e0c7",
     "semantic_hash": ""
   },
   "rider/src/components/AddressAutocomplete.tsx": {
@@ -1964,11 +1964,6 @@
     "ast_hash": "3442939ebde9c40358fba5d4721cc03d",
     "semantic_hash": ""
   },
-  "rider/src/lib/subscription.ts": {
-    "mtime": 1785443175.6118324,
-    "ast_hash": "e3302cf046573d3e7c6e1f22b61cbde2",
-    "semantic_hash": ""
-  },
   "rider/src/lib/weather.ts": {
     "mtime": 1785443175.6137242,
     "ast_hash": "41b667f946f1e9dd427a91708463cb01",
@@ -2002,11 +1997,6 @@
   "rider/src/stores/signup.store.ts": {
     "mtime": 1785443175.6152937,
     "ast_hash": "2c123c99fdc3e49be0d42619c56dbdcc",
-    "semantic_hash": ""
-  },
-  "rider/src/stores/subscription.store.ts": {
-    "mtime": 1785443175.6153905,
-    "ast_hash": "ab00139d44af1e478b4ec86d5ec31e7c",
     "semantic_hash": ""
   },
   "rider/src/theme/tokens.ts": {
@@ -2245,8 +2235,8 @@
     "semantic_hash": ""
   },
   "context/progress-log.md": {
-    "mtime": 1785793209.1942005,
-    "ast_hash": "04a61b6ba102d30e8dd6480925590061",
+    "mtime": 1785794062.467569,
+    "ast_hash": "a34f36c887ac08707912f07fb9006ce6",
     "semantic_hash": ""
   },
   "context/project-overview.md": {
@@ -2265,8 +2255,8 @@
     "semantic_hash": ""
   },
   "docs/graphify-study/log.md": {
-    "mtime": 1785793200.5216248,
-    "ast_hash": "0695c9e598ce77bcdb6180237b5ae2f4",
+    "mtime": 1785794051.976174,
+    "ast_hash": "7e016502f4ce303d0e549ca5bd3cf53a",
     "semantic_hash": ""
   },
   "docs/specs/0001-driver-carpool-mode-toggle.md": {
@@ -2702,6 +2692,16 @@
   "docs/specs/0003-carpool-discounted-rideshare-fares.md": {
     "mtime": 1785793187.7576058,
     "ast_hash": "f296dbcbf7efc6579b2459dab19cfc5e",
+    "semantic_hash": ""
+  },
+  "backend/src/common/geo.ts": {
+    "mtime": 1785793583.338397,
+    "ast_hash": "a70a2274f045e9e180cd40b52e0c5b20",
+    "semantic_hash": ""
+  },
+  "docs/specs/0004-subscription-route-pricing-free-at-use.md": {
+    "mtime": 1785794033.3589838,
+    "ast_hash": "bb7a190e5748850a85ae6a1bf2335fc9",
     "semantic_hash": ""
   }
 }
