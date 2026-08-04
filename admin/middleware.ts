@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { ADMIN_COOKIE } from '@/lib/constants';
 
-const PUBLIC_PATHS = ['/login'];
+const PUBLIC_PATHS = ['/login', '/health'];
 
 /** Cookie-presence gate. Full validation happens server-side via getSession(). */
 export function middleware(req: NextRequest) {
