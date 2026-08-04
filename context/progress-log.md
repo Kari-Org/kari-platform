@@ -34,12 +34,19 @@ wiped the disposable prod DB and cut over live (migration builds the schema on b
 prod login verified). One lean-ish backend Dockerfile (deleted the broken alt), Node pinned to 22.13.1
 across `.nvmrc`/Dockerfiles/CI, `.next` cached in turbo. Admin + web now build for Railway (Next
 standalone + root-context Dockerfiles, verified). CI typechecks all 7 workspaces (was never run).
-**Notes:** Two real Docker gotchas fixed: pinned-Node corepack ships stale signing keys (install pnpm
-via npm instead — this was the Railway build blocker), and a composite-TS `.tsbuildinfo` leaking into
-the build context made `tsc` skip emit (excluded from `.dockerignore`). Follow-ups: admin+web Railway
-services are dashboard-created (in progress); backend service watch-path ignores root-level changes
-(needs broadening so root `Dockerfile`/`packages/types` changes deploy); backend image is 1.7GB (fat
-COPY, could slim). Vercel to be decommissioned after admin/web land on Railway.
+**Notes:** All three services now live on Railway (one platform): backend + admin
+(`admin-production-02d3.up.railway.app`) + web (`web-production-9558c.up.railway.app`) + Postgres +
+Redis + bucket. Admin login verified end to end through its proxy → backend on Railway. Five real
+gotchas fixed along the way: (1) pinned-Node corepack ships stale signing keys → install pnpm via npm;
+(2) composite-TS `.tsbuildinfo` leaked into the Docker context → excluded in `.dockerignore`;
+(3) Next standalone binds `process.env.HOSTNAME` (Docker's container id) → set `HOSTNAME=0.0.0.0` as a
+Railway service var (a Dockerfile ENV is overridden at runtime); (4) the Next apps had no `/health`
+route for Railway's healthcheck → added one (whitelisted in admin middleware); (5) THE big one — root
+`railway.json` `dockerfilePath: Dockerfile` was forcing the backend image onto every service, so
+admin/web ran the backend and crashed → removed it so per-service `RAILWAY_DOCKERFILE_PATH` wins.
+Follow-ups: delete the two Vercel projects (now unused; CORS already moved to Railway); broaden the
+backend service's watch path (`backend/**`) so root `Dockerfile`/`packages/types`/`railway.json` changes
+trigger a backend rebuild instead of SKIPPED; backend image is 1.7GB (fat COPY, could slim later).
 
 ### feature · backend+rider · Subscription v2: route pricing + free-at-use (spec 0004) — 2026-08-03
 **What:** Subscriptions are now priced from the rider's own route (formula over the ECONOMY quote fare;
