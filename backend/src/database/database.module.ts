@@ -6,7 +6,8 @@ import { APP_CONFIG, type AppConfig } from '../config/config.module';
 /**
  * PostgreSQL via TypeORM. Entities are auto-loaded from feature modules
  * (`TypeOrmModule.forFeature([...])`). Schema changes go through migrations;
- * `synchronize` is only ever enabled in local/staging via config.
+ * `synchronize` is only ever enabled in local/staging via config. In production
+ * (`synchronize` off) pending migrations run on boot — see `migrationsRun` below.
  */
 @Module({
   imports: [
