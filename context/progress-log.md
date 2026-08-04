@@ -27,6 +27,20 @@ must never drift from what was decided.
 
 ## Entries
 
+### chore · infra · Clean CI/CD pipeline + Railway migration cutover — 2026-08-04
+**What:** Replaced prod `DB_SYNCHRONIZE=true` with TypeORM migrations — committed a self-contained
+baseline (creates `uuid-ossp` + 30 tables), wired `migrationsRun` on boot when synchronize is off;
+wiped the disposable prod DB and cut over live (migration builds the schema on boot, admin reseeded,
+prod login verified). One lean-ish backend Dockerfile (deleted the broken alt), Node pinned to 22.13.1
+across `.nvmrc`/Dockerfiles/CI, `.next` cached in turbo. Admin + web now build for Railway (Next
+standalone + root-context Dockerfiles, verified). CI typechecks all 7 workspaces (was never run).
+**Notes:** Two real Docker gotchas fixed: pinned-Node corepack ships stale signing keys (install pnpm
+via npm instead — this was the Railway build blocker), and a composite-TS `.tsbuildinfo` leaking into
+the build context made `tsc` skip emit (excluded from `.dockerignore`). Follow-ups: admin+web Railway
+services are dashboard-created (in progress); backend service watch-path ignores root-level changes
+(needs broadening so root `Dockerfile`/`packages/types` changes deploy); backend image is 1.7GB (fat
+COPY, could slim). Vercel to be decommissioned after admin/web land on Railway.
+
 ### feature · backend+rider · Subscription v2: route pricing + free-at-use (spec 0004) — 2026-08-03
 **What:** Subscriptions are now priced from the rider's own route (formula over the ECONOMY quote fare;
 preview endpoint so clients never compute money) and charged upfront; SOLO rides matching the route
