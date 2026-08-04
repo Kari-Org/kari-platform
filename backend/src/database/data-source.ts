@@ -28,5 +28,4 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: config.database.logging,
 });
-
-export default AppDataSource;
+// Single named export only — the TypeORM CLI requires exactly one DataSource export.

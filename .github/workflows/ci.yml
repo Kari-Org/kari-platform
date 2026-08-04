@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build-test:
+  verify:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -34,13 +34,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+      # .nvmrc is the single source of truth for the Node version (22.13.1),
+      # shared with the Dockerfiles and EAS so CI tests what prod runs.
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      # Typecheck every workspace (backend, admin, web, both mobile apps, and the
+      # shared packages). This is the only correctness gate the Expo apps have,
+      # so it must run — a type error in rider/driver used to sail through CI.
+      - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm build
       - run: pnpm test
         env:
           POSTGRES_HOST: localhost

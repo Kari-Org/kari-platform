@@ -1,18 +1,37 @@
-# Deploying the Kari backend (Railway)
+# Deploying Kari (Railway — one platform)
 
-The backend is a single NestJS service that needs **Postgres** + **Redis**. It's
-containerized from the repo root (`Dockerfile` + `railway.json`) because it's a
-pnpm workspace (`backend` depends on `@kari/types`).
+Everything that is not the mobile apps runs on **Railway**, in one project:
+
+| Service | Source | Notes |
+|---|---|---|
+| `@kari/backend` | root `Dockerfile` + `railway.json` | NestJS API + Socket.IO; needs Postgres + Redis |
+| `@kari/admin` | `admin/Dockerfile` (context = repo root) | Next.js 15, standalone output |
+| `@kari/web` | `web/Dockerfile` (context = repo root) | Next.js 15 marketing site, standalone output |
+| Postgres 16 | Railway plugin | |
+| Redis 7 | Railway plugin | |
+| Bucket | Railway object storage | KYC media, via the S3-compatible API |
+
+All three service images build from the **repo root** because this is a pnpm
+workspace (each app depends on `@kari/types`). The mobile apps (`rider`,
+`driver`) ship through **EAS**, not Railway.
+
+## Node version
+
+Pinned to **22.13.1** everywhere — `.nvmrc`, all three Dockerfiles, CI, and EAS —
+so CI tests exactly what production runs. Change it in `.nvmrc` and the
+Dockerfiles together.
 
 ## One-time setup on Railway
 
-1. **New Project → Deploy from GitHub repo** → pick this repo.
-   Railway reads `railway.json` and builds the root `Dockerfile`. (No "root
-   directory" override needed — the Dockerfile handles the workspace.)
-2. **Add Postgres**: *New → Database → PostgreSQL*.
-3. **Add Redis**: *New → Database → Redis*.
-4. On the **backend service → Variables**, set the values below.
-5. Deploy. Healthcheck hits `GET /health`; `PORT` is injected by Railway.
+1. **New Project → Deploy from GitHub repo** → pick this repo. For the backend,
+   Railway reads `railway.json` and builds the root `Dockerfile`.
+2. **Add Postgres** and **Redis** (*New → Database*).
+3. Add the **admin** and **web** services from the same repo: *New → GitHub repo*,
+   then set each service's **Dockerfile path** (`admin/Dockerfile` / `web/Dockerfile`)
+   with the **build context at the repo root** (root directory = `/`).
+4. Set each service's **Variables** (below).
+5. Deploy. The backend healthcheck hits `GET /health`; `PORT` is injected by Railway
+   into all three (the Next apps' standalone `server.js` reads it automatically).
 
 ## Environment variables
 
@@ -25,22 +44,28 @@ pnpm workspace (`backend` depends on `@kari/types`).
 | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (Railway reference) |
 | `REDIS_URL` | `${{Redis.REDIS_URL}}` (Railway reference) |
 
-**First deploy only — bootstrap the schema**
-| Var | Value |
-|---|---|
-| `DB_SYNCHRONIZE` | `true` |
+**Schema: migrations, not synchronize**
+The backend runs TypeORM **migrations on boot** whenever `DB_SYNCHRONIZE` is off
+(`migrationsRun` in `DatabaseModule`). Keep `DB_SYNCHRONIZE=false` in production
+(it defaults to false — do **not** set it to `true`). Each deploy applies any new
+migration from `backend/src/database/migrations/` automatically; the committed
+baseline builds the whole schema (incl. the `uuid-ossp` extension) on a fresh DB.
 
-> ⚠️ `DB_SYNCHRONIZE=true` lets TypeORM create the tables on the fresh DB so you
-> can launch immediately. **Before you have real data, switch to migrations**:
-> generate a baseline (`pnpm --filter @kari/backend migration:generate`), commit
-> it, set `DB_SYNCHRONIZE=false`, and run `migration:run` on deploy. Leaving
-> synchronize on in production risks destructive auto-alters.
+- New schema change → `pnpm --filter @kari/backend migration:generate src/database/migrations/<Name>`, review, commit. It ships and runs on the next deploy.
+- `DB_SYNCHRONIZE=true` is **local dev only** (see `docker-compose`), never production.
 
 **Recommended**
 | Var | Value |
 |---|---|
-| `CORS_ORIGINS` | comma-separated admin + web origins (or `*` to start) |
+| `CORS_ORIGINS` | comma-separated admin + web origins (the Railway URLs / custom domains) |
 | `LOG_LEVEL` | `info` |
+
+**Admin service variables**
+| Var | Value |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | the backend's public Railway URL (proxied through admin's `/api/proxy`) |
+
+(`web` is a static marketing site and needs no backend env.)
 
 **Optional providers** (absent ⇒ no-op; wire these as you go live)
 - Payments: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`
@@ -58,7 +83,8 @@ private `${{Postgres.DATABASE_URL}}`), also set `DB_SSL=true`.
 - Note the public backend URL Railway assigns.
 - Point the apps + admin at it:
   - `rider/app.json` and `driver/app.json` → `extra.apiBaseUrl` / `extra.socketUrl`
-  - admin → `NEXT_PUBLIC_API_URL` (Vercel/host env)
+  - admin → `NEXT_PUBLIC_API_URL` (its Railway service variables)
+- Add the admin + web origins to the backend's `CORS_ORIGINS`.
 - Then EAS **preview/production** builds will have a real API to talk to.
 
 ## Seed an admin (one-off)

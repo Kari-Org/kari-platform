@@ -31,6 +31,10 @@ import { APP_CONFIG, type AppConfig } from '../config/config.module';
         synchronize: config.database.synchronize,
         logging: config.database.logging,
         migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
+        // When synchronize is off (prod/staging), run pending migrations on boot
+        // so a deploy brings the schema up to date. When synchronize is on (local
+        // dev), it owns the schema and migrations must not also run.
+        migrationsRun: !config.database.synchronize,
         retryAttempts: config.isProd ? 10 : 3,
         retryDelay: 1500,
       }),

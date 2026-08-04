@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { NextConfig } from 'next';
 
 const config: NextConfig = {
@@ -7,6 +8,10 @@ const config: NextConfig = {
   // sharp isn't built in this monorepo (allowBuilds: sharp=false); serve images
   // as-is. Fine for a static marketing site.
   images: { unoptimized: true },
+  // Lean container output for Railway. outputFileTracingRoot at the monorepo
+  // root so the workspace dep (@kari/types) is traced; build cwd is web/.
+  output: 'standalone',
+  outputFileTracingRoot: path.resolve(process.cwd(), '..'),
 };
 
 export default config;
