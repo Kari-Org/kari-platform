@@ -14,7 +14,8 @@
 FROM node:22.13.1-slim AS build
 WORKDIR /app
 ENV CI=1
-RUN corepack enable && corepack prepare pnpm@11.5.1 --activate
+# Direct pnpm install — corepack in pinned Node patches fails signature checks.
+RUN npm i -g pnpm@11.5.1
 
 COPY . .
 # Install admin + its workspace deps only (skips the backend/Expo app deps).

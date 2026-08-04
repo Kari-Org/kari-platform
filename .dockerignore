@@ -6,6 +6,10 @@
 **/.expo
 **/.turbo
 **/coverage
+# Stale TypeScript incremental caches would make a composite `tsc` (packages/types)
+# think it's already built and skip emit inside the image. Git already ignores
+# these; exclude them from the build context too so local + Railway builds match.
+**/*.tsbuildinfo
 .git
 .github
 **/.env

@@ -11,12 +11,15 @@
 FROM node:22.13.1-slim AS build
 WORKDIR /app
 ENV CI=1
-RUN corepack enable && corepack prepare pnpm@11.5.1 --activate
+# Install pnpm directly (not via corepack): corepack bundled with pinned Node
+# patch releases ships stale package-signing keys and fails `corepack prepare`
+# with "Cannot find matching keyid". A direct npm global install is deterministic.
+RUN npm i -g pnpm@11.5.1
 
 # Whole workspace (the .dockerignore keeps node_modules/dist/.env out).
 COPY . .
 
-# Install only the backend + its workspace deps — skips the Expo/RN app deps.
+# Install only the backend + its workspace deps — skips the heavy Expo/RN app deps.
 RUN pnpm install --frozen-lockfile --filter @kari/backend...
 # Shared types must be built before the backend can compile against them.
 RUN pnpm --filter @kari/types build && pnpm --filter @kari/backend build
