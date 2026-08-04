@@ -27,6 +27,10 @@ RUN pnpm --filter @kari/types build && pnpm --filter @kari/admin build
 FROM node:22.13.1-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+# Next standalone binds to process.env.HOSTNAME (Docker sets it to the container
+# ID), so without this it listens only on the container's own IP and Railway's
+# router gets "service unavailable". Force all-interfaces binding.
+ENV HOSTNAME=0.0.0.0
 # Next injects PORT-awareness into server.js; Railway provides PORT.
 COPY --from=build /app/admin/.next/standalone ./
 COPY --from=build /app/admin/.next/static ./admin/.next/static

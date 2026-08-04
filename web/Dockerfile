@@ -23,6 +23,9 @@ RUN pnpm --filter @kari/types build && pnpm --filter @kari/web build
 FROM node:22.13.1-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+# Bind all interfaces — Next standalone otherwise binds to Docker's container-ID
+# HOSTNAME and Railway can't reach it ("service unavailable").
+ENV HOSTNAME=0.0.0.0
 COPY --from=build /app/web/.next/standalone ./
 COPY --from=build /app/web/.next/static ./web/.next/static
 COPY --from=build /app/web/public ./web/public
