@@ -60,6 +60,112 @@ are **anchored with a leading slash** — Railway matches gitignore-style, so a 
 `Dockerfile` would also match `admin/Dockerfile`/`web/Dockerfile`. `driver`/`rider`
 are EAS, so they never trigger a Railway build.
 
+## Branching model & environments (staging → production)
+
+Two long-lived branches map to two isolated Railway environments (optionally a
+third, ephemeral tier for PR previews). This replaces the earlier "every push to
+`main` deploys production" flow.
+
+| Git branch   | Railway environment | Deploys                    | Advances when…                                          |
+| ------------ | ------------------- | -------------------------- | ------------------------------------------------------- |
+| `main`       | **staging**         | staging stack, every merge | a reviewed PR merges (trunk)                            |
+| `production` | **production**      | production stack           | a reviewed **promotion PR** `main → production` merges  |
+| `feature/*`  | PR preview (opt-in) | ephemeral fork of staging  | a PR is opened/updated; torn down on close              |
+
+**Trunk-based:** cut `feature/*` off `main`, PR back into `main`; every merge
+auto-deploys **staging**. Production advances only through an explicit, reviewed
+promotion PR `main → production`, so `main` pushes never touch prod. Both tiers
+use the identical branch-tracking + `watchPatterns` + "Wait for CI" mechanism;
+auto-deploy stays **on** in both — the gate is that `production` is human-gated by
+branch protection, not a manual deploy button.
+
+- **Promote** with a **merge commit** (not squash — squash makes `production`
+  diverge and muddies the next promotion diff); `production` history stays a
+  superset of `main`.
+- **Hotfix:** normal PR → `main` → verify on staging → fast promotion PR. If prod
+  is broken and `main` holds unreleased work, branch off `production`, PR straight
+  into `production`, then back-merge to `main`.
+- **Rollback:** redeploy the last-good production deployment in Railway (instant,
+  reuses the prior image). Migrations are forward-only — a schema rollback needs a
+  compensating migration, not an auto-revert.
+
+### Environments vs. per-service config
+
+An environment is a **fully isolated stack** — its own copy of all three services
+**and its own Postgres, Redis, and bucket**, with its own variables.
+
+| Layer                 | Scope                           | Behaviour                                                                     |
+| --------------------- | ------------------------------- | ----------------------------------------------------------------------------- |
+| Tracked branch        | per service, per environment    | production-env services track `production`; staging-env services track `main`. |
+| `railway.json`        | read from the repo, per service | same file on both branches → identical build/deploy/watch in every env; no per-env file. |
+| `build.watchPatterns` | per push, per service, per env  | a push rebuilds only the services whose patterns match the changed files — same isolation in staging and prod. |
+| Variables / refs      | **per environment**             | `${{Postgres.DATABASE_URL}}` resolves to *that env's* DB, so staging code hits the staging DB unchanged. |
+
+> Both warnings from _Per-service config + build isolation_ apply **per
+> environment**: set each staging service's Config-as-Code path, and never add a
+> dashboard "Watch Paths" override (it shadows the file's `watchPatterns`).
+
+### Migration safety — staging migrates first
+
+The backend runs migrations on boot (see _Schema_) and each environment has its
+**own** DB, so a schema change is proven in three layers: **CI** (fresh DB, every
+push) → **staging** (persistent staging DB, real-shaped data — catches what an
+empty CI DB can't) → **production** (same migration, after staging proved it). The
+health-check is the safety net: Railway won't cut traffic until `/health` passes,
+so a migration that crashes on boot is a failed deploy, not an outage — the
+previous deploy keeps serving.
+
+> **Hard requirement:** the staging environment must have its **own**
+> Postgres/Redis/bucket — never a reference to prod's. If staging's
+> `${{Postgres.DATABASE_URL}}` resolves to the prod DB, a staging deploy migrates
+> **production**. Verify this before the first staging deploy.
+
+Keep migrations backward-compatible (expand/contract) so a boot migration doesn't
+break the still-serving old container during rollout. Safe at one backend replica;
+if you scale replicas, move migrations to a dedicated release step.
+
+### CI gating
+
+`.github/workflows/ci.yml` triggers on push to **`main`** and **`production`** and
+on every PR. PRs run only the affected workspaces (fast feedback); a push to either
+deploy branch runs the full suite **plus** the migration gate. Railway's
+per-service "Wait for CI" holds each environment's deploy until that commit's
+`verify` job is green — including the post-merge run on `production` that gates a
+promotion.
+
+### Cutover & staging setup (one-time)
+
+The production env and services already exist (from _One-time setup_); this adds
+the split.
+
+1. **`production` branch** — created from the live `main` SHA. Fast-forward it to
+   current `main` immediately before step 2 so the repoint is a true no-op.
+2. **Repoint the production env** (backend/admin/web): Settings → Source → tracked
+   branch `main` → **`production`**. Keep "Wait for CI" on; config path unchanged.
+   **This is the step that stops `main` pushes from deploying prod.**
+3. **Create the `staging` env** → New Environment → fork from production →
+   **duplicate Postgres, Redis, and the bucket** (fresh, isolated). Each service:
+   tracked branch `main`, "Wait for CI" on, config path inherited.
+4. **Staging variables:** staging `JWT_*` secrets, `CORS_ORIGINS` = staging
+   admin/web origins, `NEXT_PUBLIC_API_URL` = staging backend URL, provider **test**
+   keys, `HOSTNAME=0.0.0.0`; leave `DB_SYNCHRONIZE` unset. Confirm the DB/Redis refs
+   resolve to the **staging** plugins.
+5. **Seed a staging admin** against the staging DB proxy (separate DB → its own
+   admin row).
+6. **Branch protection** (GitHub → Settings → Branches) on `main` **and**
+   `production`: require a PR, require the `verify` check, ≥ 1 approval, block
+   force-push/delete. Leave `production` without a linear-history requirement so
+   merge-commit promotions are allowed.
+
+### PR preview environments (optional)
+
+Railway → project Settings → enable PR Environments, **base = `staging`** (never
+production — previews inherit the base env's variables, so basing on staging keeps
+**test** provider keys out of prod-secret range). Each PR forks staging into an
+ephemeral env (own DBs, migrations from baseline), torn down on close;
+`watchPatterns` still scope which services build. Cost is one full stack per open
+PR — gate behind a label if volume grows.
+
 ## One-time setup on Railway
 
 1. **New Project → Deploy from GitHub repo** → pick this repo (creates the backend service).
