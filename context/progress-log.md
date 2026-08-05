@@ -33,19 +33,22 @@ domains). Worked the deploy-trigger / watch-path behavior: root-level changes (`
 `railway.json`, `packages/**`, lockfile) were being SKIPPED for the backend because it had a dashboard
 "Watch Paths" override of `backend/**`. Cleared that override (dashboard) — confirmed a root-only push
 now redeploys the backend.
-**Notes / honest record:** I first tried broadening deploys via a shared `build.watchPatterns` union in
-the root `railway.json`. Two findings: (1) config-as-code `watchPatterns` does NOT override a service's
-dashboard Watch-Paths (unlike `dockerfilePath`, which does) — so the shared file only governs services
-with no dashboard override; (2) a **shared** `railway.json` is read by all three services, so a union
-`watchPatterns` breaks per-service isolation — an admin-only change rebuilt backend + web too (verified
-in deploy history). Reverted the union. **Correct model (per-service isolation) is a per-service
-setting** — either per-service dashboard Watch Paths, or per-service config via `railway config`
-(`.railway/railway.ts`, needs the Railway TS SDK + a whole-project `apply`, deemed too risky for prod
-right now). Chosen path: per-service dashboard Watch Paths (pending). Target values —
-backend: `backend/**,packages/**,Dockerfile,.dockerignore,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.base.json,railway.json`;
-admin: `admin/**,packages/**,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.base.json,railway.json`;
-web: `web/**,packages/**,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.base.json,railway.json`.
-`driver`/`rider` are EAS (not Railway), so they never trigger a Railway build regardless.
+**Final solution (DONE + verified):** per-service config files — `backend/railway.json`,
+`admin/railway.json`, `web/railway.json` — each with its own `build.watchPatterns`, `dockerfilePath`,
+and healthcheck. Each Railway service's dashboard "Config file path" points at its file (the one
+unavoidable dashboard step; Railway exposes no CLI/variable for it). Pruned: the shared root
+`railway.json` (now dead) and the `RAILWAY_DOCKERFILE_PATH` vars on admin/web (each per-service file
+carries `dockerfilePath`). **Verified isolation both ways:** a web-only push rebuilt only web
+(backend+admin SKIPPED); an admin/Dockerfile-only push rebuilt only admin (backend+web SKIPPED).
+**Gotchas recorded:** (a) the fully-in-code route (`railway config` / `.railway/railway.ts` TS-IaC) is
+blocked in this env by a Railway CLI module-loader bug (query-string import fails even after CLI
+upgrade) — reverted the SDK dep; (b) Railway `watchPatterns` match **gitignore-style**, so a bare
+`Dockerfile` also matched `admin/Dockerfile`/`web/Dockerfile` and rebuilt the backend — fixed by
+anchoring root-only inputs with a leading slash (`/Dockerfile`, `/.dockerignore`, `/pnpm-lock.yaml`,
+`/pnpm-workspace.yaml`, `/tsconfig.base.json`). `driver`/`rider` are EAS (not Railway), so they never
+trigger a Railway build. Earlier dead-ends (for the record): a shared-root `watchPatterns` union broke
+isolation (all services read one file); and config-as-code does NOT override a dashboard Watch-Paths
+override (had to clear the backend's `backend/**` dashboard override).
 
 ### chore · infra · Clean CI/CD pipeline + Railway migration cutover — 2026-08-04
 **What:** Replaced prod `DB_SYNCHRONIZE=true` with TypeORM migrations — committed a self-contained
