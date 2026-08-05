@@ -2,7 +2,8 @@
 #
 # Build from the repository ROOT — this is a pnpm workspace and admin depends on
 # the @kari/types workspace package. The admin Railway service selects this file
-# via `admin/railway.json` (build.dockerfilePath); build context is the repo root.
+# via `admin/railway.json` (build.dockerfilePath); build context is the repo root
+# (the service's root directory is `/`).
 #
 # Uses Next.js standalone output (next.config.ts: output:'standalone' +
 # outputFileTracingRoot at the repo root). The traced layout is:
