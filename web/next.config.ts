@@ -12,7 +12,6 @@ const config: NextConfig = {
   // root so the workspace dep (@kari/types) is traced; build cwd is web/.
   output: 'standalone',
   outputFileTracingRoot: path.resolve(process.cwd(), '..'),
-  // (web-only change; deploy isolation is governed by web/railway.json watchPatterns)
 };
 
 export default config;
