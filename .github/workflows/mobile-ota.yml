@@ -99,11 +99,12 @@ jobs:
       - uses: ./.github/actions/mobile-setup
       # Re-gate before shipping: a direct push to main (no PR) would otherwise
       # skip the PR gate. Turbo-cached, so it's near-instant on an already-gated sha.
-      - name: typecheck · lint · test
-        run: pnpm exec turbo run typecheck lint test --filter=@kari/${{ matrix.app }} --cache-dir=.turbo
+      - uses: ./.github/actions/mobile-gate
+        with:
+          app: ${{ matrix.app }}
       - uses: expo/expo-github-action@v8
         with:
-          eas-version: latest
+          eas-version: '21.5.0'
           token: ${{ secrets.EXPO_TOKEN }}
           # npm (not pnpm) for the eas-cli install: pnpm 11 aborts on eas-cli's
           # optional native dep dtrace-provider (ERR_PNPM_IGNORED_BUILDS); npm

@@ -16,6 +16,7 @@ on:
       - '.nvmrc'
       - '.github/workflows/mobile-ci.yml'
       - '.github/actions/mobile-setup/**'
+      - '.github/actions/mobile-gate/**'
   push:
     branches: [main]
     paths:
@@ -27,6 +28,7 @@ on:
       - '.nvmrc'
       - '.github/workflows/mobile-ci.yml'
       - '.github/actions/mobile-setup/**'
+      - '.github/actions/mobile-gate/**'
 
 # One active run per branch/PR; a new push cancels the stale run.
 concurrency:
@@ -79,10 +81,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/mobile-setup
-      # Turbo builds @kari/types first (^build), runs the expo-router codegen
-      # baked into the typecheck script, then tsc / eslint / jest for the app.
-      - name: typecheck · lint · test
-        run: pnpm exec turbo run typecheck lint test --filter=@kari/${{ matrix.app }} --cache-dir=.turbo
+      - uses: ./.github/actions/mobile-gate
+        with:
+          app: ${{ matrix.app }}
 
   # Single stable status check for branch protection. Green when the gate passed
   # for every affected app, and trivially green when no mobile app was affected

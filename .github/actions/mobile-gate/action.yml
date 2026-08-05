@@ -1,0 +1,25 @@
+# The mobile correctness gate for ONE Expo app: typecheck + lint + test.
+# lint/test run directly (eslint/jest) rather than via `turbo run lint test`, so
+# the root CI's turbo run does NOT pick up rider/driver — they no longer expose
+# `lint`/`test` scripts. The mobile pipeline owns these checks; the root
+# (backend/web/admin) pipeline stays non-mobile. typecheck still goes through
+# Turbo so @kari/types is built first (^build) and the expo-router codegen in the
+# typecheck script runs.
+name: Mobile gate
+description: typecheck + lint + test for one Expo app (rider|driver).
+inputs:
+  app:
+    description: App workspace under @kari/ (rider|driver).
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: typecheck
+      shell: bash
+      run: pnpm exec turbo run typecheck --filter=@kari/${{ inputs.app }} --cache-dir=.turbo
+    - name: lint
+      shell: bash
+      run: pnpm --filter @kari/${{ inputs.app }} exec eslint .
+    - name: test
+      shell: bash
+      run: pnpm --filter @kari/${{ inputs.app }} exec jest --passWithNoTests
