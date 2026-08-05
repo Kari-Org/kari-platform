@@ -1,8 +1,8 @@
 # Kari admin console (Next.js 15) container image for Railway.
 #
 # Build from the repository ROOT — this is a pnpm workspace and admin depends on
-# the @kari/types workspace package. Set the Railway service's Dockerfile path to
-# `admin/Dockerfile` with the build context at the repo root.
+# the @kari/types workspace package. The admin Railway service selects this file
+# via `admin/railway.json` (build.dockerfilePath); build context is the repo root.
 #
 # Uses Next.js standalone output (next.config.ts: output:'standalone' +
 # outputFileTracingRoot at the repo root). The traced layout is:
