@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Redis } from 'ioredis';
-import { BehaviorPreference, type CarCategory, DriverAvailability, type DriverType } from '@kari/types';
+import {
+  BehaviorPreference,
+  type CarCategory,
+  DriverAvailability,
+  type DriverType,
+} from '@kari/types';
 import { DriverService } from '../driver/driver.service';
 import { REDIS_CLIENT } from '../redis/redis.constants';
 

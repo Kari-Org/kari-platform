@@ -14,14 +14,14 @@ pnpm --filter @kari/backend dev
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm --filter @kari/backend dev` | Watch-mode dev server |
-| `pnpm --filter @kari/backend build` | Compile to `dist/` |
-| `pnpm --filter @kari/backend test` | Unit tests |
-| `pnpm --filter @kari/backend lint` | Lint |
+| Command                                          | Description                  |
+| ------------------------------------------------ | ---------------------------- |
+| `pnpm --filter @kari/backend dev`                | Watch-mode dev server        |
+| `pnpm --filter @kari/backend build`              | Compile to `dist/`           |
+| `pnpm --filter @kari/backend test`               | Unit tests                   |
+| `pnpm --filter @kari/backend lint`               | Lint                         |
 | `pnpm --filter @kari/backend migration:generate` | Generate a TypeORM migration |
-| `pnpm --filter @kari/backend migration:run` | Apply migrations |
+| `pnpm --filter @kari/backend migration:run`      | Apply migrations             |
 
 ## Phase 0 status
 

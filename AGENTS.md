@@ -4,12 +4,14 @@
 > This file routes you there and states the rules that never bend.
 
 ## Authority
+
 `context/foundation.md` is the top source of truth. When anything here or in the code
 disagrees with it, **foundation wins**. Never re-decide a decision the foundation already
-locked — cite it (`foundation.md §7 #N`) instead. Where a *doc* and the *code* disagree on an
+locked — cite it (`foundation.md §7 #N`) instead. Where a _doc_ and the _code_ disagree on an
 implementation detail, the code embodies the decision (see foundation's preamble).
 
 ## Context files (read before you build)
+
 - `context/foundation.md` — locked decisions + reasoning (authority)
 - `context/project-overview.md` — product story, ride flows, user stories
 - `context/architecture.md` — stack, shape, boundaries, ride-type matrix, invariants
@@ -26,18 +28,21 @@ Per-product deep dives: `backend/context/`, `rider/context/`, `driver/context/`,
 and can lag the code).
 
 `graphify-out/` is a DERIVED, ADVISORY code graph (symbols/files/call edges, rebuilt post-commit) —
-use it to *find* code, never to *decide*; `context/foundation.md` wins on conflict, and it is NOT
+use it to _find_ code, never to _decide_; `context/foundation.md` wins on conflict, and it is NOT
 `context/build-graph.md` (that is the capability plan, a different altitude).
 
 ## Agent skills
+
 Skills installed for this build (open a skill's `SKILL.md` on demand; paths are `.claude/skills/<name>/`
 or `.agents/skills/<name>/`, user- or project-level):
+
 - `context-system` — builds and maintains the `context/` system (foundation, build-graph, progress-log).
 - `architect` — designs a slice; writes its spec to `docs/specs/`.
 - `develop` — builds a slice from its spec's `## Build plan`.
 - `check` — `verify` proves behavior against the spec; `review` is a senior code review.
 
 ## Standing instructions
+
 1. Before writing code: read `code-standards.md` and the relevant `context/` files.
 2. After completing any work: prepend an entry to `context/progress-log.md`
    (category · area · what · notes · date). Mandatory — like reading context first.

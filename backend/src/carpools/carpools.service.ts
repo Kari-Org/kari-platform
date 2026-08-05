@@ -7,7 +7,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, type EntityManager, OptimisticLockVersionMismatchError, Repository } from 'typeorm';
+import {
+  DataSource,
+  type EntityManager,
+  OptimisticLockVersionMismatchError,
+  Repository,
+} from 'typeorm';
 import {
   BehaviorPreference,
   CarpoolStatus,
@@ -151,11 +156,13 @@ export class CarpoolsService {
       await this.dataSource.transaction(async (m) => {
         const cp = await m.findOne(Carpool, { where: { id: carpoolId } });
         if (!cp) throw new NotFoundException('carpool not found');
-        if (!JOINABLE.includes(cp.status)) throw new ConflictException('this carpool is no longer joinable');
+        if (!JOINABLE.includes(cp.status))
+          throw new ConflictException('this carpool is no longer joinable');
         if (cp.seatsTaken >= cp.maxSeats) throw new ConflictException('this carpool is full');
 
         const existing = await m.findOne(CarpoolMember, { where: { carpoolId, riderId } });
-        if (existing?.status === 'JOINED') throw new ConflictException('you are already in this carpool');
+        if (existing?.status === 'JOINED')
+          throw new ConflictException('you are already in this carpool');
         if (existing) {
           existing.status = 'JOINED';
           await m.save(existing);
@@ -173,7 +180,11 @@ export class CarpoolsService {
       throw err;
     }
     const view = await this.view(carpoolId);
-    this.realtime.emitToUser((await this.carpools.findOne({ where: { id: carpoolId } }))!.creatorId, 'carpool:joined', view);
+    this.realtime.emitToUser(
+      (await this.carpools.findOne({ where: { id: carpoolId } }))!.creatorId,
+      'carpool:joined',
+      view,
+    );
     return view;
   }
 
@@ -181,10 +192,14 @@ export class CarpoolsService {
     await this.dataSource.transaction(async (m) => {
       const cp = await m.findOne(Carpool, { where: { id: carpoolId } });
       if (!cp) throw new NotFoundException('carpool not found');
-      const member = await m.findOne(CarpoolMember, { where: { carpoolId, riderId, status: 'JOINED' } });
+      const member = await m.findOne(CarpoolMember, {
+        where: { carpoolId, riderId, status: 'JOINED' },
+      });
       if (!member) throw new BadRequestException('you are not in this carpool');
-      if (member.isCreator) throw new BadRequestException('the creator cancels the carpool instead of leaving');
-      if (!JOINABLE.includes(cp.status)) throw new ConflictException('this carpool can no longer be left');
+      if (member.isCreator)
+        throw new BadRequestException('the creator cancels the carpool instead of leaving');
+      if (!JOINABLE.includes(cp.status))
+        throw new ConflictException('this carpool can no longer be left');
       member.status = 'LEFT';
       await m.save(member);
       cp.seatsTaken = Math.max(0, cp.seatsTaken - 1);
@@ -199,7 +214,9 @@ export class CarpoolsService {
    * totalFare × occupancyMultiplier(n). Alone (n=1) that's the full fare (spec 0003).
    */
   private async recompute(m: EntityManager, carpool: Carpool): Promise<void> {
-    const active = await m.find(CarpoolMember, { where: { carpoolId: carpool.id, status: 'JOINED' } });
+    const active = await m.find(CarpoolMember, {
+      where: { carpoolId: carpool.id, status: 'JOINED' },
+    });
     const share = Math.round(carpool.totalFare * occupancyMultiplier(active.length));
     for (const mem of active) {
       mem.shareAmount = share;
@@ -260,7 +277,8 @@ export class CarpoolsService {
     const driverWallet = await this.ledger.getOrCreateUserWallet(cp.driverId);
     const revenue = await this.ledger.systemWallet(SystemAccount.REVENUE);
     legs.push({ walletId: driverWallet.id, direction: LedgerDirection.CREDIT, amount: driverNet });
-    if (commission > 0) legs.push({ walletId: revenue.id, direction: LedgerDirection.CREDIT, amount: commission });
+    if (commission > 0)
+      legs.push({ walletId: revenue.id, direction: LedgerDirection.CREDIT, amount: commission });
 
     await this.ledger.post({
       type: TransactionType.RIDE_CHARGE,
@@ -295,13 +313,22 @@ export class CarpoolsService {
 
   /** Open carpools near a point that still have seats — discoverable to join. */
   async listJoinable(lat: number, lng: number) {
-    const open = await this.carpools.find({ where: { status: CarpoolStatus.OPEN }, order: { createdAt: 'DESC' }, take: 50 });
-    const near = open.filter((cp) => cp.seatsTaken < cp.maxSeats && haversineKm(lat, lng, cp.pickupLat, cp.pickupLng) <= 5);
+    const open = await this.carpools.find({
+      where: { status: CarpoolStatus.OPEN },
+      order: { createdAt: 'DESC' },
+      take: 50,
+    });
+    const near = open.filter(
+      (cp) => cp.seatsTaken < cp.maxSeats && haversineKm(lat, lng, cp.pickupLat, cp.pickupLng) <= 5,
+    );
     return Promise.all(near.map((cp) => this.view(cp.id)));
   }
 
   async mine(riderId: string) {
-    const memberships = await this.members.find({ where: { riderId }, order: { createdAt: 'DESC' } });
+    const memberships = await this.members.find({
+      where: { riderId },
+      order: { createdAt: 'DESC' },
+    });
     return Promise.all(memberships.map((m) => this.view(m.carpoolId)));
   }
 
@@ -311,19 +338,27 @@ export class CarpoolsService {
 
   private async view(carpoolId: string) {
     const cp = await this.load(carpoolId);
-    const members = await this.members.find({ where: { carpoolId, status: 'JOINED' }, order: { createdAt: 'ASC' } });
+    const members = await this.members.find({
+      where: { carpoolId, status: 'JOINED' },
+      order: { createdAt: 'ASC' },
+    });
     const seatsAvailable = cp.maxSeats - cp.seatsTaken;
     return {
       ...cp,
-      members: members.map((m) => ({ riderId: m.riderId, shareAmount: m.shareAmount, isCreator: m.isCreator })),
+      members: members.map((m) => ({
+        riderId: m.riderId,
+        shareAmount: m.shareAmount,
+        isCreator: m.isCreator,
+      })),
       seatsAvailable,
       // Server-computed money figures — clients never compute fares (spec 0003).
       collectedTotal: members.reduce((sum, m) => sum + m.shareAmount, 0),
       projectedShare:
         seatsAvailable > 0
-          ? Math.round(cp.totalFare * occupancyMultiplier(Math.min(members.length + 1, cp.maxSeats)))
+          ? Math.round(
+              cp.totalFare * occupancyMultiplier(Math.min(members.length + 1, cp.maxSeats)),
+            )
           : null,
     };
   }
 }
-

@@ -10,6 +10,12 @@ export function useCan(permission: Permission): boolean {
 }
 
 /** Renders children only if the admin holds the permission. */
-export function Can({ permission, children }: { permission: Permission; children: React.ReactNode }) {
+export function Can({
+  permission,
+  children,
+}: {
+  permission: Permission;
+  children: React.ReactNode;
+}) {
   return useCan(permission) ? <>{children}</> : null;
 }

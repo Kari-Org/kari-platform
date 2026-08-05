@@ -16,7 +16,9 @@ export function InputField({ label, labelClassName, inputClassName, ...props }: 
   return (
     <View className="mb-4">
       {label ? (
-        <Text className={`mb-2 font-pmedium ${labelClassName ?? 'text-sm text-muted'}`}>{label}</Text>
+        <Text className={`mb-2 font-pmedium ${labelClassName ?? 'text-sm text-muted'}`}>
+          {label}
+        </Text>
       ) : null}
       <TextInput
         placeholderTextColor={colors.subtle}

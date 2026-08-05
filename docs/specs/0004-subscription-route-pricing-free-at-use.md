@@ -36,11 +36,13 @@ the code carries dead metering fields and an unwired screen.
 ## Requirements
 
 **User stories**:
+
 - As a commuting rider, I want to subscribe to my own route for a monthly fee so that my daily trips are prepaid and predictable.
 - As a subscribed rider, I want rides on my route to cost nothing at ride time so that the month is truly paid for.
 - As a driver serving a subscriber, I want my normal earnings on those rides so that carrying subscribers never costs me.
 
 **Acceptance criteria**:
+
 - **AC-1**: `POST /subscriptions` accepts `{ quoteRef, label? }`; the monthly fee is computed from the quote's solo ECONOMY fare by the fixed formula (below), charged upfront from the wallet, and the subscription stores the route (pickup and dropoff coordinates and addresses) and the fee.
 - **AC-2**: The fee formula is deterministic and observable: `monthlyFee = ceil((soloFare × 44 × 0.6) / 500) × 500` naira, where `soloFare` is the quote's fare with `category === ECONOMY` (named explicitly, never "the minimum"). Same quote, same fee.
 - **AC-3**: Completing a ride whose pickup and dropoff both lie within 1 km of the active subscription's route endpoints (in either direction) charges the rider nothing: no rider wallet debit, `ridesUsed` incremented, the ride recorded with `paymentMethod = WALLET` regardless of what was requested (a covered ride must never read as CASH, or the driver could collect cash on top of the funded net), and the ride view exposes `coveredBySubscription: true` for both apps.
@@ -58,26 +60,32 @@ Subscribe from a quote; store route + fee on `subscriptions`; in `rides.service.
 coverage before calling `settleRide` and post a subscription coverage settlement instead when covered.
 
 **Pros**:
+
 - Reuses the quote infrastructure and the single settlement call site; no new module.
 - Driver economics preserved with balanced legs (REVENUE → driver), no negative surprises.
 
 **Cons**:
+
 - Route matching by endpoint radius is coarse (a different destination 900 m away matches); acceptable at 1 km and tunable.
 
 ### Option 2: Keep the static catalog, add a route field for display only, meter with `includedRides`
 
 **Pros**:
+
 - Smallest diff.
 
 **Cons**:
+
 - The fee stays disconnected from the rider's actual route, which is the whole product promise; display only routes do not gate anything.
 
 ### Option 3: Credit model (subscription buys N ride credits, each ride burns one at face value)
 
 **Pros**:
+
 - Precise accounting per ride.
 
 **Cons**:
+
 - Requires a credits ledger concept the money module does not have, and the product story is "your route, unlimited commute," not a punch card. More machinery for a worse fit.
 
 ## Decision
@@ -99,6 +107,7 @@ commute route is a fixed pair). The preview endpoint exists for the same reason 
 
 **Data model sketch** (`subscriptions` table, additive nullable columns; dev via `DB_SYNCHRONIZE`,
 production as an additive migration):
+
 - `pickupLat/pickupLng/dropoffLat/dropoffLng: double NULL`, `pickupAddress/dropoffAddress: varchar NULL`
 - `monthlyFeeNaira: int NULL`, `label: varchar(60) NULL`
 - `planId` becomes nullable (route subscriptions carry no plan; old rows keep theirs).
@@ -125,6 +134,7 @@ drift. Fare basis: the same `agreedPrice ?? quotedPrice` completion already reso
 charge 0 and `paymentMethod` forced to WALLET.
 
 **Key invariants**:
+
 - Rider wallet is never debited for a covered ride.
 - Driver net on a covered ride equals driver net on the same ride uncovered (driver indifferent).
 - Every coverage settlement posts balanced legs; Σ(all wallets) = 0 preserved.
@@ -136,6 +146,7 @@ charge 0 and `paymentMethod` forced to WALLET.
 **Configuration required**: none (formula constants in code; founder tunes via follow up).
 
 **Critical test scenarios**:
+
 - Subscribe from a quote: fee = formula(soloFare), wallet debited, route stored, verifies **AC-1**, **AC-2**.
 - Covered ride end to end: complete → rider balance unchanged, driver credited normal net from REVENUE, legs balance, ridesUsed 0→1, verifies **AC-3**, **AC-4**.
 - Reversed direction (work → home) also covered, verifies **AC-3**.
@@ -155,14 +166,17 @@ Tracer bullet order (project default assumption):
 ## Consequences
 
 **Positive**:
+
 - The flagship subscription promise is real: prepaid month, free at use, driver kept whole.
 - Dead metering fields (`ridesUsed`) start working; the unwired rider surface gets wired.
 
 **Negative / tradeoffs**:
+
 - Unlimited rides within the period until the frequency slice lands: a rider could take many covered trips a day on the route; REVENUE absorbs each driver net, so a heavy user can outrun their fee (bounded by route match; accepted until frequency config, flagged to founder).
 - Endpoint radius matching is coarse; a nearby different destination rides free (1 km, tunable).
 
 **Neutral**:
+
 - Static plans remain listed (`listPlans`) for backward compatibility but the app no longer offers them; removal is a later cleanup.
 - Old subscriptions (plan based, no route) simply never match coverage; they age out.
 

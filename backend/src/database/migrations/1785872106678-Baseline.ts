@@ -1,192 +1,369 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Baseline1785872106678 implements MigrationInterface {
-    name = 'Baseline1785872106678'
+  name = 'Baseline1785872106678';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // uuid_generate_v4() needs uuid-ossp. TypeORM's synchronize creates this
-        // automatically, but migration:generate omits it — add it so the baseline
-        // is self-contained on a fresh database (e.g. a new Railway Postgres).
-        await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
-        await queryRunner.query(`CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "role" character varying(16) NOT NULL, "email" character varying(255) NOT NULL, "phone" character varying(32) NOT NULL, "passwordHash" character varying(255) NOT NULL, "status" character varying(32) NOT NULL DEFAULT 'PENDING_VERIFICATION', "emailVerified" boolean NOT NULL DEFAULT false, "phoneVerified" boolean NOT NULL DEFAULT false, "adminRole" character varying(16), "referralCode" character varying(16), "referredByUserId" uuid, "referralRewarded" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_97672ac88f789774dd47f7c8be" ON "users" ("email") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_a000cca60bcf04454e72769949" ON "users" ("phone") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_b7f8278f4e89249bb75c9a1589" ON "users" ("referralCode") `);
-        await queryRunner.query(`CREATE TABLE "support_tickets" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "requesterId" uuid NOT NULL, "requesterRole" character varying(16) NOT NULL, "category" character varying(16) NOT NULL DEFAULT 'GENERAL', "subject" character varying(140) NOT NULL, "message" text NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'OPEN', "rideId" uuid, "adminReply" text, "handledById" uuid, CONSTRAINT "PK_942e8d8f5df86100471d2324643" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_b5a4d6e32a32c86583de6354aa" ON "support_tickets" ("requesterId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_ba7b1a2ed4051fb3b39ff95444" ON "support_tickets" ("status") `);
-        await queryRunner.query(`CREATE TABLE "subscriptions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "riderId" uuid NOT NULL, "planId" character varying(32), "pickupLat" double precision, "pickupLng" double precision, "pickupAddress" character varying(200), "dropoffLat" double precision, "dropoffLng" double precision, "dropoffAddress" character varying(200), "monthlyFeeNaira" integer, "label" character varying(60), "status" character varying(16) NOT NULL DEFAULT 'ACTIVE', "assignedDriverId" uuid, "currentPeriodStart" TIMESTAMP WITH TIME ZONE NOT NULL, "currentPeriodEnd" TIMESTAMP WITH TIME ZONE NOT NULL, "ridesUsed" integer NOT NULL DEFAULT '0', "autoRenew" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_a87248d73155605cf782be9ee5e" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_9a0a82d34c33e47cf27ef1ac07" ON "subscriptions" ("riderId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_6ccf973355b70645eff37774de" ON "subscriptions" ("status") `);
-        await queryRunner.query(`CREATE TABLE "shuttle_trips" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "routeId" uuid NOT NULL, "departAt" TIMESTAMP WITH TIME ZONE NOT NULL, "capacity" integer NOT NULL DEFAULT '14', "seatsBooked" integer NOT NULL DEFAULT '0', "driverId" uuid, "status" character varying(16) NOT NULL DEFAULT 'SCHEDULED', "version" integer NOT NULL, CONSTRAINT "PK_03c8e961a3a709d7d3e60bc6cb0" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_092d14024253bf45e5869e7faf" ON "shuttle_trips" ("routeId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_01748478602845572fba1504a3" ON "shuttle_trips" ("status") `);
-        await queryRunner.query(`CREATE TABLE "shuttle_stops" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "routeId" uuid NOT NULL, "name" character varying(120) NOT NULL, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "sequence" integer NOT NULL, "fareFromOrigin" integer NOT NULL, CONSTRAINT "PK_2a7eca8f655686b0b122db32cd1" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_f8df2990207934154db0032164" ON "shuttle_stops" ("routeId") `);
-        await queryRunner.query(`CREATE TABLE "shuttle_routes" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "name" character varying(80) NOT NULL, "corridor" character varying(24) NOT NULL, "active" boolean NOT NULL DEFAULT true, "assignedDriverId" uuid, "busPlateNumber" character varying(20), "busLabel" character varying(60), CONSTRAINT "PK_b8b16cffba62973d2a4d29b1118" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_7b219893c901e1997ced5816c5" ON "shuttle_routes" ("name") `);
-        await queryRunner.query(`CREATE TABLE "shuttle_bookings" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "tripId" uuid NOT NULL, "riderId" uuid NOT NULL, "fromStopId" uuid NOT NULL, "toStopId" uuid NOT NULL, "seats" integer NOT NULL DEFAULT '1', "fare" integer NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'CONFIRMED', CONSTRAINT "PK_8bd600db4923477ded7fcfed727" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_4d0e7baf7d9a7d027f29b4c101" ON "shuttle_bookings" ("tripId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_3ed0658be3fd2edeeeac8e616e" ON "shuttle_bookings" ("riderId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_fd0b3ae6cb7f73231c056c55da" ON "shuttle_bookings" ("status") `);
-        await queryRunner.query(`CREATE TABLE "shared_trips" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "rideId" uuid NOT NULL, "token" character varying(64) NOT NULL, "createdBy" uuid NOT NULL, "expiresAt" TIMESTAMP WITH TIME ZONE NOT NULL, "active" boolean NOT NULL DEFAULT true, CONSTRAINT "PK_3404e690901ccc4b5f00ab24dc7" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_aaedc61bd4b95e840737fad558" ON "shared_trips" ("rideId") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_238ef9ae1d17a4a79832137361" ON "shared_trips" ("token") `);
-        await queryRunner.query(`CREATE TABLE "panic_events" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "rideId" uuid, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'OPEN', "contactsAlerted" integer NOT NULL DEFAULT '0', "resolvedAt" TIMESTAMP WITH TIME ZONE, CONSTRAINT "PK_09f139363c47e00ff1d7cb1e15a" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_be35a0960d1ad1cc5b2960f776" ON "panic_events" ("userId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_c5d2d831bf82446d168392ee1d" ON "panic_events" ("status") `);
-        await queryRunner.query(`CREATE TABLE "emergency_contacts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "name" character varying(120) NOT NULL, "phone" character varying(32) NOT NULL, "relationship" character varying(60), CONSTRAINT "PK_8be191845b6fca1c4e5ba5bd7d1" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_9b9bb7f85035305c3dee924d22" ON "emergency_contacts" ("userId") `);
-        await queryRunner.query(`CREATE TABLE "rides" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "type" character varying(16) NOT NULL DEFAULT 'SOLO', "status" character varying(16) NOT NULL DEFAULT 'SEARCHING', "riderId" uuid NOT NULL, "driverId" uuid, "pickupLat" double precision NOT NULL, "pickupLng" double precision NOT NULL, "pickupAddress" text, "dropoffLat" double precision NOT NULL, "dropoffLng" double precision NOT NULL, "dropoffAddress" text, "distanceMeters" integer NOT NULL, "durationSeconds" integer NOT NULL, "carCategory" character varying(16) NOT NULL, "priceType" character varying(16) NOT NULL DEFAULT 'STANDARD', "paymentMethod" character varying(16) NOT NULL DEFAULT 'CASH', "quotedPrice" integer NOT NULL, "riderProposedPrice" integer, "agreedPrice" integer, "startOtp" character varying(8), "riderRated" boolean NOT NULL DEFAULT false, "driverRated" boolean NOT NULL DEFAULT false, "acceptedAt" TIMESTAMP WITH TIME ZONE, "arrivedAt" TIMESTAMP WITH TIME ZONE, "startedAt" TIMESTAMP WITH TIME ZONE, "completedAt" TIMESTAMP WITH TIME ZONE, "cancelledAt" TIMESTAMP WITH TIME ZONE, "cancelReason" text, "commission" integer, "driverEarnings" integer, "settledAt" TIMESTAMP WITH TIME ZONE, "coveredBySubscription" boolean NOT NULL DEFAULT false, "tipAmount" integer, "tipMethod" character varying(16), "version" integer NOT NULL, CONSTRAINT "PK_ca6f62fc1e999b139c7f28f07fd" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_87b9253c85be51e3785d3653a8" ON "rides" ("status") `);
-        await queryRunner.query(`CREATE INDEX "IDX_3c581fc8082dc803233ec676ef" ON "rides" ("riderId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_0adda088d567495e71d21b6c69" ON "rides" ("driverId") `);
-        await queryRunner.query(`CREATE TABLE "ride_offers" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "rideId" uuid NOT NULL, "driverId" uuid NOT NULL, "amount" integer NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'PENDING', CONSTRAINT "PK_8bd0ac2b8b108f575ceea9cb433" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_e47debd3d44368f977ae7b6b81" ON "ride_offers" ("rideId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_59e126ca76a45cf7bdd74b817a" ON "ride_offers" ("driverId") `);
-        await queryRunner.query(`CREATE TABLE "ratings" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "rideId" uuid NOT NULL, "raterId" uuid NOT NULL, "rateeId" uuid NOT NULL, "raterRole" character varying(16) NOT NULL, "stars" integer NOT NULL, "comment" text, CONSTRAINT "PK_0f31425b073219379545ad68ed9" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_5ea4e6b760b74bd49b9cdc58ca" ON "ratings" ("rideId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_dc83bc48cfaaa56920a68da24f" ON "ratings" ("rateeId") `);
-        await queryRunner.query(`CREATE TABLE "rider_profiles" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "firstName" character varying(80), "lastName" character varying(80), "preferredDriverBehavior" character varying(16) NOT NULL DEFAULT 'NO_PREFERENCE', "nin" character varying(32), "ninStatus" character varying(16) NOT NULL DEFAULT 'NOT_STARTED', "livenessVerified" boolean NOT NULL DEFAULT false, "gender" character varying(24), "referralCode" character varying(32), "musicPreference" character varying(16), "accessibilityNeed" character varying(16) NOT NULL DEFAULT 'NONE', "promotionsOptIn" boolean NOT NULL DEFAULT false, "homeAddress" character varying(255), "ratingAvg" real NOT NULL DEFAULT '0', "ratingCount" integer NOT NULL DEFAULT '0', CONSTRAINT "PK_bec1afad599cabe486f80dbcbf2" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_fa7f813fe33853d3b8e856d79e" ON "rider_profiles" ("userId") `);
-        await queryRunner.query(`CREATE TABLE "saved_addresses" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "label" character varying(16) NOT NULL, "address" text NOT NULL, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "riderId" uuid, CONSTRAINT "PK_2dcd5492d2ac696c133d461db8b" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "notifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "type" character varying(40) NOT NULL, "title" character varying(160) NOT NULL, "body" text NOT NULL, "data" jsonb, "channels" text, "read" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_6a72c3c0f683f6462415e653c3a" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_692a909ee0fa9383e7859f9b40" ON "notifications" ("userId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_f8b7ed75170d2d7dca4477cc94" ON "notifications" ("read") `);
-        await queryRunner.query(`CREATE TABLE "device_tokens" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "token" character varying(255) NOT NULL, "platform" character varying(16) NOT NULL DEFAULT 'unknown', CONSTRAINT "PK_84700be257607cfb1f9dc2e52c3" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_511957e3e8443429dc3fb00120" ON "device_tokens" ("userId") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_977e24c520c49436d08e5eeea8" ON "device_tokens" ("token") `);
-        await queryRunner.query(`CREATE TABLE "wallets" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "ownerType" character varying(16) NOT NULL DEFAULT 'USER', "ownerId" uuid, "systemKey" character varying(24), "currency" character varying(3) NOT NULL DEFAULT 'NGN', "balance" bigint NOT NULL DEFAULT '0', "version" integer NOT NULL, CONSTRAINT "PK_8402e5df5a30a229380e83e4f7e" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_342cecf691b0d12172e69b2b8f" ON "wallets" ("ownerId") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_aa7549844b2717014833457c63" ON "wallets" ("systemKey") `);
-        await queryRunner.query(`CREATE TABLE "transactions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "type" character varying(24) NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'PENDING', "reference" character varying(80) NOT NULL, "amount" bigint NOT NULL DEFAULT '0', "currency" character varying(3) NOT NULL DEFAULT 'NGN', "userId" uuid, "rideId" uuid, "paymentMethod" character varying(16), "provider" character varying(24), "providerRef" character varying(120), "metadata" jsonb, CONSTRAINT "PK_a219afd8dd77ed80f5a862f1db9" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_2d5fa024a84dceb158b2b95f34" ON "transactions" ("type") `);
-        await queryRunner.query(`CREATE INDEX "IDX_da87c55b3bbbe96c6ed88ea7ee" ON "transactions" ("status") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_dd85cc865e0c3d5d4be095d3f3" ON "transactions" ("reference") `);
-        await queryRunner.query(`CREATE INDEX "IDX_6bb58f2b6e30cb51a6504599f4" ON "transactions" ("userId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_de56dc2e6a36afd00d9859a328" ON "transactions" ("rideId") `);
-        await queryRunner.query(`CREATE TABLE "ledger_entries" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "transactionId" uuid NOT NULL, "walletId" uuid NOT NULL, "direction" character varying(8) NOT NULL, "amount" bigint NOT NULL, "balanceAfter" bigint NOT NULL, "type" character varying(24) NOT NULL, CONSTRAINT "PK_6efcb84411d3f08b08450ae75d5" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_ce01dd5f8bde23f503bf01ffac" ON "ledger_entries" ("transactionId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_df977c08d98fab6543724d7485" ON "ledger_entries" ("walletId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_a8781f3c6e59c59666272e896b" ON "ledger_entries" ("type") `);
-        await queryRunner.query(`CREATE TABLE "documents" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "type" character varying(32) NOT NULL, "url" text NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'SUBMITTED', CONSTRAINT "PK_ac51aa5181ee2036f5ca482857c" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_e300b5c2e3fefa9d6f8a3f2597" ON "documents" ("userId") `);
-        await queryRunner.query(`CREATE TABLE "driver_scores" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "driverId" uuid NOT NULL, "periodKey" character varying(12) NOT NULL, "points" integer NOT NULL DEFAULT '0', "rides" integer NOT NULL DEFAULT '0', CONSTRAINT "PK_73f742d34031449cdb58b6a44ce" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_8f023c1b3e8b0cad7cae35b855" ON "driver_scores" ("driverId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_78f7b5e103e9c86463d22bdbef" ON "driver_scores" ("periodKey") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_baad7e76e9d9219b51797ad938" ON "driver_scores" ("driverId", "periodKey") `);
-        await queryRunner.query(`CREATE TABLE "achievements" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "driverId" uuid NOT NULL, "badge" character varying(24) NOT NULL, CONSTRAINT "PK_1bc19c37c6249f70186f318d71d" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_4c812391578b1d83600513355c" ON "achievements" ("driverId") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_095e25fe1727ad523c985250a9" ON "achievements" ("driverId", "badge") `);
-        await queryRunner.query(`CREATE TABLE "driver_profiles" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "driverType" character varying(16) NOT NULL DEFAULT 'FREELANCE', "firstName" character varying(80), "lastName" character varying(80), "dateOfBirth" date, "origin" character varying(120), "personality" character varying(16), "nin" character varying(32), "ninStatus" character varying(16) NOT NULL DEFAULT 'NOT_STARTED', "livenessVerified" boolean NOT NULL DEFAULT false, "bankAccountNumber" character varying(32), "bankName" character varying(80), "bankAccountName" character varying(120), "nokName" character varying(120), "nokPhone" character varying(32), "nokRelationship" character varying(60), "spotifyInstalled" boolean NOT NULL DEFAULT false, "appleMusicInstalled" boolean NOT NULL DEFAULT false, "availability" character varying(16) NOT NULL DEFAULT 'OFFLINE', "carpoolMode" boolean NOT NULL DEFAULT false, "onboardingComplete" boolean NOT NULL DEFAULT false, "ratingAvg" real NOT NULL DEFAULT '0', "ratingCount" integer NOT NULL DEFAULT '0', "vehicleId" uuid, CONSTRAINT "REL_0377e4613885d8814691fe805f" UNIQUE ("vehicleId"), CONSTRAINT "PK_6e002fc8a835351e070978fcad4" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_c22d0ffc4bff60e9a39c003759" ON "driver_profiles" ("userId") `);
-        await queryRunner.query(`CREATE TABLE "vehicles" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "brand" character varying(60), "model" character varying(60) NOT NULL, "year" integer, "plateNumber" character varying(20) NOT NULL, "color" character varying(30), "category" character varying(16) NOT NULL DEFAULT 'ECONOMY', CONSTRAINT "PK_18d8646b59304dce4af3a9e35b6" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "chat_messages" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "rideId" uuid NOT NULL, "senderId" uuid NOT NULL, "recipientId" uuid NOT NULL, "body" text NOT NULL, "readAt" TIMESTAMP WITH TIME ZONE, CONSTRAINT "PK_40c55ee0e571e268b0d3cd37d10" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_eb0b97c922b553cd329467154d" ON "chat_messages" ("rideId") `);
-        await queryRunner.query(`CREATE TABLE "carpools" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "creatorId" uuid NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'OPEN', "driverId" uuid, "pickupLat" double precision NOT NULL, "pickupLng" double precision NOT NULL, "pickupAddress" text, "dropoffLat" double precision NOT NULL, "dropoffLng" double precision NOT NULL, "dropoffAddress" text, "distanceMeters" integer NOT NULL, "durationSeconds" integer NOT NULL, "carCategory" character varying(16) NOT NULL, "totalFare" integer NOT NULL, "maxSeats" integer NOT NULL DEFAULT '4', "seatsTaken" integer NOT NULL DEFAULT '0', "departAt" TIMESTAMP WITH TIME ZONE, "acceptedAt" TIMESTAMP WITH TIME ZONE, "completedAt" TIMESTAMP WITH TIME ZONE, "cancelledAt" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL, CONSTRAINT "PK_43f24c2dc3f2e28a6d506d0372e" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_6ec626f01fc670be76d15147e0" ON "carpools" ("creatorId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_9f76f76f90bda16047ca4c13f9" ON "carpools" ("status") `);
-        await queryRunner.query(`CREATE INDEX "IDX_c0e932c8c5f2ee16883ef3b180" ON "carpools" ("driverId") `);
-        await queryRunner.query(`CREATE TABLE "carpool_members" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "carpoolId" uuid NOT NULL, "riderId" uuid NOT NULL, "shareAmount" integer NOT NULL DEFAULT '0', "status" character varying(16) NOT NULL DEFAULT 'JOINED', "isCreator" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_4e27937d875a639fd2848c1f528" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_889ea3d2d0e96ff5ac5a35ef6d" ON "carpool_members" ("carpoolId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_362000ce3f3566a6e82c06ce3f" ON "carpool_members" ("riderId") `);
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_88e282e7bb251127f99343f742" ON "carpool_members" ("carpoolId", "riderId") `);
-        await queryRunner.query(`CREATE TABLE "audit_logs" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "actorId" uuid, "actorEmail" character varying(160), "actorRole" character varying(32), "action" character varying(48) NOT NULL, "targetId" character varying(64), "method" character varying(8) NOT NULL, "path" character varying(200) NOT NULL, "meta" jsonb, CONSTRAINT "PK_1bb179d048bbc581caa3b013439" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE INDEX "IDX_2dc33f7f3c22e2e7badafca1d1" ON "audit_logs" ("actorId") `);
-        await queryRunner.query(`CREATE INDEX "IDX_cee5459245f652b75eb2759b4c" ON "audit_logs" ("action") `);
-        await queryRunner.query(`ALTER TABLE "saved_addresses" ADD CONSTRAINT "FK_2d081cac4543c0105b15c2b6318" FOREIGN KEY ("riderId") REFERENCES "rider_profiles"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "driver_profiles" ADD CONSTRAINT "FK_0377e4613885d8814691fe805fa" FOREIGN KEY ("vehicleId") REFERENCES "vehicles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-    }
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // uuid_generate_v4() needs uuid-ossp. TypeORM's synchronize creates this
+    // automatically, but migration:generate omits it — add it so the baseline
+    // is self-contained on a fresh database (e.g. a new Railway Postgres).
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+    await queryRunner.query(
+      `CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "role" character varying(16) NOT NULL, "email" character varying(255) NOT NULL, "phone" character varying(32) NOT NULL, "passwordHash" character varying(255) NOT NULL, "status" character varying(32) NOT NULL DEFAULT 'PENDING_VERIFICATION', "emailVerified" boolean NOT NULL DEFAULT false, "phoneVerified" boolean NOT NULL DEFAULT false, "adminRole" character varying(16), "referralCode" character varying(16), "referredByUserId" uuid, "referralRewarded" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_97672ac88f789774dd47f7c8be" ON "users" ("email") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_a000cca60bcf04454e72769949" ON "users" ("phone") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_b7f8278f4e89249bb75c9a1589" ON "users" ("referralCode") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "support_tickets" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "requesterId" uuid NOT NULL, "requesterRole" character varying(16) NOT NULL, "category" character varying(16) NOT NULL DEFAULT 'GENERAL', "subject" character varying(140) NOT NULL, "message" text NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'OPEN', "rideId" uuid, "adminReply" text, "handledById" uuid, CONSTRAINT "PK_942e8d8f5df86100471d2324643" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_b5a4d6e32a32c86583de6354aa" ON "support_tickets" ("requesterId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_ba7b1a2ed4051fb3b39ff95444" ON "support_tickets" ("status") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "subscriptions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "riderId" uuid NOT NULL, "planId" character varying(32), "pickupLat" double precision, "pickupLng" double precision, "pickupAddress" character varying(200), "dropoffLat" double precision, "dropoffLng" double precision, "dropoffAddress" character varying(200), "monthlyFeeNaira" integer, "label" character varying(60), "status" character varying(16) NOT NULL DEFAULT 'ACTIVE', "assignedDriverId" uuid, "currentPeriodStart" TIMESTAMP WITH TIME ZONE NOT NULL, "currentPeriodEnd" TIMESTAMP WITH TIME ZONE NOT NULL, "ridesUsed" integer NOT NULL DEFAULT '0', "autoRenew" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_a87248d73155605cf782be9ee5e" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_9a0a82d34c33e47cf27ef1ac07" ON "subscriptions" ("riderId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_6ccf973355b70645eff37774de" ON "subscriptions" ("status") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "shuttle_trips" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "routeId" uuid NOT NULL, "departAt" TIMESTAMP WITH TIME ZONE NOT NULL, "capacity" integer NOT NULL DEFAULT '14', "seatsBooked" integer NOT NULL DEFAULT '0', "driverId" uuid, "status" character varying(16) NOT NULL DEFAULT 'SCHEDULED', "version" integer NOT NULL, CONSTRAINT "PK_03c8e961a3a709d7d3e60bc6cb0" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_092d14024253bf45e5869e7faf" ON "shuttle_trips" ("routeId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_01748478602845572fba1504a3" ON "shuttle_trips" ("status") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "shuttle_stops" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "routeId" uuid NOT NULL, "name" character varying(120) NOT NULL, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "sequence" integer NOT NULL, "fareFromOrigin" integer NOT NULL, CONSTRAINT "PK_2a7eca8f655686b0b122db32cd1" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_f8df2990207934154db0032164" ON "shuttle_stops" ("routeId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "shuttle_routes" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "name" character varying(80) NOT NULL, "corridor" character varying(24) NOT NULL, "active" boolean NOT NULL DEFAULT true, "assignedDriverId" uuid, "busPlateNumber" character varying(20), "busLabel" character varying(60), CONSTRAINT "PK_b8b16cffba62973d2a4d29b1118" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_7b219893c901e1997ced5816c5" ON "shuttle_routes" ("name") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "shuttle_bookings" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "tripId" uuid NOT NULL, "riderId" uuid NOT NULL, "fromStopId" uuid NOT NULL, "toStopId" uuid NOT NULL, "seats" integer NOT NULL DEFAULT '1', "fare" integer NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'CONFIRMED', CONSTRAINT "PK_8bd600db4923477ded7fcfed727" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_4d0e7baf7d9a7d027f29b4c101" ON "shuttle_bookings" ("tripId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_3ed0658be3fd2edeeeac8e616e" ON "shuttle_bookings" ("riderId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_fd0b3ae6cb7f73231c056c55da" ON "shuttle_bookings" ("status") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "shared_trips" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "rideId" uuid NOT NULL, "token" character varying(64) NOT NULL, "createdBy" uuid NOT NULL, "expiresAt" TIMESTAMP WITH TIME ZONE NOT NULL, "active" boolean NOT NULL DEFAULT true, CONSTRAINT "PK_3404e690901ccc4b5f00ab24dc7" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_aaedc61bd4b95e840737fad558" ON "shared_trips" ("rideId") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_238ef9ae1d17a4a79832137361" ON "shared_trips" ("token") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "panic_events" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "rideId" uuid, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'OPEN', "contactsAlerted" integer NOT NULL DEFAULT '0', "resolvedAt" TIMESTAMP WITH TIME ZONE, CONSTRAINT "PK_09f139363c47e00ff1d7cb1e15a" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_be35a0960d1ad1cc5b2960f776" ON "panic_events" ("userId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_c5d2d831bf82446d168392ee1d" ON "panic_events" ("status") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "emergency_contacts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "name" character varying(120) NOT NULL, "phone" character varying(32) NOT NULL, "relationship" character varying(60), CONSTRAINT "PK_8be191845b6fca1c4e5ba5bd7d1" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_9b9bb7f85035305c3dee924d22" ON "emergency_contacts" ("userId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "rides" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "type" character varying(16) NOT NULL DEFAULT 'SOLO', "status" character varying(16) NOT NULL DEFAULT 'SEARCHING', "riderId" uuid NOT NULL, "driverId" uuid, "pickupLat" double precision NOT NULL, "pickupLng" double precision NOT NULL, "pickupAddress" text, "dropoffLat" double precision NOT NULL, "dropoffLng" double precision NOT NULL, "dropoffAddress" text, "distanceMeters" integer NOT NULL, "durationSeconds" integer NOT NULL, "carCategory" character varying(16) NOT NULL, "priceType" character varying(16) NOT NULL DEFAULT 'STANDARD', "paymentMethod" character varying(16) NOT NULL DEFAULT 'CASH', "quotedPrice" integer NOT NULL, "riderProposedPrice" integer, "agreedPrice" integer, "startOtp" character varying(8), "riderRated" boolean NOT NULL DEFAULT false, "driverRated" boolean NOT NULL DEFAULT false, "acceptedAt" TIMESTAMP WITH TIME ZONE, "arrivedAt" TIMESTAMP WITH TIME ZONE, "startedAt" TIMESTAMP WITH TIME ZONE, "completedAt" TIMESTAMP WITH TIME ZONE, "cancelledAt" TIMESTAMP WITH TIME ZONE, "cancelReason" text, "commission" integer, "driverEarnings" integer, "settledAt" TIMESTAMP WITH TIME ZONE, "coveredBySubscription" boolean NOT NULL DEFAULT false, "tipAmount" integer, "tipMethod" character varying(16), "version" integer NOT NULL, CONSTRAINT "PK_ca6f62fc1e999b139c7f28f07fd" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_87b9253c85be51e3785d3653a8" ON "rides" ("status") `);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_3c581fc8082dc803233ec676ef" ON "rides" ("riderId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_0adda088d567495e71d21b6c69" ON "rides" ("driverId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "ride_offers" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "rideId" uuid NOT NULL, "driverId" uuid NOT NULL, "amount" integer NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'PENDING', CONSTRAINT "PK_8bd0ac2b8b108f575ceea9cb433" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_e47debd3d44368f977ae7b6b81" ON "ride_offers" ("rideId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_59e126ca76a45cf7bdd74b817a" ON "ride_offers" ("driverId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "ratings" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "rideId" uuid NOT NULL, "raterId" uuid NOT NULL, "rateeId" uuid NOT NULL, "raterRole" character varying(16) NOT NULL, "stars" integer NOT NULL, "comment" text, CONSTRAINT "PK_0f31425b073219379545ad68ed9" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_5ea4e6b760b74bd49b9cdc58ca" ON "ratings" ("rideId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_dc83bc48cfaaa56920a68da24f" ON "ratings" ("rateeId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "rider_profiles" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "firstName" character varying(80), "lastName" character varying(80), "preferredDriverBehavior" character varying(16) NOT NULL DEFAULT 'NO_PREFERENCE', "nin" character varying(32), "ninStatus" character varying(16) NOT NULL DEFAULT 'NOT_STARTED', "livenessVerified" boolean NOT NULL DEFAULT false, "gender" character varying(24), "referralCode" character varying(32), "musicPreference" character varying(16), "accessibilityNeed" character varying(16) NOT NULL DEFAULT 'NONE', "promotionsOptIn" boolean NOT NULL DEFAULT false, "homeAddress" character varying(255), "ratingAvg" real NOT NULL DEFAULT '0', "ratingCount" integer NOT NULL DEFAULT '0', CONSTRAINT "PK_bec1afad599cabe486f80dbcbf2" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_fa7f813fe33853d3b8e856d79e" ON "rider_profiles" ("userId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "saved_addresses" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "label" character varying(16) NOT NULL, "address" text NOT NULL, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "riderId" uuid, CONSTRAINT "PK_2dcd5492d2ac696c133d461db8b" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "notifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "type" character varying(40) NOT NULL, "title" character varying(160) NOT NULL, "body" text NOT NULL, "data" jsonb, "channels" text, "read" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_6a72c3c0f683f6462415e653c3a" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_692a909ee0fa9383e7859f9b40" ON "notifications" ("userId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_f8b7ed75170d2d7dca4477cc94" ON "notifications" ("read") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "device_tokens" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "token" character varying(255) NOT NULL, "platform" character varying(16) NOT NULL DEFAULT 'unknown', CONSTRAINT "PK_84700be257607cfb1f9dc2e52c3" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_511957e3e8443429dc3fb00120" ON "device_tokens" ("userId") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_977e24c520c49436d08e5eeea8" ON "device_tokens" ("token") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "wallets" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "ownerType" character varying(16) NOT NULL DEFAULT 'USER', "ownerId" uuid, "systemKey" character varying(24), "currency" character varying(3) NOT NULL DEFAULT 'NGN', "balance" bigint NOT NULL DEFAULT '0', "version" integer NOT NULL, CONSTRAINT "PK_8402e5df5a30a229380e83e4f7e" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_342cecf691b0d12172e69b2b8f" ON "wallets" ("ownerId") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_aa7549844b2717014833457c63" ON "wallets" ("systemKey") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "transactions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "type" character varying(24) NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'PENDING', "reference" character varying(80) NOT NULL, "amount" bigint NOT NULL DEFAULT '0', "currency" character varying(3) NOT NULL DEFAULT 'NGN', "userId" uuid, "rideId" uuid, "paymentMethod" character varying(16), "provider" character varying(24), "providerRef" character varying(120), "metadata" jsonb, CONSTRAINT "PK_a219afd8dd77ed80f5a862f1db9" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_2d5fa024a84dceb158b2b95f34" ON "transactions" ("type") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_da87c55b3bbbe96c6ed88ea7ee" ON "transactions" ("status") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_dd85cc865e0c3d5d4be095d3f3" ON "transactions" ("reference") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_6bb58f2b6e30cb51a6504599f4" ON "transactions" ("userId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_de56dc2e6a36afd00d9859a328" ON "transactions" ("rideId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "ledger_entries" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "transactionId" uuid NOT NULL, "walletId" uuid NOT NULL, "direction" character varying(8) NOT NULL, "amount" bigint NOT NULL, "balanceAfter" bigint NOT NULL, "type" character varying(24) NOT NULL, CONSTRAINT "PK_6efcb84411d3f08b08450ae75d5" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_ce01dd5f8bde23f503bf01ffac" ON "ledger_entries" ("transactionId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_df977c08d98fab6543724d7485" ON "ledger_entries" ("walletId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_a8781f3c6e59c59666272e896b" ON "ledger_entries" ("type") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "documents" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "type" character varying(32) NOT NULL, "url" text NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'SUBMITTED', CONSTRAINT "PK_ac51aa5181ee2036f5ca482857c" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_e300b5c2e3fefa9d6f8a3f2597" ON "documents" ("userId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "driver_scores" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "driverId" uuid NOT NULL, "periodKey" character varying(12) NOT NULL, "points" integer NOT NULL DEFAULT '0', "rides" integer NOT NULL DEFAULT '0', CONSTRAINT "PK_73f742d34031449cdb58b6a44ce" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_8f023c1b3e8b0cad7cae35b855" ON "driver_scores" ("driverId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_78f7b5e103e9c86463d22bdbef" ON "driver_scores" ("periodKey") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_baad7e76e9d9219b51797ad938" ON "driver_scores" ("driverId", "periodKey") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "achievements" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "driverId" uuid NOT NULL, "badge" character varying(24) NOT NULL, CONSTRAINT "PK_1bc19c37c6249f70186f318d71d" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_4c812391578b1d83600513355c" ON "achievements" ("driverId") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_095e25fe1727ad523c985250a9" ON "achievements" ("driverId", "badge") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "driver_profiles" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid NOT NULL, "driverType" character varying(16) NOT NULL DEFAULT 'FREELANCE', "firstName" character varying(80), "lastName" character varying(80), "dateOfBirth" date, "origin" character varying(120), "personality" character varying(16), "nin" character varying(32), "ninStatus" character varying(16) NOT NULL DEFAULT 'NOT_STARTED', "livenessVerified" boolean NOT NULL DEFAULT false, "bankAccountNumber" character varying(32), "bankName" character varying(80), "bankAccountName" character varying(120), "nokName" character varying(120), "nokPhone" character varying(32), "nokRelationship" character varying(60), "spotifyInstalled" boolean NOT NULL DEFAULT false, "appleMusicInstalled" boolean NOT NULL DEFAULT false, "availability" character varying(16) NOT NULL DEFAULT 'OFFLINE', "carpoolMode" boolean NOT NULL DEFAULT false, "onboardingComplete" boolean NOT NULL DEFAULT false, "ratingAvg" real NOT NULL DEFAULT '0', "ratingCount" integer NOT NULL DEFAULT '0', "vehicleId" uuid, CONSTRAINT "REL_0377e4613885d8814691fe805f" UNIQUE ("vehicleId"), CONSTRAINT "PK_6e002fc8a835351e070978fcad4" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_c22d0ffc4bff60e9a39c003759" ON "driver_profiles" ("userId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "vehicles" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "brand" character varying(60), "model" character varying(60) NOT NULL, "year" integer, "plateNumber" character varying(20) NOT NULL, "color" character varying(30), "category" character varying(16) NOT NULL DEFAULT 'ECONOMY', CONSTRAINT "PK_18d8646b59304dce4af3a9e35b6" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "chat_messages" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "rideId" uuid NOT NULL, "senderId" uuid NOT NULL, "recipientId" uuid NOT NULL, "body" text NOT NULL, "readAt" TIMESTAMP WITH TIME ZONE, CONSTRAINT "PK_40c55ee0e571e268b0d3cd37d10" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_eb0b97c922b553cd329467154d" ON "chat_messages" ("rideId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "carpools" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "creatorId" uuid NOT NULL, "status" character varying(16) NOT NULL DEFAULT 'OPEN', "driverId" uuid, "pickupLat" double precision NOT NULL, "pickupLng" double precision NOT NULL, "pickupAddress" text, "dropoffLat" double precision NOT NULL, "dropoffLng" double precision NOT NULL, "dropoffAddress" text, "distanceMeters" integer NOT NULL, "durationSeconds" integer NOT NULL, "carCategory" character varying(16) NOT NULL, "totalFare" integer NOT NULL, "maxSeats" integer NOT NULL DEFAULT '4', "seatsTaken" integer NOT NULL DEFAULT '0', "departAt" TIMESTAMP WITH TIME ZONE, "acceptedAt" TIMESTAMP WITH TIME ZONE, "completedAt" TIMESTAMP WITH TIME ZONE, "cancelledAt" TIMESTAMP WITH TIME ZONE, "version" integer NOT NULL, CONSTRAINT "PK_43f24c2dc3f2e28a6d506d0372e" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_6ec626f01fc670be76d15147e0" ON "carpools" ("creatorId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_9f76f76f90bda16047ca4c13f9" ON "carpools" ("status") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_c0e932c8c5f2ee16883ef3b180" ON "carpools" ("driverId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "carpool_members" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "carpoolId" uuid NOT NULL, "riderId" uuid NOT NULL, "shareAmount" integer NOT NULL DEFAULT '0', "status" character varying(16) NOT NULL DEFAULT 'JOINED', "isCreator" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_4e27937d875a639fd2848c1f528" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_889ea3d2d0e96ff5ac5a35ef6d" ON "carpool_members" ("carpoolId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_362000ce3f3566a6e82c06ce3f" ON "carpool_members" ("riderId") `,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_88e282e7bb251127f99343f742" ON "carpool_members" ("carpoolId", "riderId") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "audit_logs" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "actorId" uuid, "actorEmail" character varying(160), "actorRole" character varying(32), "action" character varying(48) NOT NULL, "targetId" character varying(64), "method" character varying(8) NOT NULL, "path" character varying(200) NOT NULL, "meta" jsonb, CONSTRAINT "PK_1bb179d048bbc581caa3b013439" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_2dc33f7f3c22e2e7badafca1d1" ON "audit_logs" ("actorId") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_cee5459245f652b75eb2759b4c" ON "audit_logs" ("action") `,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "saved_addresses" ADD CONSTRAINT "FK_2d081cac4543c0105b15c2b6318" FOREIGN KEY ("riderId") REFERENCES "rider_profiles"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "driver_profiles" ADD CONSTRAINT "FK_0377e4613885d8814691fe805fa" FOREIGN KEY ("vehicleId") REFERENCES "vehicles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "driver_profiles" DROP CONSTRAINT "FK_0377e4613885d8814691fe805fa"`);
-        await queryRunner.query(`ALTER TABLE "saved_addresses" DROP CONSTRAINT "FK_2d081cac4543c0105b15c2b6318"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_cee5459245f652b75eb2759b4c"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_2dc33f7f3c22e2e7badafca1d1"`);
-        await queryRunner.query(`DROP TABLE "audit_logs"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_88e282e7bb251127f99343f742"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_362000ce3f3566a6e82c06ce3f"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_889ea3d2d0e96ff5ac5a35ef6d"`);
-        await queryRunner.query(`DROP TABLE "carpool_members"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_c0e932c8c5f2ee16883ef3b180"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_9f76f76f90bda16047ca4c13f9"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_6ec626f01fc670be76d15147e0"`);
-        await queryRunner.query(`DROP TABLE "carpools"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_eb0b97c922b553cd329467154d"`);
-        await queryRunner.query(`DROP TABLE "chat_messages"`);
-        await queryRunner.query(`DROP TABLE "vehicles"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_c22d0ffc4bff60e9a39c003759"`);
-        await queryRunner.query(`DROP TABLE "driver_profiles"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_095e25fe1727ad523c985250a9"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_4c812391578b1d83600513355c"`);
-        await queryRunner.query(`DROP TABLE "achievements"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_baad7e76e9d9219b51797ad938"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_78f7b5e103e9c86463d22bdbef"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_8f023c1b3e8b0cad7cae35b855"`);
-        await queryRunner.query(`DROP TABLE "driver_scores"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_e300b5c2e3fefa9d6f8a3f2597"`);
-        await queryRunner.query(`DROP TABLE "documents"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_a8781f3c6e59c59666272e896b"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_df977c08d98fab6543724d7485"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_ce01dd5f8bde23f503bf01ffac"`);
-        await queryRunner.query(`DROP TABLE "ledger_entries"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_de56dc2e6a36afd00d9859a328"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_6bb58f2b6e30cb51a6504599f4"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_dd85cc865e0c3d5d4be095d3f3"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_da87c55b3bbbe96c6ed88ea7ee"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_2d5fa024a84dceb158b2b95f34"`);
-        await queryRunner.query(`DROP TABLE "transactions"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_aa7549844b2717014833457c63"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_342cecf691b0d12172e69b2b8f"`);
-        await queryRunner.query(`DROP TABLE "wallets"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_977e24c520c49436d08e5eeea8"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_511957e3e8443429dc3fb00120"`);
-        await queryRunner.query(`DROP TABLE "device_tokens"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_f8b7ed75170d2d7dca4477cc94"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_692a909ee0fa9383e7859f9b40"`);
-        await queryRunner.query(`DROP TABLE "notifications"`);
-        await queryRunner.query(`DROP TABLE "saved_addresses"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_fa7f813fe33853d3b8e856d79e"`);
-        await queryRunner.query(`DROP TABLE "rider_profiles"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_dc83bc48cfaaa56920a68da24f"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_5ea4e6b760b74bd49b9cdc58ca"`);
-        await queryRunner.query(`DROP TABLE "ratings"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_59e126ca76a45cf7bdd74b817a"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_e47debd3d44368f977ae7b6b81"`);
-        await queryRunner.query(`DROP TABLE "ride_offers"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_0adda088d567495e71d21b6c69"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_3c581fc8082dc803233ec676ef"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_87b9253c85be51e3785d3653a8"`);
-        await queryRunner.query(`DROP TABLE "rides"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_9b9bb7f85035305c3dee924d22"`);
-        await queryRunner.query(`DROP TABLE "emergency_contacts"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_c5d2d831bf82446d168392ee1d"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_be35a0960d1ad1cc5b2960f776"`);
-        await queryRunner.query(`DROP TABLE "panic_events"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_238ef9ae1d17a4a79832137361"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_aaedc61bd4b95e840737fad558"`);
-        await queryRunner.query(`DROP TABLE "shared_trips"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_fd0b3ae6cb7f73231c056c55da"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_3ed0658be3fd2edeeeac8e616e"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_4d0e7baf7d9a7d027f29b4c101"`);
-        await queryRunner.query(`DROP TABLE "shuttle_bookings"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_7b219893c901e1997ced5816c5"`);
-        await queryRunner.query(`DROP TABLE "shuttle_routes"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_f8df2990207934154db0032164"`);
-        await queryRunner.query(`DROP TABLE "shuttle_stops"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_01748478602845572fba1504a3"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_092d14024253bf45e5869e7faf"`);
-        await queryRunner.query(`DROP TABLE "shuttle_trips"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_6ccf973355b70645eff37774de"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_9a0a82d34c33e47cf27ef1ac07"`);
-        await queryRunner.query(`DROP TABLE "subscriptions"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_ba7b1a2ed4051fb3b39ff95444"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_b5a4d6e32a32c86583de6354aa"`);
-        await queryRunner.query(`DROP TABLE "support_tickets"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_b7f8278f4e89249bb75c9a1589"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_a000cca60bcf04454e72769949"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_97672ac88f789774dd47f7c8be"`);
-        await queryRunner.query(`DROP TABLE "users"`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `ALTER TABLE "driver_profiles" DROP CONSTRAINT "FK_0377e4613885d8814691fe805fa"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "saved_addresses" DROP CONSTRAINT "FK_2d081cac4543c0105b15c2b6318"`,
+    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_cee5459245f652b75eb2759b4c"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_2dc33f7f3c22e2e7badafca1d1"`);
+    await queryRunner.query(`DROP TABLE "audit_logs"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_88e282e7bb251127f99343f742"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_362000ce3f3566a6e82c06ce3f"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_889ea3d2d0e96ff5ac5a35ef6d"`);
+    await queryRunner.query(`DROP TABLE "carpool_members"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_c0e932c8c5f2ee16883ef3b180"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_9f76f76f90bda16047ca4c13f9"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_6ec626f01fc670be76d15147e0"`);
+    await queryRunner.query(`DROP TABLE "carpools"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_eb0b97c922b553cd329467154d"`);
+    await queryRunner.query(`DROP TABLE "chat_messages"`);
+    await queryRunner.query(`DROP TABLE "vehicles"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_c22d0ffc4bff60e9a39c003759"`);
+    await queryRunner.query(`DROP TABLE "driver_profiles"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_095e25fe1727ad523c985250a9"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_4c812391578b1d83600513355c"`);
+    await queryRunner.query(`DROP TABLE "achievements"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_baad7e76e9d9219b51797ad938"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_78f7b5e103e9c86463d22bdbef"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_8f023c1b3e8b0cad7cae35b855"`);
+    await queryRunner.query(`DROP TABLE "driver_scores"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_e300b5c2e3fefa9d6f8a3f2597"`);
+    await queryRunner.query(`DROP TABLE "documents"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_a8781f3c6e59c59666272e896b"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_df977c08d98fab6543724d7485"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_ce01dd5f8bde23f503bf01ffac"`);
+    await queryRunner.query(`DROP TABLE "ledger_entries"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_de56dc2e6a36afd00d9859a328"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_6bb58f2b6e30cb51a6504599f4"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_dd85cc865e0c3d5d4be095d3f3"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_da87c55b3bbbe96c6ed88ea7ee"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_2d5fa024a84dceb158b2b95f34"`);
+    await queryRunner.query(`DROP TABLE "transactions"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_aa7549844b2717014833457c63"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_342cecf691b0d12172e69b2b8f"`);
+    await queryRunner.query(`DROP TABLE "wallets"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_977e24c520c49436d08e5eeea8"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_511957e3e8443429dc3fb00120"`);
+    await queryRunner.query(`DROP TABLE "device_tokens"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_f8b7ed75170d2d7dca4477cc94"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_692a909ee0fa9383e7859f9b40"`);
+    await queryRunner.query(`DROP TABLE "notifications"`);
+    await queryRunner.query(`DROP TABLE "saved_addresses"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_fa7f813fe33853d3b8e856d79e"`);
+    await queryRunner.query(`DROP TABLE "rider_profiles"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_dc83bc48cfaaa56920a68da24f"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_5ea4e6b760b74bd49b9cdc58ca"`);
+    await queryRunner.query(`DROP TABLE "ratings"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_59e126ca76a45cf7bdd74b817a"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_e47debd3d44368f977ae7b6b81"`);
+    await queryRunner.query(`DROP TABLE "ride_offers"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_0adda088d567495e71d21b6c69"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_3c581fc8082dc803233ec676ef"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_87b9253c85be51e3785d3653a8"`);
+    await queryRunner.query(`DROP TABLE "rides"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_9b9bb7f85035305c3dee924d22"`);
+    await queryRunner.query(`DROP TABLE "emergency_contacts"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_c5d2d831bf82446d168392ee1d"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_be35a0960d1ad1cc5b2960f776"`);
+    await queryRunner.query(`DROP TABLE "panic_events"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_238ef9ae1d17a4a79832137361"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_aaedc61bd4b95e840737fad558"`);
+    await queryRunner.query(`DROP TABLE "shared_trips"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_fd0b3ae6cb7f73231c056c55da"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_3ed0658be3fd2edeeeac8e616e"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_4d0e7baf7d9a7d027f29b4c101"`);
+    await queryRunner.query(`DROP TABLE "shuttle_bookings"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_7b219893c901e1997ced5816c5"`);
+    await queryRunner.query(`DROP TABLE "shuttle_routes"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_f8df2990207934154db0032164"`);
+    await queryRunner.query(`DROP TABLE "shuttle_stops"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_01748478602845572fba1504a3"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_092d14024253bf45e5869e7faf"`);
+    await queryRunner.query(`DROP TABLE "shuttle_trips"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_6ccf973355b70645eff37774de"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_9a0a82d34c33e47cf27ef1ac07"`);
+    await queryRunner.query(`DROP TABLE "subscriptions"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_ba7b1a2ed4051fb3b39ff95444"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_b5a4d6e32a32c86583de6354aa"`);
+    await queryRunner.query(`DROP TABLE "support_tickets"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_b7f8278f4e89249bb75c9a1589"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_a000cca60bcf04454e72769949"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_97672ac88f789774dd47f7c8be"`);
+    await queryRunner.query(`DROP TABLE "users"`);
+  }
 }

@@ -1,10 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import {
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationChannel, PanicStatus } from '@kari/types';
@@ -40,7 +35,12 @@ export class SafetyService {
   // ─── emergency contacts ──────────────────────────────────────────────────────
   addContact(userId: string, dto: { name: string; phone: string; relationship?: string }) {
     return this.contacts.save(
-      this.contacts.create({ userId, name: dto.name, phone: dto.phone, relationship: dto.relationship ?? null }),
+      this.contacts.create({
+        userId,
+        name: dto.name,
+        phone: dto.phone,
+        relationship: dto.relationship ?? null,
+      }),
     );
   }
 
@@ -87,9 +87,16 @@ export class SafetyService {
     if (dto.rideId) {
       const ride = await this.rides.findOne({ where: { id: dto.rideId } });
       const otherId = ride ? (ride.riderId === userId ? ride.driverId : ride.riderId) : null;
-      if (otherId) this.realtime.emitToUser(otherId, 'safety:panic', { rideId: dto.rideId, lat: dto.lat, lng: dto.lng });
+      if (otherId)
+        this.realtime.emitToUser(otherId, 'safety:panic', {
+          rideId: dto.rideId,
+          lat: dto.lat,
+          lng: dto.lng,
+        });
     }
-    this.logger.warn(`PANIC raised by ${userId} (ride ${dto.rideId ?? 'none'}) — ${contacts.length} contacts alerted`);
+    this.logger.warn(
+      `PANIC raised by ${userId} (ride ${dto.rideId ?? 'none'}) — ${contacts.length} contacts alerted`,
+    );
     return event;
   }
 
@@ -114,7 +121,9 @@ export class SafetyService {
   async share(userId: string, rideId: string) {
     await this.ensureParticipant(userId, rideId);
     // Reuse an existing active share for this ride if present.
-    const existing = await this.shares.findOne({ where: { rideId, createdBy: userId, active: true } });
+    const existing = await this.shares.findOne({
+      where: { rideId, createdBy: userId, active: true },
+    });
     if (existing && existing.expiresAt > new Date()) {
       return this.shapeShare(existing);
     }
@@ -154,7 +163,12 @@ export class SafetyService {
         driver = {
           name: [d.firstName, d.lastName].filter(Boolean).join(' ') || 'Your driver',
           vehicle: d.vehicle
-            ? { brand: d.vehicle.brand, model: d.vehicle.model, color: d.vehicle.color, plateNumber: d.vehicle.plateNumber }
+            ? {
+                brand: d.vehicle.brand,
+                model: d.vehicle.model,
+                color: d.vehicle.color,
+                plateNumber: d.vehicle.plateNumber,
+              }
             : null,
         };
       }

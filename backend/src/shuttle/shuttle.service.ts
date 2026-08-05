@@ -7,7 +7,14 @@ import {
   type OnModuleInit,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, MoreThan, Not, OptimisticLockVersionMismatchError, Repository } from 'typeorm';
+import {
+  DataSource,
+  In,
+  MoreThan,
+  Not,
+  OptimisticLockVersionMismatchError,
+  Repository,
+} from 'typeorm';
 import {
   LedgerDirection,
   ShuttleBookingStatus,
@@ -90,14 +97,20 @@ export class ShuttleService implements OnModuleInit {
     for (const def of SEED_ROUTES) {
       let route = await this.routes.findOne({ where: { name: def.name } });
       if (!route) {
-        route = await this.routes.save(this.routes.create({ name: def.name, corridor: def.corridor }));
+        route = await this.routes.save(
+          this.routes.create({ name: def.name, corridor: def.corridor }),
+        );
         for (const s of def.stops) {
           await this.stops.save(this.stops.create({ routeId: route.id, ...s }));
         }
         this.logger.log(`seeded shuttle route "${def.name}" with ${def.stops.length} stops`);
       }
       const upcoming = await this.trips.count({
-        where: { routeId: route.id, status: ShuttleTripStatus.SCHEDULED, departAt: MoreThan(new Date()) },
+        where: {
+          routeId: route.id,
+          status: ShuttleTripStatus.SCHEDULED,
+          departAt: MoreThan(new Date()),
+        },
       });
       for (let i = upcoming; i < TRIP_OFFSETS_HOURS.length; i++) {
         const departAt = new Date(Date.now() + TRIP_OFFSETS_HOURS[i] * 3_600_000);
@@ -124,7 +137,11 @@ export class ShuttleService implements OnModuleInit {
       routes.map(async (r) => ({
         ...r,
         upcomingTrips: await this.trips.count({
-          where: { routeId: r.id, status: ShuttleTripStatus.SCHEDULED, departAt: MoreThan(new Date()) },
+          where: {
+            routeId: r.id,
+            status: ShuttleTripStatus.SCHEDULED,
+            departAt: MoreThan(new Date()),
+          },
         }),
       })),
     );
@@ -210,13 +227,19 @@ export class ShuttleService implements OnModuleInit {
   }
 
   // ─── book / cancel ───────────────────────────────────────────────────────────
-  async book(riderId: string, tripId: string, dto: { fromStopId: string; toStopId: string; seats?: number }) {
+  async book(
+    riderId: string,
+    tripId: string,
+    dto: { fromStopId: string; toStopId: string; seats?: number },
+  ) {
     const seats = dto.seats ?? 1;
-    if (!Number.isInteger(seats) || seats < 1) throw new BadRequestException('seats must be a positive integer');
+    if (!Number.isInteger(seats) || seats < 1)
+      throw new BadRequestException('seats must be a positive integer');
 
     const trip = await this.trips.findOne({ where: { id: tripId } });
     if (!trip) throw new NotFoundException('trip not found');
-    if (trip.status !== ShuttleTripStatus.SCHEDULED) throw new BadRequestException('trip is not open for booking');
+    if (trip.status !== ShuttleTripStatus.SCHEDULED)
+      throw new BadRequestException('trip is not open for booking');
 
     const [from, to] = await Promise.all([
       this.stops.findOne({ where: { id: dto.fromStopId } }),
@@ -225,13 +248,15 @@ export class ShuttleService implements OnModuleInit {
     if (!from || !to || from.routeId !== trip.routeId || to.routeId !== trip.routeId) {
       throw new BadRequestException('both stops must be on this trip’s route');
     }
-    if (from.sequence >= to.sequence) throw new BadRequestException('drop-off must be after pickup');
+    if (from.sequence >= to.sequence)
+      throw new BadRequestException('drop-off must be after pickup');
     const fare = (to.fareFromOrigin - from.fareFromOrigin) * seats;
     if (fare <= 0) throw new BadRequestException('invalid fare for this leg');
     const fareKobo = fare * 100;
 
     const wallet = await this.ledger.getOrCreateUserWallet(riderId);
-    if (wallet.balance < fareKobo) throw new BadRequestException(`top up ₦${fare} to book this seat`);
+    if (wallet.balance < fareKobo)
+      throw new BadRequestException(`top up ₦${fare} to book this seat`);
 
     // Reserve the seat + create the booking atomically (optimistic seat lock).
     let booking: ShuttleBooking;
@@ -239,7 +264,8 @@ export class ShuttleService implements OnModuleInit {
       booking = await this.dataSource.transaction(async (m) => {
         const t = await m.findOne(ShuttleTrip, { where: { id: tripId } });
         if (!t) throw new NotFoundException('trip not found');
-        if (t.seatsBooked + seats > t.capacity) throw new ConflictException('not enough seats left');
+        if (t.seatsBooked + seats > t.capacity)
+          throw new ConflictException('not enough seats left');
         t.seatsBooked += seats;
         await m.save(t);
         return m.save(

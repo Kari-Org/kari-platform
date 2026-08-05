@@ -25,7 +25,10 @@ import { APP_CONFIG, type AppConfig } from '../../config/config.module';
           autoLogging: !config.isTest,
           transport: config.isProd
             ? undefined
-            : { target: 'pino-pretty', options: { singleLine: true, translateTime: 'SYS:HH:MM:ss' } },
+            : {
+                target: 'pino-pretty',
+                options: { singleLine: true, translateTime: 'SYS:HH:MM:ss' },
+              },
         },
       }),
     }),

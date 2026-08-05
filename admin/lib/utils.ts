@@ -9,5 +9,10 @@ export function cn(...inputs: ClassValue[]) {
 /** ₦ formatter with thousands separators. */
 export function naira(n: number | null | undefined): string {
   if (n == null) return '—';
-  return '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (
+    '₦' +
+    Math.round(n)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  );
 }

@@ -31,7 +31,9 @@ const log = new Logger('Providers');
 /** Logs once whether a capability is configured; real impls land in later phases. */
 function note(capability: string, configured: boolean, vendor: string): void {
   if (configured) {
-    log.log(`${capability}: ${vendor} credentials present (real impl lands in its phase; using no-op for now)`);
+    log.log(
+      `${capability}: ${vendor} credentials present (real impl lands in its phase; using no-op for now)`,
+    );
   } else {
     log.log(`${capability}: no credentials — using no-op implementation`);
   }

@@ -2,5 +2,7 @@
 export const env = {
   apiBaseUrl: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5001',
   socketUrl:
-    process.env.NEXT_PUBLIC_SOCKET_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5001',
+    process.env.NEXT_PUBLIC_SOCKET_URL ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    'http://localhost:5001',
 };

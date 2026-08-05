@@ -94,10 +94,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
 };
 
 /** True if `role` is granted `permission`. */
-export function hasPermission(
-  role: AdminRole | null | undefined,
-  permission: Permission,
-): boolean {
+export function hasPermission(role: AdminRole | null | undefined, permission: Permission): boolean {
   if (!role) return false;
   return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
 }

@@ -3,7 +3,10 @@ import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 /** Route-priced subscribe (spec 0004): the fee comes from the rider's own route quote. */
 export class SubscribeDto {
-  @ApiProperty({ example: 'a1b2c3d4e5f6', description: 'Quote ref from POST /rides/quote for your commute route' })
+  @ApiProperty({
+    example: 'a1b2c3d4e5f6',
+    description: 'Quote ref from POST /rides/quote for your commute route',
+  })
   @IsString()
   quoteRef: string;
 

@@ -3,8 +3,8 @@
 Design tokens for KariPlatform mobile and admin apps. Use these exact values — never hardcode colors or use default Tailwind palette classes.
 
 > **This file is ground truth — the repo must comply with it.** Where code diverges (e.g. the rider splash
-> referencing an unloaded Poppins font → system-font fallback), the *code* is the bug to fix, not this doc.
-> Known compliance gaps are tracked in progress-log.md. (For design *decisions* and their reasoning,
+> referencing an unloaded Poppins font → system-font fallback), the _code_ is the bug to fix, not this doc.
+> Known compliance gaps are tracked in progress-log.md. (For design _decisions_ and their reasoning,
 > foundation.md §7 #20 wins on conflict.)
 
 ---
@@ -13,35 +13,39 @@ Design tokens for KariPlatform mobile and admin apps. Use these exact values —
 
 All tokens defined in `packages/mobile-core/src/theme/tokens.ts` and the Tailwind preset at `packages/mobile-core/tailwind-preset.js`.
 
-> **Source of truth (rider redesign):** the Figma file *Kari Mobile App* (`vVBjcKZOnxqIA6u9q35BxB`) is the
+> **Source of truth (rider redesign):** the Figma file _Kari Mobile App_ (`vVBjcKZOnxqIA6u9q35BxB`) is the
 > visual source of truth for the rider UI. The onboarding palette was verified against it and matches these
 > tokens exactly — `bg #070707`, `card`/off-black `#181818`, `subtle #888888`, `brand`/Primary-Yellow
 > `#FFFF00`, `white #FFFFFF`. `#000D26` (deep-navy "Primery") is a defined Figma variable reserved for the web
 > ink; not yet used on mobile.
 
 ### Colors
+
 ```typescript
-brand:    '#FFFF00'   // Kari yellow — primary accent
-bg:       '#070707'   // App background (near-black)
-surface:  '#121212'   // Card/modal surfaces
-card:     '#181818'   // Elevated card background
-hairline: '#2A2A2A'   // Subtle borders/dividers
-text:     '#FFFFFF'   // Primary text
-muted:    '#CBCBCB'   // Secondary text
-subtle:   '#888888'   // Tertiary/placeholder text
-success:  '#3BD17A'   // Positive states (ride complete, match)
-danger:   '#FF5A5F'   // Error states, cancel, panic
+brand: '#FFFF00'; // Kari yellow — primary accent
+bg: '#070707'; // App background (near-black)
+surface: '#121212'; // Card/modal surfaces
+card: '#181818'; // Elevated card background
+hairline: '#2A2A2A'; // Subtle borders/dividers
+text: '#FFFFFF'; // Primary text
+muted: '#CBCBCB'; // Secondary text
+subtle: '#888888'; // Tertiary/placeholder text
+success: '#3BD17A'; // Positive states (ride complete, match)
+danger: '#FF5A5F'; // Error states, cancel, panic
 ```
 
 ### Fonts
+
 ```
 Primary: HankenGrotesk (Regular 400, Medium 500, SemiBold 600, Bold 700)
 Wordmark: Archivo Expanded
 Monospace: Geist Mono 400
 ```
+
 Font file: `brand/fonts/Archivo-Variable.ttf` (wordmark only). HankenGrotesk and GeistMono loaded via `expo-font` from Google Fonts.
 
 ### Design Principles (Mobile)
+
 - **Dark theme everywhere** — black backgrounds, white text, yellow accents
 - Brand yellow `#FFFF00` used sparingly: primary buttons, active states, key CTAs
 - No gradients on card surfaces — flat dark colors only
@@ -49,15 +53,16 @@ Font file: `brand/fonts/Archivo-Variable.ttf` (wordmark only). HankenGrotesk and
 - Success/danger for semantic states only — never as decorative colors
 
 ### NativeWind Usage
+
 ```tsx
 // Correct — uses preset tokens
-className="bg-bg text-text"
-className="bg-brand text-bg"  // Yellow button with dark text
-className="border-hairline"
+className = 'bg-bg text-text';
+className = 'bg-brand text-bg'; // Yellow button with dark text
+className = 'border-hairline';
 
 // Never — default Tailwind
-className="bg-black text-white"
-className="bg-yellow-400"
+className = 'bg-black text-white';
+className = 'bg-yellow-400';
 ```
 
 ---
@@ -65,16 +70,19 @@ className="bg-yellow-400"
 ## Admin Dashboard
 
 ### Theme
+
 - **Dark theme** matching the Kari brand
 - 17px root font size
 - Kari logo: `admin/public/kari-logo.png` (copied from `rider/assets/logo.png`)
 
 ### Stack
+
 - Tailwind CSS 3 (NOT v4 — different from the reference project)
 - shadcn/ui components
 - Colors configured in `tailwind.config.ts`
 
 ### Key Colors
+
 ```
 Background:     Dark (near-black)
 Surface:        Slightly lighter dark
@@ -106,15 +114,16 @@ So the platform has **two surfaces**: dark (mobile apps + admin) and light (web)
 
 Located in `brand/`:
 
-| Asset | Path | Usage |
-|-------|------|-------|
-| Logo mark (SVG) | `brand/mark/` | App icons, in-app branding |
-| Logo lockup | `brand/lockup/` | Mark + "Kari" wordmark together |
-| App icon | `brand/app-icon/` | Store-ready icons (iOS/Android) |
-| Favicon | `brand/favicon/` | Web + admin browser tabs |
-| Wordmark font | `brand/fonts/Archivo-Variable.ttf` | "Kari" text in logos |
+| Asset           | Path                               | Usage                           |
+| --------------- | ---------------------------------- | ------------------------------- |
+| Logo mark (SVG) | `brand/mark/`                      | App icons, in-app branding      |
+| Logo lockup     | `brand/lockup/`                    | Mark + "Kari" wordmark together |
+| App icon        | `brand/app-icon/`                  | Store-ready icons (iOS/Android) |
+| Favicon         | `brand/favicon/`                   | Web + admin browser tabs        |
+| Wordmark font   | `brand/fonts/Archivo-Variable.ttf` | "Kari" text in logos            |
 
 ### Brand Colors
+
 ```
 Primary:    #FFFF00 (brand yellow)
 Background: #070707 (near-black)

@@ -1,40 +1,40 @@
 # Architecture
 
-> How the pieces fit. For *why* any of this was chosen see [foundation.md](foundation.md) — it wins on
+> How the pieces fit. For _why_ any of this was chosen see [foundation.md](foundation.md) — it wins on
 > conflict (cite decisions as `foundation.md §7 #N`).
 
 ## Stack
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| Language | TypeScript (strict) | Everything end-to-end |
-| Package manager | pnpm 11 | Workspaces, hoisted for Expo |
-| Monorepo | Turborepo | Task orchestration |
-| Backend framework | NestJS 11 (Node 24) | Unified API + WebSocket server |
-| Database | PostgreSQL 16 + TypeORM | Durable state, migrations |
-| Cache / Ephemeral | Redis 7 | Live driver geo, quotes, socket adapter, BullMQ |
-| Realtime | Socket.IO 4 + Redis adapter | Per-user rooms (`user:{id}`), JWT-authed |
-| Jobs / Async | BullMQ 5 | OTP expiry, notifications, commission, leaderboards |
-| Auth | Self-issued JWT (access + rotating refresh), scrypt password hash | Stateless, no Cognito; scrypt = no native dep |
-| Mobile framework | Expo SDK 54, React Native 0.81, React 19 | Rider + Driver apps |
-| Mobile routing | Expo Router v6 (file-based) | Screen navigation |
-| Mobile state | Zustand + TanStack Query | Client state + server state |
-| Mobile styling | NativeWind 4 + Tailwind CSS | Token-driven design |
-| Admin framework | Next.js 15, App Router | Operations dashboard |
-| Admin auth | Email/password -> backend JWT (httpOnly cookie, same-origin proxy) | Custom, not NextAuth |
-| Admin styling | Tailwind 3 + shadcn/ui | Dark theme |
-| Payments | Paystack (primary, behind interface) | Flutterwave alternative |
-| KYC / Identity | Dojah (NIN) + AWS Rekognition (liveness) | |
-| Maps | Google Maps API | Distance Matrix, autocomplete |
-| SMS | Termii (Nigeria-optimized) | OTP |
-| WhatsApp | Twilio | OTP alternative channel |
-| Voice (masked) | Twilio | In-ride calls |
-| Storage | AWS S3 | Driver/rider documents |
-| Push | Expo Push / FCM | Decision pending (Phase 7) |
-| Logging | pino (structured) | Per-request traceId |
-| Validation | class-validator + Zod | DTOs + env config |
-| Rate limiting | @nestjs/throttler | Auth/OTP abuse protection |
-| Testing | Jest + Supertest (backend), Maestro (mobile e2e, planned) | |
+| Layer             | Tool                                                               | Purpose                                             |
+| ----------------- | ------------------------------------------------------------------ | --------------------------------------------------- |
+| Language          | TypeScript (strict)                                                | Everything end-to-end                               |
+| Package manager   | pnpm 11                                                            | Workspaces, hoisted for Expo                        |
+| Monorepo          | Turborepo                                                          | Task orchestration                                  |
+| Backend framework | NestJS 11 (Node 24)                                                | Unified API + WebSocket server                      |
+| Database          | PostgreSQL 16 + TypeORM                                            | Durable state, migrations                           |
+| Cache / Ephemeral | Redis 7                                                            | Live driver geo, quotes, socket adapter, BullMQ     |
+| Realtime          | Socket.IO 4 + Redis adapter                                        | Per-user rooms (`user:{id}`), JWT-authed            |
+| Jobs / Async      | BullMQ 5                                                           | OTP expiry, notifications, commission, leaderboards |
+| Auth              | Self-issued JWT (access + rotating refresh), scrypt password hash  | Stateless, no Cognito; scrypt = no native dep       |
+| Mobile framework  | Expo SDK 54, React Native 0.81, React 19                           | Rider + Driver apps                                 |
+| Mobile routing    | Expo Router v6 (file-based)                                        | Screen navigation                                   |
+| Mobile state      | Zustand + TanStack Query                                           | Client state + server state                         |
+| Mobile styling    | NativeWind 4 + Tailwind CSS                                        | Token-driven design                                 |
+| Admin framework   | Next.js 15, App Router                                             | Operations dashboard                                |
+| Admin auth        | Email/password -> backend JWT (httpOnly cookie, same-origin proxy) | Custom, not NextAuth                                |
+| Admin styling     | Tailwind 3 + shadcn/ui                                             | Dark theme                                          |
+| Payments          | Paystack (primary, behind interface)                               | Flutterwave alternative                             |
+| KYC / Identity    | Dojah (NIN) + AWS Rekognition (liveness)                           |                                                     |
+| Maps              | Google Maps API                                                    | Distance Matrix, autocomplete                       |
+| SMS               | Termii (Nigeria-optimized)                                         | OTP                                                 |
+| WhatsApp          | Twilio                                                             | OTP alternative channel                             |
+| Voice (masked)    | Twilio                                                             | In-ride calls                                       |
+| Storage           | AWS S3                                                             | Driver/rider documents                              |
+| Push              | Expo Push / FCM                                                    | Decision pending (Phase 7)                          |
+| Logging           | pino (structured)                                                  | Per-request traceId                                 |
+| Validation        | class-validator + Zod                                              | DTOs + env config                                   |
+| Rate limiting     | @nestjs/throttler                                                  | Auth/OTP abuse protection                           |
+| Testing           | Jest + Supertest (backend), Maestro (mobile e2e, planned)          |                                                     |
 
 ---
 
@@ -149,24 +149,25 @@ KariPlatform/
 
 ## System Boundaries
 
-| Location | Owns | Never Does |
-|----------|------|------------|
-| `backend/src/{module}/` | Domain logic, entities, DTOs, services | Import from rider/driver/admin |
+| Location                 | Owns                                       | Never Does                                |
+| ------------------------ | ------------------------------------------ | ----------------------------------------- |
+| `backend/src/{module}/`  | Domain logic, entities, DTOs, services     | Import from rider/driver/admin            |
 | `backend/src/providers/` | Third-party integrations behind interfaces | Hardcode vendor-specific logic in modules |
-| `rider/app/` | Screens and navigation | Business logic, direct API calls |
-| `rider/src/stores/` | Client state (Zustand) | DB calls, server logic |
-| `rider/src/api/` | API call definitions | UI rendering |
-| `driver/app/` | Screens and navigation | Business logic |
-| `driver/src/stores/` | Client state | DB calls |
-| `admin/app/` | Pages and API proxy | Business logic |
-| `packages/types/` | Shared enums, contracts, RBAC | Runtime logic, React components |
-| `packages/mobile-core/` | Shared mobile UI + API client + socket | App-specific screens, stores, endpoints |
+| `rider/app/`             | Screens and navigation                     | Business logic, direct API calls          |
+| `rider/src/stores/`      | Client state (Zustand)                     | DB calls, server logic                    |
+| `rider/src/api/`         | API call definitions                       | UI rendering                              |
+| `driver/app/`            | Screens and navigation                     | Business logic                            |
+| `driver/src/stores/`     | Client state                               | DB calls                                  |
+| `admin/app/`             | Pages and API proxy                        | Business logic                            |
+| `packages/types/`        | Shared enums, contracts, RBAC              | Runtime logic, React components           |
+| `packages/mobile-core/`  | Shared mobile UI + API client + socket     | App-specific screens, stores, endpoints   |
 
 ---
 
 ## Data Flow Patterns
 
 ### Mobile -> Backend (API call)
+
 ```
 Screen triggers action
     -> Zustand store or direct call
@@ -177,6 +178,7 @@ Screen triggers action
 ```
 
 ### Real-time (Socket.IO)
+
 ```
 Backend event (ride matched, driver arrived, etc.)
     -> RealtimeService.emitToUser(userId, event, payload)
@@ -185,12 +187,14 @@ Backend event (ride matched, driver arrived, etc.)
     -> Zustand state update
     -> UI re-renders
 ```
+
 > Socket model is **per-user rooms only**. On connect, the gateway JWT-auths and joins the socket to
 > `user:{id}`. Every ride/carpool/chat event is fanned out to each participant's `user:{id}` room via
 > `emitToUser`. The only non-user room is `'ops'` (safety panic). There are **no** `ride:{id}` /
 > `driver:{id}` rooms despite what older docs (incl. backend ARCHITECTURE.md) imply.
 
 ### Admin -> Backend
+
 ```
 Admin page fetches data
     -> fetch('/api/proxy/admin/...') (same-origin)
@@ -207,6 +211,7 @@ Admin page fetches data
 > camelCase (`riderId`, `walletOwnerType`) — quote them in SQL. 29 entities total.
 
 ### Users & Profiles
+
 - `users` (User) — id, role (DRIVER/RIDER/ADMIN), email, phone, passwordHash, status, adminRole, referralCode
 - `driver_profiles` (DriverProfile) — userId, driverType, personality, onboardingComplete, DOB, NIN/KYC status, spotifyInstalled, rating
 - `rider_profiles` (RiderProfile) — userId, preferences (gender, music, accessibility), cardToken, NIN status, rating
@@ -214,29 +219,35 @@ Admin page fetches data
 - `saved_addresses` (SavedAddress) — riderId, label (home/work), geo
 
 ### Rides & Matching
+
 - `rides` (Ride) — type, status (state machine), pickup/dropoff (geo), riderId, driverId, quotedPrice, agreedPrice, paymentMethod, startOtp, @VersionColumn
 - `ride_offers` (RideOffer) — driverId, rideId, amount, status
 - `ratings` (Rating) — mutual driver<->rider
 
 ### Money
+
 - `wallets` (Wallet) — ownerId, balance (kobo), walletOwnerType (USER/SYSTEM: REVENUE, GATEWAY)
 - `ledger_entries` (LedgerEntry) — walletId, direction (CREDIT/DEBIT), amount, transactionId
 - `transactions` (Transaction) — type, status, reference (idempotency), gatewayRef (Paystack)
 
 ### Engagement
+
 - `driver_scores` (DriverScore) — points per ride, ISO-week + ALL all-time buckets
 - `achievements` (Achievement) — badges (FIRST_RIDE, TEN_RIDES, etc.)
 - `subscriptions` (Subscription) — plan, route, assignedDriverId (sticky)
 
 ### Ride Variants
+
 - `carpools` (Carpool) — @VersionColumn seat guard, NIN-gated, cost-split + `carpool_members` (CarpoolMember)
 - `shuttle_routes` / `shuttle_stops` / `shuttle_trips` (@VersionColumn) / `shuttle_bookings`
 
 ### Safety & Comms
+
 - `emergency_contacts`, `panic_events`, `shared_trips` (opaque token, 12h TTL)
 - `chat_messages`, `notifications`, `device_tokens`
 
 ### Admin & Identity
+
 - `audit_logs` (AuditLog) — every admin write (actor, before/after JSON)
 - `support_tickets` (SupportTicket) — support inbox (source: APP/WEB/EMAIL)
 - `documents` (Document) — uploaded driver/rider files (S3 URL + status)
@@ -248,12 +259,12 @@ Admin page fetches data
 The contract governing matching, state machine, and settlement per ride type. Narrative flows live in
 [project-overview.md](project-overview.md) → Ride Flows; gaps in [build-graph.md](build-graph.md).
 
-| Type | Driver eligibility | Pricing | Payment | Start PIN | Status vs vision |
-|------|--------------------|---------|---------|-----------|------------------|
-| **Solo** | Freelance only (for now) | Standard (3 tiers) **or** Negotiate (tier-agnostic, no floor) | Wallet / card / cash | 1 PIN, minted on accept | Built; PIN-on-accept ✓ |
-| **Carpool** | Freelance, opt-in carpool mode | Standard only; **discounted ride-share** (not equal split) | Wallet → saved-card fallback | **1 PIN per rider** | GAP: equal-split today; no carpool-mode toggle, en-route incremental dispatch, per-rider PIN, or route optimization |
-| **Shuttle** | Dedicated; ops assigns bus+route via admin | Fixed, stop-distance based | **Wallet only** | n/a — **QR scan** board/alight | GAP: pre-book-a-seat today; QR boarding + ops bus/route assignment not built |
-| **Subscription** | Sticky dedicated → dedicated → freelance fallback | **Prepaid monthly, per-route price**; free at point of use | Monthly charge (rides free at use) | per underlying ride | GAP: static plan catalog today; no scheduler job, fallback chain, per-route pricing, or free-at-use |
+| Type             | Driver eligibility                                | Pricing                                                       | Payment                            | Start PIN                      | Status vs vision                                                                                                    |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **Solo**         | Freelance only (for now)                          | Standard (3 tiers) **or** Negotiate (tier-agnostic, no floor) | Wallet / card / cash               | 1 PIN, minted on accept        | Built; PIN-on-accept ✓                                                                                              |
+| **Carpool**      | Freelance, opt-in carpool mode                    | Standard only; **discounted ride-share** (not equal split)    | Wallet → saved-card fallback       | **1 PIN per rider**            | GAP: equal-split today; no carpool-mode toggle, en-route incremental dispatch, per-rider PIN, or route optimization |
+| **Shuttle**      | Dedicated; ops assigns bus+route via admin        | Fixed, stop-distance based                                    | **Wallet only**                    | n/a — **QR scan** board/alight | GAP: pre-book-a-seat today; QR boarding + ops bus/route assignment not built                                        |
+| **Subscription** | Sticky dedicated → dedicated → freelance fallback | **Prepaid monthly, per-route price**; free at point of use    | Monthly charge (rides free at use) | per underlying ride            | GAP: static plan catalog today; no scheduler job, fallback chain, per-route pricing, or free-at-use                 |
 
 **Matching eligibility** is the load-bearing rule: the matching path must filter candidate drivers by
 `driverType` **and** ride type (Solo→freelance, Carpool→freelance in carpool mode, Shuttle→assigned
@@ -268,18 +279,18 @@ Every external service is behind an interface. Swap vendors by changing config, 
 
 All 10 interfaces live in `backend/src/providers/contracts.ts`; impls + noops in the same folder.
 
-| Interface | Primary | Alternative | Test/Dev (noop) |
-|-----------|---------|-------------|----------|
-| PaymentProvider | Paystack (real impl present) | Flutterwave (planned, not built) | NoopPaymentProvider (auto-succeeds) |
-| IdentityProvider | Dojah (NIN) | — | NoopIdentityProvider (verified:true) |
-| LivenessProvider | AWS Rekognition | — | NoopLivenessProvider (auto-pass) |
-| StorageProvider | AWS S3 | — | NoopStorageProvider (mock URLs) |
-| MapsProvider | Google Maps | — | NoopMapsProvider (OSM Nominatim, Nigeria-only) |
-| SmsProvider | Termii | — | NoopSmsProvider (logs OTP to console) |
-| WhatsAppProvider | Twilio | — | NoopWhatsAppProvider (logs OTP) |
-| VoiceProvider | Twilio Voice | — | NoopVoiceProvider |
-| EmailProvider | AWS SES (planned) | — | NoopEmailProvider (logs to console) |
-| PushProvider | Expo Push / FCM (planned) | — | NoopPushProvider (logs to console) |
+| Interface        | Primary                      | Alternative                      | Test/Dev (noop)                                |
+| ---------------- | ---------------------------- | -------------------------------- | ---------------------------------------------- |
+| PaymentProvider  | Paystack (real impl present) | Flutterwave (planned, not built) | NoopPaymentProvider (auto-succeeds)            |
+| IdentityProvider | Dojah (NIN)                  | —                                | NoopIdentityProvider (verified:true)           |
+| LivenessProvider | AWS Rekognition              | —                                | NoopLivenessProvider (auto-pass)               |
+| StorageProvider  | AWS S3                       | —                                | NoopStorageProvider (mock URLs)                |
+| MapsProvider     | Google Maps                  | —                                | NoopMapsProvider (OSM Nominatim, Nigeria-only) |
+| SmsProvider      | Termii                       | —                                | NoopSmsProvider (logs OTP to console)          |
+| WhatsAppProvider | Twilio                       | —                                | NoopWhatsAppProvider (logs OTP)                |
+| VoiceProvider    | Twilio Voice                 | —                                | NoopVoiceProvider                              |
+| EmailProvider    | AWS SES (planned)            | —                                | NoopEmailProvider (logs to console)            |
+| PushProvider     | Expo Push / FCM (planned)    | —                                | NoopPushProvider (logs to console)             |
 
 > Only **Paystack** has a real implementation today; every other provider runs on its noop. The full stack
 > runs keyless — see [provider-docs.md](provider-docs.md).

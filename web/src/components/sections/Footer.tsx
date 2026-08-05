@@ -51,7 +51,9 @@ export function Footer() {
             CONTACT
           </a>
         </div>
-        <div className="text-xs text-[#666]">© 2025 Kari · support@kari.com · +234 800-KARI-RIDE</div>
+        <div className="text-xs text-[#666]">
+          © 2025 Kari · support@kari.com · +234 800-KARI-RIDE
+        </div>
       </footer>
     </>
   );

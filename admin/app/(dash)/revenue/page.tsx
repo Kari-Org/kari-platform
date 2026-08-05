@@ -7,21 +7,44 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/ui/stat-card';
 import { adminApi } from '@/lib/admin-api';
 
-const naira = (n: number | undefined) =>
-  '₦' + Math.round(n ?? 0).toLocaleString('en-NG');
+const naira = (n: number | undefined) => '₦' + Math.round(n ?? 0).toLocaleString('en-NG');
 
 export default function RevenuePage() {
-  const { data, isLoading } = useQuery({ queryKey: ['admin-finance'], queryFn: adminApi.financeSummary });
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-finance'],
+    queryFn: adminApi.financeSummary,
+  });
 
   return (
     <div>
       <PageHeader title="Revenue" subtitle="Platform commission, GMV and money flow" />
 
       <div className="mb-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Platform revenue" value={naira(data?.revenue)} icon={TrendingUp} loading={isLoading} accent />
-        <StatCard label="GMV (all-time)" value={naira(data?.gmvAllTime)} icon={Banknote} loading={isLoading} />
-        <StatCard label="GMV (today)" value={naira(data?.gmvToday)} icon={Banknote} loading={isLoading} />
-        <StatCard label="Net float" value={naira((data?.topups ?? 0) - (data?.payouts ?? 0))} icon={Wallet} loading={isLoading} />
+        <StatCard
+          label="Platform revenue"
+          value={naira(data?.revenue)}
+          icon={TrendingUp}
+          loading={isLoading}
+          accent
+        />
+        <StatCard
+          label="GMV (all-time)"
+          value={naira(data?.gmvAllTime)}
+          icon={Banknote}
+          loading={isLoading}
+        />
+        <StatCard
+          label="GMV (today)"
+          value={naira(data?.gmvToday)}
+          icon={Banknote}
+          loading={isLoading}
+        />
+        <StatCard
+          label="Net float"
+          value={naira((data?.topups ?? 0) - (data?.payouts ?? 0))}
+          icon={Wallet}
+          loading={isLoading}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -30,7 +53,11 @@ export default function RevenuePage() {
             <CardTitle>Money in</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Row label="Wallet top-ups" value={naira(data?.topups)} sub={`${data?.topupCount ?? 0} transactions`} />
+            <Row
+              label="Wallet top-ups"
+              value={naira(data?.topups)}
+              sub={`${data?.topupCount ?? 0} transactions`}
+            />
             <Row label="GMV (completed fares)" value={naira(data?.gmvAllTime)} />
           </CardContent>
         </Card>

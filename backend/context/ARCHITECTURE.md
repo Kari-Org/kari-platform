@@ -36,22 +36,22 @@ Design goals, in priority order:
 
 ## 2. Lineage — What We Carry Forward
 
-| Concern | Legacy NestJS | Legacy Java | **Decision for Kari** |
-|---|---|---|---|
-| Framework | NestJS | Spring Boot | **NestJS** (TS everywhere) |
-| Identity | AWS Cognito, 2 user pools | Self-issued JWT | **Self-issued JWT** (access + refresh) |
-| Primary DB | Postgres **+ MongoDB** | MySQL | **PostgreSQL only** |
-| Cache / ephemeral | — | Redis (price quotes) | **Redis** (quotes, live geo, sockets, queues) |
-| Real-time | Socket.IO broadcast (all→all) | STOMP, targeted, JWT-auth | **Socket.IO, targeted rooms, JWT-auth, Redis adapter** |
-| Concurrency | none | optimistic locking (`@Version`) | **Optimistic locking** |
-| Transactions | hollow / abandoned | real `@Transactional` | **Real transactions** (QueryRunner + ledger) |
-| Matching | none | geo-radius dispatch | **Redis GEO + multi-factor matching** |
-| Pricing | none | distance × duration, tiered, negotiable | **Extended**: + traffic + fuel factor |
-| KYC | none | S3 + Rekognition liveness | **Carry + add NIN verification** |
-| Validation | global `ValidationPipe` ✓ | none | **Carry from NestJS** |
-| Error handling | global filter ✓ | ad-hoc | **Carry from NestJS** |
-| OTP channels | SMS **+ WhatsApp** ✓ | SMS only | **Carry multi-channel from NestJS** |
-| Config validation | none | properties | **Add Zod-validated config** (fix both) |
+| Concern           | Legacy NestJS                 | Legacy Java                             | **Decision for Kari**                                  |
+| ----------------- | ----------------------------- | --------------------------------------- | ------------------------------------------------------ |
+| Framework         | NestJS                        | Spring Boot                             | **NestJS** (TS everywhere)                             |
+| Identity          | AWS Cognito, 2 user pools     | Self-issued JWT                         | **Self-issued JWT** (access + refresh)                 |
+| Primary DB        | Postgres **+ MongoDB**        | MySQL                                   | **PostgreSQL only**                                    |
+| Cache / ephemeral | —                             | Redis (price quotes)                    | **Redis** (quotes, live geo, sockets, queues)          |
+| Real-time         | Socket.IO broadcast (all→all) | STOMP, targeted, JWT-auth               | **Socket.IO, targeted rooms, JWT-auth, Redis adapter** |
+| Concurrency       | none                          | optimistic locking (`@Version`)         | **Optimistic locking**                                 |
+| Transactions      | hollow / abandoned            | real `@Transactional`                   | **Real transactions** (QueryRunner + ledger)           |
+| Matching          | none                          | geo-radius dispatch                     | **Redis GEO + multi-factor matching**                  |
+| Pricing           | none                          | distance × duration, tiered, negotiable | **Extended**: + traffic + fuel factor                  |
+| KYC               | none                          | S3 + Rekognition liveness               | **Carry + add NIN verification**                       |
+| Validation        | global `ValidationPipe` ✓     | none                                    | **Carry from NestJS**                                  |
+| Error handling    | global filter ✓               | ad-hoc                                  | **Carry from NestJS**                                  |
+| OTP channels      | SMS **+ WhatsApp** ✓          | SMS only                                | **Carry multi-channel from NestJS**                    |
+| Config validation | none                          | properties                              | **Add Zod-validated config** (fix both)                |
 
 **Net:** Java's architecture + NestJS's hygiene + multi-channel OTP + the full MVP feature set.
 
@@ -59,29 +59,29 @@ Design goals, in priority order:
 
 ## 3. Technology Stack
 
-| Layer | Choice | Rationale |
-|---|---|---|
-| Runtime / language | Node.js LTS, TypeScript (strict) | One language across backend, web, mobile |
-| Framework | NestJS | Modules, DI, guards, first-class WebSocket & validation |
-| ORM | TypeORM | Carries from NestJS; migrations; QueryRunner for real txns |
-| Primary DB | PostgreSQL | Relational integrity for money/identity; PostGIS-ready for geo |
-| Cache / ephemeral | Redis | Price quotes (TTL), **live driver geo-index (GEO)**, socket adapter, BullMQ backend |
-| Jobs / async | BullMQ (Redis) | OTP expiry, commission calc, leaderboard, billing, notification fan-out (replaces `setTimeout` hack) |
-| Realtime | Socket.IO + `@socket.io/redis-adapter` | Targeted rooms, JWT-auth, horizontal scale at peak |
-| Auth | JWT (access + refresh), Passport, **scrypt** | Self-issued, stateless, rotating refresh; scrypt = no native dep |
-| Object storage | AWS S3 | Driver documents (carry from Java) |
-| Identity/liveness | AWS Rekognition Face Liveness | Carry from Java; >0.9 confidence gate |
-| NIN / KYC | Pluggable; **Dojah** primary | NG-focused NIN/BVN verification (locked 2026-06-02) |
-| Payments | Pluggable; **Paystack** primary | Nigeria-first DX; Flutterwave as alt impl (locked 2026-06-02) |
-| Maps / traffic | Google Maps (Distance Matrix + traffic) | Carry from Java; traffic factor for pricing |
-| SMS | Pluggable; **Termii** (NG) | NG-optimized delivery + OTP templates (locked 2026-06-02) |
-| WhatsApp | Twilio | Carry from NestJS |
-| Push | Expo Push (mobile is Expo RN) / FCM | Matches chosen mobile stack |
-| API docs | Swagger / OpenAPI | Carry from both |
-| Rate limit / bot | `@nestjs/throttler` (+ Arcjet optional) | Abuse protection on OTP/auth |
-| Logging | pino (structured) + request IDs | Observability from day one |
-| Testing | Jest (unit) + Supertest (e2e) | Carry from NestJS |
-| Local infra | Docker Compose (Postgres + Redis) | Reproducible dev |
+| Layer              | Choice                                       | Rationale                                                                                            |
+| ------------------ | -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Runtime / language | Node.js LTS, TypeScript (strict)             | One language across backend, web, mobile                                                             |
+| Framework          | NestJS                                       | Modules, DI, guards, first-class WebSocket & validation                                              |
+| ORM                | TypeORM                                      | Carries from NestJS; migrations; QueryRunner for real txns                                           |
+| Primary DB         | PostgreSQL                                   | Relational integrity for money/identity; PostGIS-ready for geo                                       |
+| Cache / ephemeral  | Redis                                        | Price quotes (TTL), **live driver geo-index (GEO)**, socket adapter, BullMQ backend                  |
+| Jobs / async       | BullMQ (Redis)                               | OTP expiry, commission calc, leaderboard, billing, notification fan-out (replaces `setTimeout` hack) |
+| Realtime           | Socket.IO + `@socket.io/redis-adapter`       | Targeted rooms, JWT-auth, horizontal scale at peak                                                   |
+| Auth               | JWT (access + refresh), Passport, **scrypt** | Self-issued, stateless, rotating refresh; scrypt = no native dep                                     |
+| Object storage     | AWS S3                                       | Driver documents (carry from Java)                                                                   |
+| Identity/liveness  | AWS Rekognition Face Liveness                | Carry from Java; >0.9 confidence gate                                                                |
+| NIN / KYC          | Pluggable; **Dojah** primary                 | NG-focused NIN/BVN verification (locked 2026-06-02)                                                  |
+| Payments           | Pluggable; **Paystack** primary              | Nigeria-first DX; Flutterwave as alt impl (locked 2026-06-02)                                        |
+| Maps / traffic     | Google Maps (Distance Matrix + traffic)      | Carry from Java; traffic factor for pricing                                                          |
+| SMS                | Pluggable; **Termii** (NG)                   | NG-optimized delivery + OTP templates (locked 2026-06-02)                                            |
+| WhatsApp           | Twilio                                       | Carry from NestJS                                                                                    |
+| Push               | Expo Push (mobile is Expo RN) / FCM          | Matches chosen mobile stack                                                                          |
+| API docs           | Swagger / OpenAPI                            | Carry from both                                                                                      |
+| Rate limit / bot   | `@nestjs/throttler` (+ Arcjet optional)      | Abuse protection on OTP/auth                                                                         |
+| Logging            | pino (structured) + request IDs              | Observability from day one                                                                           |
+| Testing            | Jest (unit) + Supertest (e2e)                | Carry from NestJS                                                                                    |
+| Local infra        | Docker Compose (Postgres + Redis)            | Reproducible dev                                                                                     |
 
 ---
 
@@ -90,8 +90,8 @@ Design goals, in priority order:
 1. **Concern-split services, thin controllers.** Controllers stay thin (HTTP only). Each module's logic is
    split into focused services by concern (`money` → wallet/ledger/payments/commission; `rides` →
    rides/matching/pricing) — a service owns both its logic and its DB access, and multi-writes use a
-   `QueryRunner` transaction inline. *(The original intent was a two-tier orchestration/data split from the
-   Java app; the code uses concern-split instead — see ../../context/code-standards.md.)*
+   `QueryRunner` transaction inline. _(The original intent was a two-tier orchestration/data split from the
+   Java app; the code uses concern-split instead — see ../../context/code-standards.md.)_
 2. **One identity, role-scoped profiles.** A single `User` (auth identity) with role-specific
    `DriverProfile` / `RiderProfile`. No separate identity pools; no duplicate identity stores.
 3. **Money is double-entry.** Every balance change is a `LedgerEntry`. Wallets are projections of the
@@ -114,16 +114,19 @@ Design goals, in priority order:
 ## 5. System Architecture
 
 ### 5.1 Request path (HTTP)
+
 ```
 Client → JwtAuthGuard (GLOBAL; @Public opts out) + ThrottlerGuard → ValidationPipe
        → Controller (thin) → Service(s) (QueryRunner txn on multi-write) → Repository → Postgres
                                    ↓
                      Providers / Redis / Queue / Socket
 ```
+
 RolesGuard / PermissionsGuard apply per-controller. A global `ResponseEnvelopeInterceptor` wraps every
 success in `ApiResponse<T>`; `AllExceptionsFilter` normalizes every error to the same shape.
 
 ### 5.2 Realtime path (WebSocket)
+
 ```
 Client --CONNECT(JWT)--> Gateway (verifies JWT) → joins its `user:{id}` room (only)
 Events → RealtimeService.emitToUser(userId, event, payload)     # targeted to user rooms, never broadcast
@@ -135,6 +138,7 @@ panic. Events fan out to each participant's `user:{id}` room via `emitToUser`. T
 `ride:`/`carpool:`/`shuttle:` rooms (the original per-resource-room design was not implemented).
 
 ### 5.3 Matching flow (the core loop)
+
 ```
 1. Rider requests quote   → Pricing computes (distance+duration+traffic+fuel) → cache in Redis (15-min TTL, ref code)
 2. Rider books with ref   → validate quote freshness → create Ride (status=SEARCHING)
@@ -152,17 +156,19 @@ panic. Events fan out to each participant's `user:{id}` room via `emitToUser`. T
 ## 6. Data Architecture
 
 ### 6.1 What lives where
-| Store | Data |
-|---|---|
+
+| Store        | Data                                                                                                                                                                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Postgres** | Users, profiles, vehicles, rides, negotiations, ledger/wallets, transactions, subscriptions, shuttle routes/stops, carpools, leaderboards, achievements, commission rules, ratings, chat messages, documents (metadata), saved addresses, emergency contacts |
-| **Redis** | Live driver positions (GEO), price quotes (TTL), OTP state (TTL), socket adapter pub/sub, BullMQ queues, rate-limit counters |
-| **S3** | Driver/rider document binaries (license, NIN card, car photos, profile photo) |
+| **Redis**    | Live driver positions (GEO), price quotes (TTL), OTP state (TTL), socket adapter pub/sub, BullMQ queues, rate-limit counters                                                                                                                                 |
+| **S3**       | Driver/rider document binaries (license, NIN card, car photos, profile photo)                                                                                                                                                                                |
 
 ### 6.2 Core entities (overview)
 
 > The **authoritative 29-entity list** with real table/column names and FKs is in
 > [entity-relationships.md](entity-relationships.md). The sketch below is the original design — some names
 > differ from the as-built (e.g. `RideOffer` not `RideNegotiation`; `DriverScore` not `LeaderboardEntry`).
+
 - **User** — id, role(`DRIVER`/`RIDER`/`ADMIN`), email, phone, passwordHash, status, verification flags.
 - **DriverProfile** — userId, **driverType(`FREELANCE`/`DEDICATED`)**, personality(`TALKATIVE`/`RESERVED`/`NEUTRAL`), onboarding status, DOB, origin, NIN status, KYC/liveness status, payment details, walletId, referralCode, ratingAvg.
 - **RiderProfile** — userId, preferredDriverBehavior, savedAddresses(home/work), card token (gateway ref), walletId, ninStatus, ratingAvg.
@@ -202,28 +208,28 @@ panic. Events fan out to each participant's `user:{id}` room via `emitToUser`. T
 Each module = controller(s) + one or more concern-split services + entities. MVP scope noted. The full
 as-built catalog (routes, entities owned, dependencies) is in [module-catalog.md](module-catalog.md).
 
-| # | Module | Responsibility | Key decisions | Source |
-|---|---|---|---|---|
-| 1 | **Auth** | Signup, login, JWT access/refresh, password, signup-OTP | Self-issued, scrypt, refresh rotation | Java model + Nest OTP |
-| 2 | **Identity / KYC** | Document upload (S3), Rekognition liveness, **NIN verification**, verification gating | Pluggable KYC provider; liveness hard-gate | Java + new (NIN) |
-| 3 | **Drivers** | Profile, **freelance vs dedicated**, multi-step onboarding, **personality quiz**, vehicle, availability | Driver-type drives onboarding path & dispatch eligibility | Java + req |
-| 4 | **Riders** | Light onboarding, **driver-behavior preference**, saved addresses, card token | Low friction (req); preference feeds matching | Java + req |
-| 5 | **Rides** | Lifecycle state machine, **ride-start OTP**, ratings, location history, cancellation | Optimistic lock on accept; OTP to start | Java + req |
-| 6 | **Matching** | Redis GEO radius + availability + car class + **personality** + driver-type | Targeted dispatch, never broadcast | Java geo + req |
-| 7 | **Pricing** | Distance × duration, **traffic + fuel factor**, tiers (Economy/Comfort/Premium), **negotiation** (rider floorless, driver capped), carpool cost-split | Quote cached in Redis 15 min | Java + req |
-| 8 | **Payments** | Gateway (Paystack), top-up, charges, **payouts**, **cancellation penalties** | Provider abstraction; idempotent | new (both stubbed) |
-| 9 | **Wallet** | Double-entry ledger, balances, **fallback rail** when bank apps fail | All money txn'l; wallet = ledger projection | Java wallet + req |
-| 10 | **Commission & Earnings** | Commission split, **leaderboard-driven reductions** (top 3 = −1%, weekly streak = extra) | Rate resolved per-ride from rules + standings | new (req) |
-| 11 | **Gamification** | Leaderboard, achievements, milestones, badges | Feeds commission engine | req (both stubbed) |
-| 12 | **Subscriptions** | Monthly plans by frequency/distance, **same-driver assignment**, auto-assign freelance/dedicated, billing | Trust = sticky driver | req (both stubbed) |
-| 13 | **Shuttle** | Fixed routes, designated stops, schedules (Lekki/Aba) | Route+stop graph; seat inventory | new (req) |
-| 14 | **Carpooling** | Initiate/join, cost-sharing, adjusted price if alone, **NIN gate** | Seat claims optimistic-locked | new (req) |
-| 15 | **Safety** | **Panic button**, **share trip status** (public link), emergency contacts | Public read-only trip token | new (req) |
-| 16 | **Communication** | In-app chat (WebSocket + persisted), **masked calls** (Twilio) | Reuse socket infra; numbers masked | new (req) |
-| 17 | **Notifications** | Push (Expo/FCM), SMS, WhatsApp, email; templated, queued fan-out | All async via BullMQ | new (both stubbed) |
-| 18 | **Admin** | **Dedicated-driver onboarding/management**, disputes, config, oversight | Admin role; server-driven onboarding | req |
-| 19 | **Realtime (Gateway)** | Socket gateway, presence, Redis adapter, auth, room authorization | Cross-cutting; used by 5/6/12/13/14/16 | Java STOMP → Socket.IO |
-| 20 | **Ratings** | Mutual driver↔rider ratings & aggregates | Affects leaderboard & matching | req |
+| #   | Module                    | Responsibility                                                                                                                                        | Key decisions                                             | Source                 |
+| --- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ---------------------- |
+| 1   | **Auth**                  | Signup, login, JWT access/refresh, password, signup-OTP                                                                                               | Self-issued, scrypt, refresh rotation                     | Java model + Nest OTP  |
+| 2   | **Identity / KYC**        | Document upload (S3), Rekognition liveness, **NIN verification**, verification gating                                                                 | Pluggable KYC provider; liveness hard-gate                | Java + new (NIN)       |
+| 3   | **Drivers**               | Profile, **freelance vs dedicated**, multi-step onboarding, **personality quiz**, vehicle, availability                                               | Driver-type drives onboarding path & dispatch eligibility | Java + req             |
+| 4   | **Riders**                | Light onboarding, **driver-behavior preference**, saved addresses, card token                                                                         | Low friction (req); preference feeds matching             | Java + req             |
+| 5   | **Rides**                 | Lifecycle state machine, **ride-start OTP**, ratings, location history, cancellation                                                                  | Optimistic lock on accept; OTP to start                   | Java + req             |
+| 6   | **Matching**              | Redis GEO radius + availability + car class + **personality** + driver-type                                                                           | Targeted dispatch, never broadcast                        | Java geo + req         |
+| 7   | **Pricing**               | Distance × duration, **traffic + fuel factor**, tiers (Economy/Comfort/Premium), **negotiation** (rider floorless, driver capped), carpool cost-split | Quote cached in Redis 15 min                              | Java + req             |
+| 8   | **Payments**              | Gateway (Paystack), top-up, charges, **payouts**, **cancellation penalties**                                                                          | Provider abstraction; idempotent                          | new (both stubbed)     |
+| 9   | **Wallet**                | Double-entry ledger, balances, **fallback rail** when bank apps fail                                                                                  | All money txn'l; wallet = ledger projection               | Java wallet + req      |
+| 10  | **Commission & Earnings** | Commission split, **leaderboard-driven reductions** (top 3 = −1%, weekly streak = extra)                                                              | Rate resolved per-ride from rules + standings             | new (req)              |
+| 11  | **Gamification**          | Leaderboard, achievements, milestones, badges                                                                                                         | Feeds commission engine                                   | req (both stubbed)     |
+| 12  | **Subscriptions**         | Monthly plans by frequency/distance, **same-driver assignment**, auto-assign freelance/dedicated, billing                                             | Trust = sticky driver                                     | req (both stubbed)     |
+| 13  | **Shuttle**               | Fixed routes, designated stops, schedules (Lekki/Aba)                                                                                                 | Route+stop graph; seat inventory                          | new (req)              |
+| 14  | **Carpooling**            | Initiate/join, cost-sharing, adjusted price if alone, **NIN gate**                                                                                    | Seat claims optimistic-locked                             | new (req)              |
+| 15  | **Safety**                | **Panic button**, **share trip status** (public link), emergency contacts                                                                             | Public read-only trip token                               | new (req)              |
+| 16  | **Communication**         | In-app chat (WebSocket + persisted), **masked calls** (Twilio)                                                                                        | Reuse socket infra; numbers masked                        | new (req)              |
+| 17  | **Notifications**         | Push (Expo/FCM), SMS, WhatsApp, email; templated, queued fan-out                                                                                      | All async via BullMQ                                      | new (both stubbed)     |
+| 18  | **Admin**                 | **Dedicated-driver onboarding/management**, disputes, config, oversight                                                                               | Admin role; server-driven onboarding                      | req                    |
+| 19  | **Realtime (Gateway)**    | Socket gateway, presence, Redis adapter, auth, room authorization                                                                                     | Cross-cutting; used by 5/6/12/13/14/16                    | Java STOMP → Socket.IO |
+| 20  | **Ratings**               | Mutual driver↔rider ratings & aggregates                                                                                                              | Affects leaderboard & matching                            | req                    |
 
 **Minor attributes** (not full modules): driver "Spotify/Apple Music installed" attestation flag;
 "reserved for subscribed routes" eligibility on dedicated drivers.
@@ -249,18 +255,18 @@ as-built catalog (routes, entities owned, dependencies) is in [module-catalog.md
 
 ## 10. External Integrations (behind interfaces)
 
-| Capability | Interface | Primary impl | Notes |
-|---|---|---|---|
-| Payments | `PaymentProvider` | **Paystack** | Flutterwave alt; cards, transfers, payouts |
-| KYC / NIN | `IdentityProvider` | **Dojah** | NIN lookup + match |
-| Liveness | `LivenessProvider` | AWS Rekognition | Carry from Java |
-| Storage | `StorageProvider` | AWS S3 | Document binaries |
-| Maps / traffic | `MapsProvider` | Google Maps | Distance, duration-in-traffic |
-| SMS | `SmsProvider` | **Termii** | OTP + alerts |
-| WhatsApp | `WhatsAppProvider` | Twilio | OTP alt channel |
-| Voice (masked) | `VoiceProvider` | Twilio | In-ride masked calls |
-| Push | `PushProvider` | Expo Push / FCM | Mobile notifications |
-| Email | `EmailProvider` | **AWS SES** | Transactional only (notifications channel); marketing email is separate/roadmap |
+| Capability     | Interface          | Primary impl    | Notes                                                                           |
+| -------------- | ------------------ | --------------- | ------------------------------------------------------------------------------- |
+| Payments       | `PaymentProvider`  | **Paystack**    | Flutterwave alt; cards, transfers, payouts                                      |
+| KYC / NIN      | `IdentityProvider` | **Dojah**       | NIN lookup + match                                                              |
+| Liveness       | `LivenessProvider` | AWS Rekognition | Carry from Java                                                                 |
+| Storage        | `StorageProvider`  | AWS S3          | Document binaries                                                               |
+| Maps / traffic | `MapsProvider`     | Google Maps     | Distance, duration-in-traffic                                                   |
+| SMS            | `SmsProvider`      | **Termii**      | OTP + alerts                                                                    |
+| WhatsApp       | `WhatsAppProvider` | Twilio          | OTP alt channel                                                                 |
+| Voice (masked) | `VoiceProvider`    | Twilio          | In-ride masked calls                                                            |
+| Push           | `PushProvider`     | Expo Push / FCM | Mobile notifications                                                            |
+| Email          | `EmailProvider`    | **AWS SES**     | Transactional only (notifications channel); marketing email is separate/roadmap |
 
 No provider IDs/keys in code — all via validated config; every provider has a `test`/`noop` impl for local + CI.
 **As-built:** only `PaymentProvider` (Paystack) has a real implementation today — the other 9 run on their
@@ -280,31 +286,31 @@ noop until built (10 contracts total). See [../../context/provider-docs.md](../.
 
 ## 12. Requirements Traceability
 
-| Requirement (RSD v1.0) | Module(s) |
-|---|---|
-| Driver onboarding & profiling, personality quiz | Drivers, Identity/KYC |
-| Freelance drivers (self-onboard) | Drivers |
-| Dedicated drivers (admin-onboarded, salaried, subscription routes) | Admin, Drivers, Subscriptions |
-| Earnings/wallet, leaderboard commission reductions | Wallet, Commission, Gamification |
-| Order management within radius | Matching, Rides |
-| Rate customers / view ratings | Ratings |
-| Rider onboarding (+ optional card, home/work) | Riders |
-| Ride preference: driver behavior type | Riders, Matching |
-| Wallet fallback for bank failures | Wallet, Payments |
-| Cancellation penalties | Rides, Payments |
-| Pricing: distance + traffic | Pricing |
-| Negotiation (rider floorless, driver capped) | Pricing, Rides |
-| Security: identity (OTP/security Q/biometric) | Auth, Identity |
-| NIN verification for carpooling | Identity/KYC, Carpooling |
-| Ride-start OTP | Rides |
-| Panic button, share ride status | Safety |
-| In-app chat & calls, direct calls | Communication |
-| Gamification: leaderboard, achievements, badges | Gamification |
-| Shuttle logic (routes, stops) | Shuttle |
-| Carpooling (initiate/join, cost-share) | Carpooling |
-| Subscriptions (frequency/distance, same driver) | Subscriptions |
-| Nigerian economy alignment (fuel + traffic) | Pricing |
-| NFRs (scalability, security, performance, usability, compliance) | Cross-cutting / Infra |
+| Requirement (RSD v1.0)                                             | Module(s)                        |
+| ------------------------------------------------------------------ | -------------------------------- |
+| Driver onboarding & profiling, personality quiz                    | Drivers, Identity/KYC            |
+| Freelance drivers (self-onboard)                                   | Drivers                          |
+| Dedicated drivers (admin-onboarded, salaried, subscription routes) | Admin, Drivers, Subscriptions    |
+| Earnings/wallet, leaderboard commission reductions                 | Wallet, Commission, Gamification |
+| Order management within radius                                     | Matching, Rides                  |
+| Rate customers / view ratings                                      | Ratings                          |
+| Rider onboarding (+ optional card, home/work)                      | Riders                           |
+| Ride preference: driver behavior type                              | Riders, Matching                 |
+| Wallet fallback for bank failures                                  | Wallet, Payments                 |
+| Cancellation penalties                                             | Rides, Payments                  |
+| Pricing: distance + traffic                                        | Pricing                          |
+| Negotiation (rider floorless, driver capped)                       | Pricing, Rides                   |
+| Security: identity (OTP/security Q/biometric)                      | Auth, Identity                   |
+| NIN verification for carpooling                                    | Identity/KYC, Carpooling         |
+| Ride-start OTP                                                     | Rides                            |
+| Panic button, share ride status                                    | Safety                           |
+| In-app chat & calls, direct calls                                  | Communication                    |
+| Gamification: leaderboard, achievements, badges                    | Gamification                     |
+| Shuttle logic (routes, stops)                                      | Shuttle                          |
+| Carpooling (initiate/join, cost-share)                             | Carpooling                       |
+| Subscriptions (frequency/distance, same driver)                    | Subscriptions                    |
+| Nigerian economy alignment (fuel + traffic)                        | Pricing                          |
+| NFRs (scalability, security, performance, usability, compliance)   | Cross-cutting / Infra            |
 
 **Post-MVP (KARI V1.0 roadmap):** Spotify partnership, "Kari Wrapped", watchlist address + push,
 emergency car-alarm integration, **fare-split with friends** (social graph), **marketing email** (separate
@@ -315,21 +321,20 @@ from the transactional `EmailProvider`). Tracked, not built in MVP.
 ## 13. Decisions Log
 
 **Locked 2026-06-02:**
+
 1. **Monorepo tooling** — ✅ pnpm workspaces + Turborepo, shared `packages/types` consumed by backend + web + mobile.
 2. **Payments** — ✅ Paystack primary (Flutterwave as future alt behind `PaymentProvider`).
 3. **KYC/NIN** — ✅ Dojah primary.
 4. **SMS** — ✅ Termii primary (WhatsApp via Twilio remains).
 
-**Still open (decide just-in-time, before the phase that needs them):**
-5. **Liveness** — keep AWS Rekognition, or consolidate into Dojah's liveness (decide in Phase 1).
-6. **Push** — Expo Push (matches Expo RN) vs FCM directly (decide in Phase 6).
-7. **Chat** — build on our WebSocket layer (MVP) vs managed (Stream/Sendbird) (decide in Phase 6).
+**Still open (decide just-in-time, before the phase that needs them):** 5. **Liveness** — keep AWS Rekognition, or consolidate into Dojah's liveness (decide in Phase 1). 6. **Push** — Expo Push (matches Expo RN) vs FCM directly (decide in Phase 6). 7. **Chat** — build on our WebSocket layer (MVP) vs managed (Stream/Sendbird) (decide in Phase 6).
 
 **Phase 3 — Money (landed 2026-06-04):** modules 8–10 (Payments/Wallet/Commission) implemented as a single `MoneyModule`.
+
 - **Unit = kobo (minor units).** All ledger/wallet/transaction amounts are integer kobo (bigint + numeric transformer); ride fares stay whole naira and convert at the boundary (×100). Matches Paystack's native unit — no rounding at the gateway.
 - **Double-entry, projection balances.** `Wallet` + `Transaction` + `LedgerEntry`. Every change posts ≥2 balanced legs through `LedgerService.post` inside one DB transaction, pessimistic-locking each wallet row in a stable order; `wallet.balance` is a cached projection updated in that same txn (never mutated elsewhere). Idempotent by `Transaction.reference`. **Global invariant: Σ(all wallet balances) = 0** — asserted by the E2E.
 - **System wallets:** `REVENUE` (commission + platform penalty share) and `GATEWAY` (clearing/contra for money in transit to/from Paystack; its negative balance = net funds held in user wallets). Lazily created.
-- **Settlement on ride complete** (`PaymentsService.settleRide`, idempotent by `ride_{id}`): **CASH** (default) → platform collects commission *from the driver* (driver wallet may go negative = owes platform); **WALLET/CARD** → rider charged the full fare, driver paid net, platform keeps commission. Ride stores `commission` / `driverEarnings` / `settledAt`.
+- **Settlement on ride complete** (`PaymentsService.settleRide`, idempotent by `ride_{id}`): **CASH** (default) → platform collects commission _from the driver_ (driver wallet may go negative = owes platform); **WALLET/CARD** → rider charged the full fare, driver paid net, platform keeps commission. Ride stores `commission` / `driverEarnings` / `settledAt`.
 - **Commission:** base `COMMISSION_RATE_BPS` (default **2000** = 20%); `CommissionService.resolveRateBps(driver)` is the hook for Phase 11 leaderboard reductions (returns base for now). Split is exact (`driverNet = fare − commission`).
 - **Cancellation penalty:** free before a driver is assigned or within `CANCELLATION_GRACE_SECONDS` (default 120); after that a rider cancel charges `CANCELLATION_FEE` (default ₦500) split `PENALTY_DRIVER_SHARE_BPS` (default 6000 = 60% to driver, rest to REVENUE); driver cancel charges `DRIVER_CANCEL_FEE` (default ₦0 = strike only). Best-effort — never blocks the cancel.
 - **Top-up / payout:** top-up = PENDING txn → gateway `initiateCharge` → `verifyCharge`/webhook → GATEWAY-debit/user-credit (`settlePending`). Payout = reserve funds (driver-debit/GATEWAY-credit) → `initiateTransfer` → reverse on failure; `MIN_TOPUP` ₦100, `MIN_PAYOUT` ₦1000.
@@ -337,22 +342,25 @@ from the transactional `EmailProvider`). Tracked, not built in MVP.
 - **Open for later phases:** real Paystack bank-code resolution for payouts (currently passes the stored bank field); async settlement via BullMQ if settle-on-complete becomes a hot path (synchronous + idempotent for now); rider/driver wallet UI (mobile).
 
 **Phase 4 — Engagement (landed 2026-06-04):** modules 10–12 (Commission reductions / Gamification / Subscriptions) + referrals.
+
 - **Gamification** (`GamificationModule`): `DriverScore` (per ISO-week + an `ALL` all-time bucket) and `Achievement` entities. Each completed ride awards `GAMIFICATION_POINTS_PER_RIDE` (default 10) and evaluates milestone badges (first / 10 / 50 / 100 rides, top-rated ≥4.8★ over ≥20 ratings). Weekly leaderboard ranks by points.
 - **Commission reduction (closes the Phase 3 hook):** `CommissionService.resolveRateBps` now subtracts `GamificationService.commissionReductionBps(driver)` — top-3 weekly drivers get `GAMIFICATION_TOP3_REDUCTION_BPS` (−100 bps) off, capped at `GAMIFICATION_MAX_REDUCTION_BPS` and floored at `COMMISSION_MIN_RATE_BPS` (10%). Verified: a leaderboard-leading driver's next ride is settled at 19% instead of 20%.
 - **Referrals** (`ReferralsModule`): each `User` gets a unique lazily-generated `referralCode`; `POST /referrals/apply` records `referredByUserId` (one-time, no self-referral). On the referee's first completed ride both sides are credited `REFERRAL_REWARD` (default ₦500) via a REVENUE-funded `REFERRAL` ledger transaction — idempotent via the `referralRewarded` flag + a per-referee reference.
-- **Subscriptions** (`SubscriptionsModule`): static plan catalog (Weekly Lite / Monthly Commute / Monthly Unlimited). Subscribe charges the plan fee from the wallet (`SUBSCRIPTION` ledger txn, rolled back if the charge fails) and creates an ACTIVE `Subscription`. **Same-driver:** the first driver to serve an active subscriber is captured as `assignedDriverId`; `MatchingService.findCandidates` then dispatches *exclusively* to that driver when they're online + eligible.
+- **Subscriptions** (`SubscriptionsModule`): static plan catalog (Weekly Lite / Monthly Commute / Monthly Unlimited). Subscribe charges the plan fee from the wallet (`SUBSCRIPTION` ledger txn, rolled back if the charge fails) and creates an ACTIVE `Subscription`. **Same-driver:** the first driver to serve an active subscriber is captured as `assignedDriverId`; `MatchingService.findCandidates` then dispatches _exclusively_ to that driver when they're online + eligible.
 - **Ride hooks:** `rides.complete()` fires gamification + referral rewards (best-effort, never blocks completion); `rides.request()` routes subscribers to their sticky driver; `accept`/`acceptOffer` capture it.
 - **Enums added:** `TransactionType.SUBSCRIPTION` + `REFERRAL`, `AchievementBadge`.
 - **Deferred:** subscription auto-renew billing (BullMQ cron) + metered per-ride coverage/discount; streak-based commission bonuses; mobile engagement UI.
 
 **Phase 5 — Ride variants (landed 2026-06-04):** modules 13–14 (Shuttle / Carpooling).
-- **Carpooling** (`CarpoolsModule`): `Carpool` (`@Version` seat guard) + `CarpoolMember`. **NIN-gated** — create *and* join require the rider's `ninStatus = VERIFIED`. Created from a ride quote (the solo fare becomes `totalFare`); **cost-split** = `totalFare / member-count`, recomputed on join/leave (alone ⇒ full fare). Seat claims are optimistic-locked (first wins the last seat). Dispatched to nearby drivers (reuses `MatchingService`, emits `carpool:offer`); on completion the whole fare is settled in **one balanced ledger transaction** — every member debited their share, the driver credited net, the platform credited commission.
+
+- **Carpooling** (`CarpoolsModule`): `Carpool` (`@Version` seat guard) + `CarpoolMember`. **NIN-gated** — create _and_ join require the rider's `ninStatus = VERIFIED`. Created from a ride quote (the solo fare becomes `totalFare`); **cost-split** = `totalFare / member-count`, recomputed on join/leave (alone ⇒ full fare). Seat claims are optimistic-locked (first wins the last seat). Dispatched to nearby drivers (reuses `MatchingService`, emits `carpool:offer`); on completion the whole fare is settled in **one balanced ledger transaction** — every member debited their share, the driver credited net, the platform credited commission.
 - **Shuttle** (`ShuttleModule`): `ShuttleRoute` + ordered `ShuttleStop` (cumulative `fareFromOrigin`) + `ShuttleTrip` (`@Version` seat inventory) + `ShuttleBooking`. Lekki + Aba corridor routes/stops and a few upcoming trips are **seeded on boot** (idempotent). A booking's fare = stop-distance × seats, charged from the wallet to REVENUE (driver is dedicated/salaried — no per-trip payout yet); seats are optimistic-locked; cancel refunds + frees seats.
 - **Enums added:** `CarpoolStatus`, `ShuttleTripStatus`, `ShuttleBookingStatus`. `RideType.CARPOOL`/`SHUTTLE` already existed. Settlement reuses `TransactionType.RIDE_CHARGE` / `REFUND`.
 - **Reuse:** RidesModule now exports `PricingService` + `MatchingService`; MoneyModule exports `CommissionService`. Verified by an E2E (23/23) including the ledger invariant Σ(balances)=0.
 - **Deferred:** real-time carpool join UX over sockets, dynamic shuttle trip generation/scheduling, shuttle driver payout, per-member mixed payment methods, mobile UI.
 
 **Phase 6 — Safety & Comms (landed 2026-06-04):** modules 15–17 (Safety / Communication / Notifications).
+
 - **Notifications** (`NotificationsModule`): the first real **BullMQ queue + `@Processor` worker**. `NotificationsService.notify()` persists an in-app `Notification` row synchronously and enqueues a `deliver` job; the worker fans out to the user's **push / SMS / email** providers per the notification's `channels`. `sendSms()` enqueues a raw `sms` job for non-user recipients (emergency contacts). `DeviceToken` registry for push. `GET /notifications`, `POST /notifications/:id/read`, `POST /notifications/devices`.
 - **Safety** (`SafetyModule`): `EmergencyContact` CRUD; **panic** (`POST /safety/panic`) → `PanicEvent` + SOS SMS to every contact (via Notifications queue) + in-app confirmation + socket `safety:panic` to ops and the assigned driver; **share-trip** → `SharedTrip` opaque token (12 h TTL, revocable) resolved by a **`@Public` `GET /trips/shared/:token`** returning read-only status + driver/vehicle but **never the start PIN or rider PII**.
 - **Communication** (`CommsModule`): persisted **in-ride chat** (`POST/GET /rides/:id/messages`, delivered live via `RealtimeService.emitToUser('chat:message')`) and **masked calls** (`POST /rides/:id/call` → `VoiceProvider` proxy session). Both gated to the two ride participants (non-participant → 403).
@@ -362,4 +370,4 @@ from the transactional `EmailProvider`). Tracked, not built in MVP.
 
 ---
 
-*Architecture draft v1; updated as decisions land (latest: Phase 6 Safety & Comms, 2026-06-04).*
+_Architecture draft v1; updated as decisions land (latest: Phase 6 Safety & Comms, 2026-06-04)._

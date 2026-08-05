@@ -26,6 +26,7 @@ all five products — exactly the "who consumes this contract?" shape the study 
 No graph.
 
 **Slice selection (from build-graph.md, not invented for the study):**
+
 - **B1 (before):** Carpool v2 — driver carpool-mode toggle. Backend + `@kari/types` + driver app.
 - **B2 (before):** Shuttle v2 — ops assigns driver→bus→route in admin. Backend + `@kari/types` + admin.
 - **A1/A2 (after):** comparable spans, chosen at Phase 2 from the same graph (candidates: carpool
@@ -49,7 +50,7 @@ left to the founder.
 - **Cross-package links re-derived by hand:** the `@kari/types` enum surface (which enums exist for
   driver/carpool state) and the socket event name (`carpool:offer`) had to be grepped across two
   workspaces to connect backend emitter → driver-app listener.
-- **The near-miss (the honest one):** I designed the `findCandidates` change *before* checking who else
+- **The near-miss (the honest one):** I designed the `findCandidates` change _before_ checking who else
   calls it. Only a deliberate last-minute grep revealed the second consumer —
   `rides.service.ts:192` (solo dispatch) — which a naive signature change would have broken. Nothing in
   the curated context enumerates function-level consumers; experience prompted the check, not the docs.
@@ -118,7 +119,7 @@ roughly a third of all tool rounds.**
   code-contradictions — (a) the shuttle **seeder creates trips without reading route assignment**, so
   spec-as-drafted's AC-8 was unimplementable without a change I hadn't planned; (b) **`ShuttleModule`
   exports nothing and `AdminModule` doesn't import it** — the admin controller literally cannot inject
-  the shuttle service today. Both are *edge queries* (module-import edges, call edges) that I failed to
+  the shuttle service today. Both are _edge queries_ (module-import edges, call edges) that I failed to
   derive by hand on the first pass, caught only by a second full read. A dependency graph answers both
   mechanically. Plus 5 more design issues (audit payload shape, driver-status check, exclusivity,
   active-filter ambiguity, a simpler single-endpoint shape — adopted).
@@ -145,6 +146,7 @@ assignment, PATCH endpoint, admin Shuttle page.
 ### Verify step (check verify) — result: PASS (calibrated)
 
 Runtime evidence (real admin login; dedicated driver onboarded through the real admin endpoint):
+
 - AC-1 ✅ `shuttle:assign` in built PERMISSIONS, OPS granted, SUPER_ADMIN inherits
 - AC-2 ✅ routes list with assignment + trip counts (200, 2 routes)
 - AC-3 ✅ assignment persisted; **all 3 future SCHEDULED trips stamped with driverId (live-schema query)**
@@ -164,6 +166,7 @@ evidence: manual explore missed real dependency edges that had to be recovered b
 ## Phase 1 — Graphify integration (2026-08-03)
 
 **Commands (verified against the README first — worth doing: the package is `graphifyy`, double-y):**
+
 - `brew install uv` (machine had no uv/pipx) → `uv tool install graphifyy` → later
   `uv tool install --force "graphifyy[mcp]"` because the HTTP MCP transport needs an extra
   (`mcp + starlette + uvicorn`) the base install omits. **Friction logged: two installs.**
@@ -186,6 +189,7 @@ tools). Verified over HTTP. In-session queries also available via the identical 
 advisory, foundation wins, and explicitly NOT `context/build-graph.md` (different altitude).
 
 **Sanity replay of the two baseline near-misses:**
+
 - B1 ("who calls `findCandidates`?"): `graphify query` returned BOTH callers as explicit edges with
   file:line — `carpools.service.ts:L116` and `rides.service.ts:L192`. In the baseline this took a
   deliberate late grep that almost didn't happen.
@@ -200,10 +204,11 @@ advisory, foundation wins, and explicitly NOT `context/build-graph.md` (differen
 ### Explore step (architect phase) — measured
 
 **Contamination note (honest):** `carpools.service.ts` was fully read during B1 this same session, so
-the backend half of this slice cost me nothing *this time* — but that's session memory, not the graph.
+the backend half of this slice cost me nothing _this time_ — but that's session memory, not the graph.
 The clean comparison is the RIDER side, untouched all session.
 
 **Graph queries run (6 total, ~40s wall):**
+
 1. `query "where is carpool shareAmount computed…"` — **WEAK**: generic terms (backend, Rider) seeded a
    394-node BFS of noise. Lesson: NL queries need distinctive anchors.
 2. `explain "recompute"` — **CRISP**: the full caller set of the split function in one shot —
@@ -218,7 +223,7 @@ The clean comparison is the RIDER side, untouched all session.
    opening/grepping the rider app's 76 files.
 6. Targeted grep over exactly those 3 files (graph-directed) → found the headline defect: `carpools.tsx`
    **duplicates the equal-split formula inline in 2 places** — client-side drift the slice must kill.
-   The graph pointed at the files; the *judgment* that inline math = duplicated business rule is still
+   The graph pointed at the files; the _judgment_ that inline math = duplicated business rule is still
    human/model work. Honest boundary of the tool.
 
 **Files opened: 3 (all graph-named). Baseline B1 for the same phase: 6 rounds, 5 full reads + 9 peeks
@@ -252,6 +257,7 @@ race inheritance, wrong-keyed share lookup, unpinned label strings) — all fold
 ### Explore step — measured
 
 **Graph queries: 3. Files opened before writing the spec: 2 full + 3 grep-peeks. All graph-directed.**
+
 1. `explain "SubscriptionsService"` — the complete service map (7 methods with line numbers) + both
    consumers (`rides.service.ts` imports it — the sticky-driver AND future settlement seam;
    `subscriptions.controller.ts`) in ONE query. Baseline equivalent: 2–3 file reads.
@@ -303,18 +309,18 @@ haversine, and a too-weak Σ-invariant test.
 
 ## The before/after, side by side
 
-| Metric (explore/architect phase) | B1 (before) | B2 (before) | A1 (after) | A2 (after) |
-|---|---|---|---|---|
-| Explore rounds | 6 | 4 | 6 queries + 1 grep round | 3 queries + 2 reads + 3 peeks |
-| Files fully read to map the slice | 5 | 3 | 0 new (3 grep-peeks, graph-named) | 2 (graph-named) |
-| Files opened on guesses (not pointers) | ~14 | ~11 | 0 | 0 |
-| Consumers missed / near-missed | 1 near-miss (`rides.service` caller) + 2 caught only by cross-check (module wiring, seeder) | same 2 | 0 (book.tsx enumerated) | 0 (unwired screen FOUND) |
-| Workspaces swept by hand | 3 | 3–4 | 0 (queries crossed them) | 0 |
+| Metric (explore/architect phase)       | B1 (before)                                                                                 | B2 (before) | A1 (after)                        | A2 (after)                    |
+| -------------------------------------- | ------------------------------------------------------------------------------------------- | ----------- | --------------------------------- | ----------------------------- |
+| Explore rounds                         | 6                                                                                           | 4           | 6 queries + 1 grep round          | 3 queries + 2 reads + 3 peeks |
+| Files fully read to map the slice      | 5                                                                                           | 3           | 0 new (3 grep-peeks, graph-named) | 2 (graph-named)               |
+| Files opened on guesses (not pointers) | ~14                                                                                         | ~11         | 0                                 | 0                             |
+| Consumers missed / near-missed         | 1 near-miss (`rides.service` caller) + 2 caught only by cross-check (module wiring, seeder) | same 2      | 0 (book.tsx enumerated)           | 0 (unwired screen FOUND)      |
+| Workspaces swept by hand               | 3                                                                                           | 3–4         | 0 (queries crossed them)          | 0                             |
 
 The explore cost didn't just shrink — it changed shape. Before: sweep directories, grep names, read
-whole files to build a mental map, then *hope* the map is complete. After: ask for the map
+whole files to build a mental map, then _hope_ the map is complete. After: ask for the map
 (`explain <symbol>` = callers/importers with file:line), then read only the 2–3 files whose exact
-*shapes* matter. Reading for shape is cheap and bounded; sweeping for structure was the expensive,
+_shapes_ matter. Reading for shape is cheap and bounded; sweeping for structure was the expensive,
 error-prone part, and that's the part the graph deleted.
 
 ## The single best moment
@@ -323,19 +329,19 @@ error-prone part, and that's the part the graph deleted.
 graph query revealed that the rider app's entire subscription surface — two screens plus a home-tab
 card — was running on a SAMPLE-seeded local store and had **never been wired to the backend**, while
 the progress tracker recorded rider P4 as complete. The curated context couldn't know (it records
-intent and decisions, not wiring); grepping wouldn't have flagged it (the screens *work*, on fake
+intent and decisions, not wiring); grepping wouldn't have flagged it (the screens _work_, on fake
 data); runtime testing would have found it only if someone thought to test that specific screen
 against the server. A structural absence — an edge that should exist and doesn't — is something only
 a graph surfaces cheaply. That finding reshaped slice A2's scope and is now shipped code.
 
 Runner-up: `explain "recompute"` returning the complete 2-caller blast set for the fare-split change —
-the exact query class whose manual version I *almost skipped* in B1 (the `findCandidates` near-miss).
+the exact query class whose manual version I _almost skipped_ in B1 (the `findCandidates` near-miss).
 
 ## Honest frictions (the piece needs these)
 
 1. **Natural-language queries are hit-or-miss.** Generic terms ("backend", "rider") seed noisy
    394-node BFS traversals. The crisp tool is `explain` on a known symbol — which means you need a
-   name first. The graph is a *resolver*, not a search engine; you still need one grep or one guess
+   name first. The graph is a _resolver_, not a search engine; you still need one grep or one guess
    to get the first anchor.
 2. **Node naming needs learning.** Bare `affected "findCandidates"` fails ("no unique node match");
    labels are qualified (`.findCandidates()`) and ambiguity errors want full node ids. ~3 failed
@@ -348,7 +354,7 @@ the exact query class whose manual version I *almost skipped* in B1 (the `findCa
    grep after I'd already committed to deletion.
 5. **What the graph doesn't carry:** exact code shapes (DTO field names — `adminRole` not `role` cost
    a failed verify leg), in-file facts (which query key a screen uses), semantics (that inline
-   `totalFare / n` math *duplicates a business rule* — the graph pointed at the file; the judgment was
+   `totalFare / n` math _duplicates a business rule_ — the graph pointed at the file; the judgment was
    still on me), and environment truth (the zombie process serving stale code — only runtime
    verification caught that).
 6. **Index cost: a non-issue for code.** 6.9s, zero tokens, 466 files. The "LLM cost to index" worry
@@ -356,12 +362,12 @@ the exact query class whose manual version I *almost skipped* in B1 (the `findCa
 
 ## Where Graphify added value BEYOND the curated context (the thesis answer)
 
-The two memories turned out to be different *altitudes*, and the gap between them is exactly where
+The two memories turned out to be different _altitudes_, and the gap between them is exactly where
 the four slices' bugs lived:
 
 - `context/` (curated, authoritative) answers **why and what-should-be**: the eligibility rule exists
   (§5), Redis is ephemeral (§7 #11), the ride-type matrix. It's the layer that told me carpool
-  dispatch filtering *ought* to exist — and it was right that the code violated it.
+  dispatch filtering _ought_ to exist — and it was right that the code violated it.
 - `graphify-out/` (derived, advisory) answers **what-is at the file/symbol level**: who actually
   calls `findCandidates` (2 sites), who consumes `PERMISSIONS` (3 surfaces), whether
   `subscriptionsApi` has any importers at all (none!), which module exports what (ShuttleModule
@@ -369,17 +375,17 @@ the four slices' bugs lived:
 - **The failures of the baseline were precisely edge-enumeration failures**: B1's near-missed second
   caller, B2's two cross-check catches (a missing module edge, a seeder that ignored a field). Every
   one is a one-query graph answer. In the after-slices, that failure class went to zero — the
-  cross-checks still found real issues, but they were *semantic* (cash double-pay, fee-basis
+  cross-checks still found real issues, but they were _semantic_ (cash double-pay, fee-basis
   ambiguity, untestable ACs), never structural. The graph took the structural class off the table
   and left the reviewers free to catch the semantic class.
-- The tension resolution never needed invoking: the graph never *disagreed* with foundation.md —
+- The tension resolution never needed invoking: the graph never _disagreed_ with foundation.md —
   it disagreed with the **progress tracker's optimism** (rider P4 "complete") and with **doc claims
   about code** (the eligibility rule). In both cases the rule held: foundation states intent, the
   graph states reality, and the delta between them is the work list.
 
-**Verdict for the piece:** the curated context made the graph *more* valuable, not redundant — the
+**Verdict for the piece:** the curated context made the graph _more_ valuable, not redundant — the
 WHY layer told me which WHAT-IS queries mattered. And the graph's best trick isn't finding what's
-there; it's proving what *isn't* (no importers, no export, no filter). Absences are invisible to
+there; it's proving what _isn't_ (no importers, no export, no filter). Absences are invisible to
 grep and to curated docs alike.
 
 ## Ship record

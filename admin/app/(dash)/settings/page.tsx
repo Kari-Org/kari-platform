@@ -68,8 +68,9 @@ export default function SettingsPage() {
             </table>
           </div>
           <p className="mt-3 text-xs text-subtle">
-            Roles are defined in code (`@kari/types` · ROLE_PERMISSIONS) — the single source of truth shared
-            by this console and the backend guard. Admin invitations &amp; role assignment land in a later pass.
+            Roles are defined in code (`@kari/types` · ROLE_PERMISSIONS) — the single source of
+            truth shared by this console and the backend guard. Admin invitations &amp; role
+            assignment land in a later pass.
           </p>
         </CardContent>
       </Card>

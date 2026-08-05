@@ -3,7 +3,7 @@
 > **Status:** v1 — converged. Last updated 2026-07-30. Derived from the existing codebase and hand-built
 > context docs (brownfield); build constraints and goals confirmed with the founder.
 > **Source of truth.** Every other file references this; none restate it. If any file — or any per-app
-> `ARCHITECTURE.md` — disagrees with this one, this one wins. Where a doc and the *code* disagree on an
+> `ARCHITECTURE.md` — disagrees with this one, this one wins. Where a doc and the _code_ disagree on an
 > implementation detail, the code embodies the decision and the doc is the bug (see §7 #10, #12 for
 > examples already caught).
 > The name **Kari** is locked (brand assets shipped in `brand/`).
@@ -83,13 +83,13 @@ The central object is the **Ride** — a state machine (`SEARCHING → … → C
 
 ## §6 Core flows & surfaces
 
-| Surface | Path | The flow it lives or dies on |
-|---------|------|------------------------------|
-| Rider app (Expo/RN) | `rider/` | book → match → PIN start → track → pay (wallet/card/cash) → rate |
-| Driver app (Expo/RN) | `driver/` | KYC wizard → go online → dispatch sheet → accept/counter → enter PIN → complete → earnings |
-| Admin console (Next.js) | `admin/` | live fleet map · KYC/lifecycle management · trip override · tickets · financials · audit-logged RBAC |
-| Marketing web (Next.js) | `web/` | static single-page site (light theme, no backend by design) |
-| Backend (NestJS) | `backend/` | one unified API + Socket.IO server behind everything |
+| Surface                 | Path       | The flow it lives or dies on                                                                         |
+| ----------------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| Rider app (Expo/RN)     | `rider/`   | book → match → PIN start → track → pay (wallet/card/cash) → rate                                     |
+| Driver app (Expo/RN)    | `driver/`  | KYC wizard → go online → dispatch sheet → accept/counter → enter PIN → complete → earnings           |
+| Admin console (Next.js) | `admin/`   | live fleet map · KYC/lifecycle management · trip override · tickets · financials · audit-logged RBAC |
+| Marketing web (Next.js) | `web/`     | static single-page site (light theme, no backend by design)                                          |
+| Backend (NestJS)        | `backend/` | one unified API + Socket.IO server behind everything                                                 |
 
 Full narrative user stories: `project-overview.md`. Per-type ride contracts: `architecture.md`.
 
@@ -98,30 +98,30 @@ Full narrative user stories: `project-overview.md`. Per-type ride contracts: `ar
 Numbered so other files can cite `foundation.md §7 #N`. These were made during the build and are embodied
 in the code; reasoning is recorded so no session re-litigates them.
 
-| # | Decision | Reasoning | Rejected alternative |
-|---|----------|-----------|----------------------|
-| 1 | **Monorepo: pnpm 11 + Turborepo**, TypeScript strict end-to-end | One language/one repo for a solo founder; consolidates 8 legacy repos whose split was a hiring artifact | Keeping split repos (NestJS + Java backends, RN + Flutter mobile) |
-| 2 | **Backend: NestJS 11** on Node 24, PostgreSQL 16 + TypeORM, Redis 7 | Batteries-included DI/modules suit a large domain; TS keeps types shared | Java/Spring legacy backend |
-| 3 | **Mobile: Expo SDK 54 + React Native 0.81**, Expo Router v6, Zustand + TanStack Query, NativeWind 4 | One React mental model shared across rider/driver via `@kari/mobile-core`; EAS handles store builds | Flutter (legacy driver app) |
-| 4 | **Admin: Next.js 15 App Router**, Tailwind 3 + shadcn/ui, dark theme | Server Components for read-heavy ops pages; shadcn = fast, ownable UI | Separate SPA / legacy admin |
-| 5 | **Auth: self-issued JWT** (access 15m + rotating refresh 30d) | Stateless, no vendor lock, full control of claims | AWS Cognito (dropped) |
-| 6 | **Passwords: scrypt** (Node built-in, `salt:hash` hex, constant-time compare) | Zero native dependency — builds anywhere incl. EAS | Argon2id (needs native build; docs claiming it were aspirational) |
-| 7 | **2FA: OTP required on re-login** for riders/drivers; **admins exempt** (email/password + httpOnly cookie) | Phone possession is the trust anchor for the field; admins are staff on trusted devices | OTP for everyone (friction without threat-model gain) |
-| 8 | **Identity: phone + OTP (SMS Termii / WhatsApp Twilio) + Google sign-in; no email/password** for riders/drivers | Phone-first is how Nigeria authenticates; email is low-trust there | Email/password accounts |
-| 9 | **Payments: Paystack** behind `PaymentProvider` | Dominant NG gateway; interface keeps Flutterwave swappable | Flutterwave as primary |
-| 10 | **Socket model: per-user rooms only** (`user:{id}`, JWT-authed; `'ops'` room for panic is the sole exception) | One fan-out primitive (`emitToUser`) covers every event; no room-lifecycle management | `ride:{id}`/`driver:{id}` rooms (older docs imply them; never built) |
-| 11 | **Money: kobo minor-units, `bigint` columns, double-entry ledger**, Σ(wallets)=0, idempotent sync settlement; CASH rides collect commission from the driver wallet (may go negative) | Financial correctness is non-negotiable; invariant is E2E-asserted | Decimal naira, single-entry balances |
-| 12 | **DB naming: snake_case plural tables, camelCase columns** | TS convention at the column level; TypeORM default table style | Full snake_case |
-| 13 | **Optimistic locking (`@VersionColumn`) on Ride / Carpool / ShuttleTrip** | Contended objects; first actor wins, others get 409 — no pessimistic lock queues | Row locks / serializable transactions |
-| 14 | **One active ride per rider**, enforced at the API (409) | Product simplicity + fraud surface reduction | Multiple concurrent bookings |
-| 15 | **Provider abstraction: 10 interfaces in `providers/contracts.ts`**, every one with a keyless noop; real impls added per provider when launch demands | Full stack runs with zero credentials; vendors swap by config | Direct SDK imports in modules |
-| 16 | **Commission: 20% base BPS, leaderboard-reduced** (top 3 → 19%) | Gamification wired to real earnings, not vanity points | Flat commission |
-| 17 | **Personality quiz: 1–5 Likert**, scored to TALKATIVE/RESERVED/NEUTRAL | User feedback: 3-point scale too coarse | 3-point scale (original) |
-| 18 | **`@kari/mobile-core` is source-shipped** (Metro/Babel transforms it; no build step); `@kari/types` is built (`dist/`) | NativeWind classnames must be compiled per-app; types need one canonical artifact | Building mobile-core / source-shipping types |
-| 19 | **Admin auth: custom httpOnly-cookie + same-origin proxy** (`/api/proxy/[...path]` injects Bearer) | Token never touches client JS; no NextAuth complexity | NextAuth/Auth.js, Zoho SSO (stubbed only) |
-| 20 | **Design: dark theme (mobile + admin), brand yellow `#FFFF00` on near-black `#070707`; web is the one light surface** with its own tokens; rider UI's visual source of truth is the Figma file *Kari Mobile App* | High-contrast brand DNA; marketing needs approachability | Light mobile apps; shared web/mobile tokens |
-| 21 | **Deploy: backend on Railway** (Dockerfile, `DATABASE_URL`), mobile via **EAS** (dev-client + EAS Update, Node pinned 22.13.1) | Lowest-ops path for a solo founder; EAS is the Expo-native store pipeline | Self-managed AWS from day one |
-| 22 | **Jobs: BullMQ on Redis** — never `setTimeout`; durable record persisted synchronously, side-effects queued | Jobs survive restarts; Redis already in the stack | In-process timers, cron-only |
+| #   | Decision                                                                                                                                                                                                         | Reasoning                                                                                               | Rejected alternative                                                 |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | **Monorepo: pnpm 11 + Turborepo**, TypeScript strict end-to-end                                                                                                                                                  | One language/one repo for a solo founder; consolidates 8 legacy repos whose split was a hiring artifact | Keeping split repos (NestJS + Java backends, RN + Flutter mobile)    |
+| 2   | **Backend: NestJS 11** on Node 24, PostgreSQL 16 + TypeORM, Redis 7                                                                                                                                              | Batteries-included DI/modules suit a large domain; TS keeps types shared                                | Java/Spring legacy backend                                           |
+| 3   | **Mobile: Expo SDK 54 + React Native 0.81**, Expo Router v6, Zustand + TanStack Query, NativeWind 4                                                                                                              | One React mental model shared across rider/driver via `@kari/mobile-core`; EAS handles store builds     | Flutter (legacy driver app)                                          |
+| 4   | **Admin: Next.js 15 App Router**, Tailwind 3 + shadcn/ui, dark theme                                                                                                                                             | Server Components for read-heavy ops pages; shadcn = fast, ownable UI                                   | Separate SPA / legacy admin                                          |
+| 5   | **Auth: self-issued JWT** (access 15m + rotating refresh 30d)                                                                                                                                                    | Stateless, no vendor lock, full control of claims                                                       | AWS Cognito (dropped)                                                |
+| 6   | **Passwords: scrypt** (Node built-in, `salt:hash` hex, constant-time compare)                                                                                                                                    | Zero native dependency — builds anywhere incl. EAS                                                      | Argon2id (needs native build; docs claiming it were aspirational)    |
+| 7   | **2FA: OTP required on re-login** for riders/drivers; **admins exempt** (email/password + httpOnly cookie)                                                                                                       | Phone possession is the trust anchor for the field; admins are staff on trusted devices                 | OTP for everyone (friction without threat-model gain)                |
+| 8   | **Identity: phone + OTP (SMS Termii / WhatsApp Twilio) + Google sign-in; no email/password** for riders/drivers                                                                                                  | Phone-first is how Nigeria authenticates; email is low-trust there                                      | Email/password accounts                                              |
+| 9   | **Payments: Paystack** behind `PaymentProvider`                                                                                                                                                                  | Dominant NG gateway; interface keeps Flutterwave swappable                                              | Flutterwave as primary                                               |
+| 10  | **Socket model: per-user rooms only** (`user:{id}`, JWT-authed; `'ops'` room for panic is the sole exception)                                                                                                    | One fan-out primitive (`emitToUser`) covers every event; no room-lifecycle management                   | `ride:{id}`/`driver:{id}` rooms (older docs imply them; never built) |
+| 11  | **Money: kobo minor-units, `bigint` columns, double-entry ledger**, Σ(wallets)=0, idempotent sync settlement; CASH rides collect commission from the driver wallet (may go negative)                             | Financial correctness is non-negotiable; invariant is E2E-asserted                                      | Decimal naira, single-entry balances                                 |
+| 12  | **DB naming: snake_case plural tables, camelCase columns**                                                                                                                                                       | TS convention at the column level; TypeORM default table style                                          | Full snake_case                                                      |
+| 13  | **Optimistic locking (`@VersionColumn`) on Ride / Carpool / ShuttleTrip**                                                                                                                                        | Contended objects; first actor wins, others get 409 — no pessimistic lock queues                        | Row locks / serializable transactions                                |
+| 14  | **One active ride per rider**, enforced at the API (409)                                                                                                                                                         | Product simplicity + fraud surface reduction                                                            | Multiple concurrent bookings                                         |
+| 15  | **Provider abstraction: 10 interfaces in `providers/contracts.ts`**, every one with a keyless noop; real impls added per provider when launch demands                                                            | Full stack runs with zero credentials; vendors swap by config                                           | Direct SDK imports in modules                                        |
+| 16  | **Commission: 20% base BPS, leaderboard-reduced** (top 3 → 19%)                                                                                                                                                  | Gamification wired to real earnings, not vanity points                                                  | Flat commission                                                      |
+| 17  | **Personality quiz: 1–5 Likert**, scored to TALKATIVE/RESERVED/NEUTRAL                                                                                                                                           | User feedback: 3-point scale too coarse                                                                 | 3-point scale (original)                                             |
+| 18  | **`@kari/mobile-core` is source-shipped** (Metro/Babel transforms it; no build step); `@kari/types` is built (`dist/`)                                                                                           | NativeWind classnames must be compiled per-app; types need one canonical artifact                       | Building mobile-core / source-shipping types                         |
+| 19  | **Admin auth: custom httpOnly-cookie + same-origin proxy** (`/api/proxy/[...path]` injects Bearer)                                                                                                               | Token never touches client JS; no NextAuth complexity                                                   | NextAuth/Auth.js, Zoho SSO (stubbed only)                            |
+| 20  | **Design: dark theme (mobile + admin), brand yellow `#FFFF00` on near-black `#070707`; web is the one light surface** with its own tokens; rider UI's visual source of truth is the Figma file _Kari Mobile App_ | High-contrast brand DNA; marketing needs approachability                                                | Light mobile apps; shared web/mobile tokens                          |
+| 21  | **Deploy: backend on Railway** (Dockerfile, `DATABASE_URL`), mobile via **EAS** (dev-client + EAS Update, Node pinned 22.13.1)                                                                                   | Lowest-ops path for a solo founder; EAS is the Expo-native store pipeline                               | Self-managed AWS from day one                                        |
+| 22  | **Jobs: BullMQ on Redis** — never `setTimeout`; durable record persisted synchronously, side-effects queued                                                                                                      | Jobs survive restarts; Redis already in the stack                                                       | In-process timers, cron-only                                         |
 
 A decision made mid-build that changes any of these updates this table **first**, then ripples (see
 `progress-log.md` standing instruction).
@@ -129,6 +129,7 @@ A decision made mid-build that changes any of these updates this table **first**
 ## §8 Scope
 
 ### In (v1 / launch)
+
 Everything in §6, plus: P7 hardening (a11y, offline/error states, perf, Maestro e2e, store builds);
 runtime verification of mobile P3–P6 and admin A2–A6; real provider implementations; and the **ride-variant
 v2 gaps** already specced in `architecture.md` → Ride Type Matrix (carpool: mode toggle, per-rider PIN,
@@ -136,11 +137,13 @@ incremental dispatch, discounted ride-share fares, route optimization · shuttle
 ops bus/route assignment · subscription: scheduler job, fallback chain, per-route pricing, free-at-use).
 
 ### Out / cut (the forcing function)
+
 Autonomous vehicles · multi-country (Nigeria only) · email/password auth for riders/drivers · crypto
 payments · third-party delivery/logistics · in-app driver-training product · scheduled one-off rides ·
 multiple active rides per rider.
 
 ### Deferred (roadmap, tracked not built)
+
 Full Spotify account integration + playlist sharing (today: preference setting + manual link share) ·
 "Kari Wrapped" · watchlist address + push · emergency car-alarm integration · fare-split with friends
 (social graph) · marketing-email campaigns (distinct from transactional `EmailProvider`) · Flutterwave
@@ -159,7 +162,7 @@ as payment alternative.
 - **Tenancy/isolation:** single-tenant platform; the boundary that matters is **role + ownership** —
   every query scoped to the current user, admin routes behind `PermissionsGuard` + audit logs, socket
   events only to participants' `user:{id}` rooms.
-- Detail lives in `architecture.md`; the *why* stays here.
+- Detail lives in `architecture.md`; the _why_ stays here.
 
 ## §10 Known scale seams
 

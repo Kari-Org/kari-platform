@@ -12,10 +12,30 @@ type Opt = {
 
 // Labels map to the shared RideType enum (not redefined strings).
 const OPTIONS: Opt[] = [
-  { type: RideType.SOLO, label: 'Solo Ride', desc: 'Need your own ride? Get a car just for you anytime, anywhere.', img: 'illustration-solo' },
-  { type: RideType.CARPOOL, label: 'Carpooling', desc: 'Share the cost with others heading the same way.', img: 'illustration-carpool' },
-  { type: RideType.SUBSCRIPTION, label: 'Subscription Rides', desc: 'Book regular trips in advance and never miss a commute.', icon: 'calendar' },
-  { type: RideType.SHUTTLE, label: 'Shuttle Rides', desc: 'Affordable group transport with fixed stops for your daily commute.', icon: 'bus' },
+  {
+    type: RideType.SOLO,
+    label: 'Solo Ride',
+    desc: 'Need your own ride? Get a car just for you anytime, anywhere.',
+    img: 'illustration-solo',
+  },
+  {
+    type: RideType.CARPOOL,
+    label: 'Carpooling',
+    desc: 'Share the cost with others heading the same way.',
+    img: 'illustration-carpool',
+  },
+  {
+    type: RideType.SUBSCRIPTION,
+    label: 'Subscription Rides',
+    desc: 'Book regular trips in advance and never miss a commute.',
+    icon: 'calendar',
+  },
+  {
+    type: RideType.SHUTTLE,
+    label: 'Shuttle Rides',
+    desc: 'Affordable group transport with fixed stops for your daily commute.',
+    icon: 'bus',
+  },
 ];
 
 export function RideOptions() {

@@ -52,7 +52,12 @@ export class NotificationsProcessor extends WorkerHost {
       if (channels.includes(NotificationChannel.PUSH)) {
         const tokens = await this.devices.find({ where: { userId: n.userId } });
         for (const t of tokens) {
-          await this.push.send({ to: t.token, title: n.title, body: n.body, data: n.data ?? undefined });
+          await this.push.send({
+            to: t.token,
+            title: n.title,
+            body: n.body,
+            data: n.data ?? undefined,
+          });
         }
       }
       if (channels.includes(NotificationChannel.SMS) && user?.phone) {

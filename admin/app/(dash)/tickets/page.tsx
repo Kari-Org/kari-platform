@@ -38,7 +38,8 @@ export default function TicketsPage() {
   });
 
   const mut = useMutation({
-    mutationFn: (body: { status?: TicketStatus; reply?: string }) => adminApi.updateTicket(selected!.id, body),
+    mutationFn: (body: { status?: TicketStatus; reply?: string }) =>
+      adminApi.updateTicket(selected!.id, body),
     onSuccess: (updated) => {
       setSelected(updated);
       setReply('');
@@ -47,10 +48,20 @@ export default function TicketsPage() {
   });
 
   const columns: Column<Ticket>[] = [
-    { key: 'subject', header: 'Subject', render: (t) => <span className="text-white">{t.subject}</span> },
+    {
+      key: 'subject',
+      header: 'Subject',
+      render: (t) => <span className="text-white">{t.subject}</span>,
+    },
     { key: 'from', header: 'From', render: (t) => t.requesterRole },
     { key: 'category', header: 'Category', render: (t) => t.category },
-    { key: 'status', header: 'Status', render: (t) => <Badge tone={STATUS_TONE[t.status] ?? 'default'}>{t.status.replace(/_/g, ' ')}</Badge> },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (t) => (
+        <Badge tone={STATUS_TONE[t.status] ?? 'default'}>{t.status.replace(/_/g, ' ')}</Badge>
+      ),
+    },
     { key: 'created', header: 'Opened', render: (t) => new Date(t.createdAt).toLocaleDateString() },
   ];
 
@@ -65,7 +76,9 @@ export default function TicketsPage() {
             onClick={() => setStatus(f.value)}
             className={cn(
               'rounded-full border px-3 py-1 text-xs',
-              status === f.value ? 'border-brand bg-brand/10 text-brand' : 'border-hairline text-muted hover:text-white',
+              status === f.value
+                ? 'border-brand bg-brand/10 text-brand'
+                : 'border-hairline text-muted hover:text-white',
             )}
           >
             {f.label}
@@ -75,7 +88,13 @@ export default function TicketsPage() {
 
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <DataTable columns={columns} rows={data?.items} loading={isLoading} empty="No tickets" onRowClick={setSelected} />
+          <DataTable
+            columns={columns}
+            rows={data?.items}
+            loading={isLoading}
+            empty="No tickets"
+            onRowClick={setSelected}
+          />
         </div>
 
         <div className="lg:col-span-2">
@@ -84,14 +103,18 @@ export default function TicketsPage() {
               <CardHeader>
                 <CardTitle>{selected.subject}</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Badge tone={STATUS_TONE[selected.status] ?? 'default'}>{selected.status.replace(/_/g, ' ')}</Badge>
+                  <Badge tone={STATUS_TONE[selected.status] ?? 'default'}>
+                    {selected.status.replace(/_/g, ' ')}
+                  </Badge>
                   <span className="text-xs text-subtle">
                     {selected.requesterRole} · {selected.category}
                   </span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="whitespace-pre-wrap rounded-md bg-surface p-3 text-sm text-white">{selected.message}</p>
+                <p className="whitespace-pre-wrap rounded-md bg-surface p-3 text-sm text-white">
+                  {selected.message}
+                </p>
                 {selected.adminReply ? (
                   <div className="rounded-md border border-hairline p-3 text-sm">
                     <p className="mb-1 text-xs text-subtle">Admin reply</p>
@@ -109,13 +132,27 @@ export default function TicketsPage() {
                       className="w-full rounded-md border border-hairline bg-surface px-3 py-2 text-sm text-white outline-none placeholder:text-subtle focus:border-brand"
                     />
                     <div className="flex flex-wrap gap-2">
-                      <Button size="sm" disabled={mut.isPending || !reply.trim()} onClick={() => mut.mutate({ reply: reply.trim() })}>
+                      <Button
+                        size="sm"
+                        disabled={mut.isPending || !reply.trim()}
+                        onClick={() => mut.mutate({ reply: reply.trim() })}
+                      >
                         Send reply
                       </Button>
-                      <Button size="sm" variant="outline" disabled={mut.isPending} onClick={() => mut.mutate({ status: 'RESOLVED' })}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={mut.isPending}
+                        onClick={() => mut.mutate({ status: 'RESOLVED' })}
+                      >
                         Resolve
                       </Button>
-                      <Button size="sm" variant="ghost" disabled={mut.isPending} onClick={() => mut.mutate({ status: 'CLOSED' })}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={mut.isPending}
+                        onClick={() => mut.mutate({ status: 'CLOSED' })}
+                      >
                         Close
                       </Button>
                     </div>
@@ -125,7 +162,9 @@ export default function TicketsPage() {
             </Card>
           ) : (
             <Card>
-              <CardContent className="py-10 text-center text-sm text-subtle">Select a ticket to view + respond.</CardContent>
+              <CardContent className="py-10 text-center text-sm text-subtle">
+                Select a ticket to view + respond.
+              </CardContent>
             </Card>
           )}
         </div>

@@ -38,6 +38,7 @@ export const session = {
   get refreshToken() {
     return config.getRefreshToken();
   },
-  setTokens: (accessToken: string, refreshToken: string) => config.setTokens(accessToken, refreshToken),
+  setTokens: (accessToken: string, refreshToken: string) =>
+    config.setTokens(accessToken, refreshToken),
   unauthorized: () => config.onUnauthorized(),
 };

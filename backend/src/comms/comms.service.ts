@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VOICE_PROVIDER, type VoiceProvider } from '../providers/contracts';
@@ -23,7 +29,10 @@ export class CommsService {
   ) {}
 
   /** Verify the user is on the ride and return the counterparty. */
-  private async counterparty(userId: string, rideId: string): Promise<{ ride: Ride; otherId: string }> {
+  private async counterparty(
+    userId: string,
+    rideId: string,
+  ): Promise<{ ride: Ride; otherId: string }> {
     const ride = await this.rides.findOne({ where: { id: rideId } });
     if (!ride) throw new NotFoundException('ride not found');
     if (ride.riderId !== userId && ride.driverId !== userId) {
@@ -68,6 +77,10 @@ export class CommsService {
       toNumber: callee.phone,
       reference: rideId,
     });
-    return { proxyNumber: session.proxyNumber, sessionId: session.sessionId, provider: session.provider };
+    return {
+      proxyNumber: session.proxyNumber,
+      sessionId: session.sessionId,
+      provider: session.provider,
+    };
   }
 }

@@ -13,7 +13,11 @@ import { type FleetDriver, adminApi } from '@/lib/admin-api';
 const BOUNDS = { latMin: 6.35, latMax: 6.75, lngMin: 3.05, lngMax: 3.75 };
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
-const AVAIL_TONE: Record<string, Tone> = { ONLINE: 'success', ON_TRIP: 'brand', OFFLINE: 'default' };
+const AVAIL_TONE: Record<string, Tone> = {
+  ONLINE: 'success',
+  ON_TRIP: 'brand',
+  OFFLINE: 'default',
+};
 
 type Row = FleetDriver & { id: string };
 
@@ -32,7 +36,9 @@ export default function LiveRidesPage() {
       key: 'availability',
       header: 'Status',
       render: (d) => (
-        <Badge tone={AVAIL_TONE[d.availability] ?? 'default'}>{d.availability.replace(/_/g, ' ')}</Badge>
+        <Badge tone={AVAIL_TONE[d.availability] ?? 'default'}>
+          {d.availability.replace(/_/g, ' ')}
+        </Badge>
       ),
     },
     { key: 'category', header: 'Class', render: (d) => d.category ?? '—' },
@@ -64,15 +70,29 @@ export default function LiveRidesPage() {
       <PageHeader title="Live Rides" subtitle="Active fleet — refreshes every 5s" />
 
       <div className="mb-5 grid grid-cols-2 gap-4 md:grid-cols-3">
-        <StatCard label="Active drivers" value={data?.counts.total} icon={Radio} loading={isLoading} accent />
-        <StatCard label="Online (idle)" value={data?.counts.online} icon={Wifi} loading={isLoading} />
+        <StatCard
+          label="Active drivers"
+          value={data?.counts.total}
+          icon={Radio}
+          loading={isLoading}
+          accent
+        />
+        <StatCard
+          label="Online (idle)"
+          value={data?.counts.online}
+          icon={Wifi}
+          loading={isLoading}
+        />
         <StatCard label="On a trip" value={data?.counts.onTrip} icon={Car} loading={isLoading} />
       </div>
 
       {/* Relative position scatter (dependency-free; tiled basemap needs a Mapbox token — follow-up) */}
       <Card className="mb-5 p-4">
         <p className="mb-2 text-xs text-subtle">Greater Lagos · relative positions</p>
-        <div className="relative w-full overflow-hidden rounded-md border border-hairline bg-surface" style={{ aspectRatio: '16 / 7' }}>
+        <div
+          className="relative w-full overflow-hidden rounded-md border border-hairline bg-surface"
+          style={{ aspectRatio: '16 / 7' }}
+        >
           {rows.length === 0 ? (
             <div className="flex h-full items-center justify-center text-sm text-subtle">
               {isLoading ? 'Loading fleet…' : 'No active drivers right now.'}

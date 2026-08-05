@@ -11,8 +11,7 @@ import { env } from '@/lib/env';
 async function forward(req: NextRequest, path: string[]) {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   const url = `${env.apiBaseUrl}/${path.join('/')}${req.nextUrl.search}`;
-  const body =
-    req.method === 'GET' || req.method === 'HEAD' ? undefined : await req.text();
+  const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await req.text();
 
   const res = await fetch(url, {
     method: req.method,

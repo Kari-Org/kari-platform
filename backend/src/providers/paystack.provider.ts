@@ -62,7 +62,11 @@ export class PaystackPaymentProvider implements PaymentProvider {
         metadata: input.metadata,
       },
     );
-    return { reference: input.reference, authorizationUrl: data.authorization_url, provider: this.name };
+    return {
+      reference: input.reference,
+      authorizationUrl: data.authorization_url,
+      provider: this.name,
+    };
   }
 
   async verifyCharge(reference: string): Promise<ChargeStatus> {
@@ -81,13 +85,17 @@ export class PaystackPaymentProvider implements PaymentProvider {
       bank_code: input.recipient.bankCode,
       currency: input.currency ?? 'NGN',
     });
-    const transfer = await this.call<{ transfer_code: string; status: string }>('/transfer', 'POST', {
-      source: 'balance',
-      amount: input.amount,
-      recipient: recipient.recipient_code,
-      reference: input.reference,
-      reason: input.reason,
-    });
+    const transfer = await this.call<{ transfer_code: string; status: string }>(
+      '/transfer',
+      'POST',
+      {
+        source: 'balance',
+        amount: input.amount,
+        recipient: recipient.recipient_code,
+        reference: input.reference,
+        reason: input.reason,
+      },
+    );
     return {
       reference: input.reference,
       providerRef: transfer.transfer_code,

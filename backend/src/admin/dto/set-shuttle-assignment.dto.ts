@@ -3,7 +3,10 @@ import { IsOptional, IsString, IsUUID, MaxLength, ValidateIf } from 'class-valid
 
 /** Assign (driverId set) or clear (driverId null) a shuttle route's driver + bus. */
 export class SetShuttleAssignmentDto {
-  @ApiProperty({ description: 'Dedicated driver userId, or null to clear the assignment', nullable: true })
+  @ApiProperty({
+    description: 'Dedicated driver userId, or null to clear the assignment',
+    nullable: true,
+  })
   @ValidateIf((o: SetShuttleAssignmentDto) => o.driverId !== null)
   @IsUUID()
   driverId: string | null;

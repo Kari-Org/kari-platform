@@ -83,7 +83,9 @@ export default function LoginPage() {
           variant="outline"
           className="w-full"
           onClick={() =>
-            setError('Zoho SSO is stubbed for now — use email sign-in. (Wire ADMIN_SSO=zoho to enable.)')
+            setError(
+              'Zoho SSO is stubbed for now — use email sign-in. (Wire ADMIN_SSO=zoho to enable.)',
+            )
           }
         >
           Sign in with Zoho (SSO)

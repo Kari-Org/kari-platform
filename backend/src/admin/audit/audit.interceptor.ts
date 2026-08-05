@@ -28,9 +28,7 @@ export class AuditInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const action = this.reflector.get<string>(AUDIT_ACTION, context.getHandler());
     if (!action) return next.handle();
-    const req = context
-      .switchToHttp()
-      .getRequest<Request & { user?: AuthUser; body?: unknown }>();
+    const req = context.switchToHttp().getRequest<Request & { user?: AuthUser; body?: unknown }>();
     const actor = req.user;
     const params = (req.params ?? {}) as Record<string, string>;
     return next.handle().pipe(

@@ -5,7 +5,13 @@ import type { AdminUser } from '@/lib/auth';
 
 const SessionContext = createContext<AdminUser | null>(null);
 
-export function SessionProvider({ user, children }: { user: AdminUser; children: React.ReactNode }) {
+export function SessionProvider({
+  user,
+  children,
+}: {
+  user: AdminUser;
+  children: React.ReactNode;
+}) {
   return <SessionContext.Provider value={user}>{children}</SessionContext.Provider>;
 }
 

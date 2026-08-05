@@ -8,9 +8,7 @@ import { SupportTicket, TicketStatus } from './entities/ticket.entity';
 
 @Injectable()
 export class TicketsService {
-  constructor(
-    @InjectRepository(SupportTicket) private readonly repo: Repository<SupportTicket>,
-  ) {}
+  constructor(@InjectRepository(SupportTicket) private readonly repo: Repository<SupportTicket>) {}
 
   create(requesterId: string, requesterRole: UserRole, dto: CreateTicketDto) {
     return this.repo.save(

@@ -17,17 +17,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: '#FFFF00',          // taxi yellow — CTAs, accents, active nav
-        gold: '#FFD700',           // pressed / hover-darken
+        brand: '#FFFF00', // taxi yellow — CTAs, accents, active nav
+        gold: '#FFD700', // pressed / hover-darken
         amber: '#FFBB00',
         glow: '#FFF049',
-        ink: '#000D26',            // deep navy — primary text + logo road
-        night: '#0A0A0A',          // near-black dark cards on light page
+        ink: '#000D26', // deep navy — primary text + logo road
+        night: '#0A0A0A', // near-black dark cards on light page
         surface: '#121212',
         paper: { DEFAULT: '#FFFFFF', 2: '#FAFAFA', 3: '#F4F4F4' },
         line: { DEFAULT: '#E6E6E6', 2: '#DBDBDB' },
-        muted: '#5C5C5C',          // on-light secondary text
-        subtle: '#8A8A8A',         // on-light tertiary text
+        muted: '#5C5C5C', // on-light secondary text
+        subtle: '#8A8A8A', // on-light tertiary text
         success: '#1F9D55',
         info: '#0095FF',
         warning: '#F5852C',

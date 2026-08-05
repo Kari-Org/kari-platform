@@ -17,8 +17,8 @@ export default function PromotionsPage() {
             <div>
               <p className="text-white">Referral rewards</p>
               <p className="text-subtle">
-                Riders and drivers earn a wallet credit when an invitee completes their first ride. Managed
-                by the engagement service; rates are part of the fare configuration.
+                Riders and drivers earn a wallet credit when an invitee completes their first ride.
+                Managed by the engagement service; rates are part of the fare configuration.
               </p>
             </div>
           </div>
@@ -27,8 +27,8 @@ export default function PromotionsPage() {
             <div>
               <p className="text-white">Leaderboard commission relief</p>
               <p className="text-subtle">
-                Top weekly drivers receive a temporary commission reduction — an automatic, performance-based
-                incentive.
+                Top weekly drivers receive a temporary commission reduction — an automatic,
+                performance-based incentive.
               </p>
             </div>
           </div>
@@ -36,8 +36,8 @@ export default function PromotionsPage() {
       </Card>
 
       <div className="rounded-card border border-dashed border-hairline p-8 text-center text-sm text-subtle">
-        Campaign management — promo codes, time-boxed discounts and surge caps — lands with the dedicated
-        promotions engine. The programs above are live today.
+        Campaign management — promo codes, time-boxed discounts and surge caps — lands with the
+        dedicated promotions engine. The programs above are live today.
       </div>
     </div>
   );

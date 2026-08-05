@@ -20,8 +20,15 @@ export default function ShuttlePage() {
   const [label, setLabel] = useState('');
   const [error, setError] = useState('');
 
-  const { data: routes, isLoading } = useQuery({ queryKey: ['admin-shuttle-routes'], queryFn: adminApi.shuttleRoutes });
-  const { data: drivers } = useQuery({ queryKey: ['admin-drivers'], queryFn: adminApi.drivers, enabled: canAssign });
+  const { data: routes, isLoading } = useQuery({
+    queryKey: ['admin-shuttle-routes'],
+    queryFn: adminApi.shuttleRoutes,
+  });
+  const { data: drivers } = useQuery({
+    queryKey: ['admin-drivers'],
+    queryFn: adminApi.drivers,
+    enabled: canAssign,
+  });
   const dedicated = (drivers ?? []).filter((d) => d.driverType === 'DEDICATED');
 
   const done = () => {
@@ -35,7 +42,11 @@ export default function ShuttlePage() {
 
   const assign = useMutation({
     mutationFn: () =>
-      adminApi.setShuttleAssignment(assigning!.id, { driverId, busPlateNumber: plate, busLabel: label || undefined }),
+      adminApi.setShuttleAssignment(assigning!.id, {
+        driverId,
+        busPlateNumber: plate,
+        busLabel: label || undefined,
+      }),
     onSuccess: done,
     onError: (e) => setError(e instanceof ApiError ? e.message : 'Could not update the assignment'),
   });
@@ -52,7 +63,9 @@ export default function ShuttlePage() {
     {
       key: 'active',
       header: 'Active',
-      render: (r) => <Badge tone={r.active ? 'success' : 'default'}>{r.active ? 'ACTIVE' : 'INACTIVE'}</Badge>,
+      render: (r) => (
+        <Badge tone={r.active ? 'success' : 'default'}>{r.active ? 'ACTIVE' : 'INACTIVE'}</Badge>
+      ),
     },
     {
       key: 'driver',
@@ -73,11 +86,23 @@ export default function ShuttlePage() {
             header: '',
             render: (r: ShuttleRouteRow) => (
               <div className="flex justify-end gap-2">
-                <Button size="sm" variant="ghost" onClick={() => { setAssigning(r); setError(''); }}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setAssigning(r);
+                    setError('');
+                  }}
+                >
                   {r.assignedDriverId ? 'Reassign' : 'Assign'}
                 </Button>
                 {r.assignedDriverId && (
-                  <Button size="sm" variant="ghost" disabled={clear.isPending} onClick={() => clear.mutate(r.id)}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={clear.isPending}
+                    onClick={() => clear.mutate(r.id)}
+                  >
                     Clear
                   </Button>
                 )}
@@ -113,12 +138,24 @@ export default function ShuttlePage() {
                   </option>
                 ))}
               </select>
-              <Input placeholder="Bus plate number" value={plate} onChange={(e) => setPlate(e.target.value)} />
-              <Input placeholder="Bus label (optional)" value={label} onChange={(e) => setLabel(e.target.value)} />
+              <Input
+                placeholder="Bus plate number"
+                value={plate}
+                onChange={(e) => setPlate(e.target.value)}
+              />
+              <Input
+                placeholder="Bus label (optional)"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+              />
             </div>
             {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
             <div className="mt-4 flex gap-2">
-              <Button size="sm" disabled={assign.isPending || !driverId || !plate} onClick={() => assign.mutate()}>
+              <Button
+                size="sm"
+                disabled={assign.isPending || !driverId || !plate}
+                onClick={() => assign.mutate()}
+              >
                 {assign.isPending ? 'Saving…' : 'Save assignment'}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setAssigning(null)}>
@@ -129,7 +166,12 @@ export default function ShuttlePage() {
         </Card>
       )}
 
-      <DataTable columns={columns} rows={routes ?? []} loading={isLoading} empty="No shuttle routes seeded" />
+      <DataTable
+        columns={columns}
+        rows={routes ?? []}
+        loading={isLoading}
+        empty="No shuttle routes seeded"
+      />
     </div>
   );
 }

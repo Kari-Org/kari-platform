@@ -91,7 +91,9 @@ export function loadConfiguration(): AppConfig {
     corsOrigins:
       e.CORS_ORIGINS.trim() === '*'
         ? '*'
-        : e.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean),
+        : e.CORS_ORIGINS.split(',')
+            .map((s) => s.trim())
+            .filter(Boolean),
     docs: { enabled: e.SWAGGER_ENABLED, user: e.DOCS_USER, password: e.DOCS_PASSWORD },
     database: {
       url: e.DATABASE_URL,
@@ -155,7 +157,9 @@ export function loadConfiguration(): AppConfig {
       google: {
         mapsApiKey: e.GOOGLE_MAPS_API_KEY,
         oauthClientIds: e.GOOGLE_OAUTH_CLIENT_IDS
-          ? e.GOOGLE_OAUTH_CLIENT_IDS.split(',').map((s) => s.trim()).filter(Boolean)
+          ? e.GOOGLE_OAUTH_CLIENT_IDS.split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
           : [],
       },
       expo: { accessToken: e.EXPO_ACCESS_TOKEN },

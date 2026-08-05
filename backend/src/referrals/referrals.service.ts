@@ -52,10 +52,14 @@ export class ReferralsService {
   async apply(userId: string, code: string) {
     const user = await this.users.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('user not found');
-    if (user.referredByUserId) throw new BadRequestException('you have already used a referral code');
-    const referrer = await this.users.findOne({ where: { referralCode: code.trim().toUpperCase() } });
+    if (user.referredByUserId)
+      throw new BadRequestException('you have already used a referral code');
+    const referrer = await this.users.findOne({
+      where: { referralCode: code.trim().toUpperCase() },
+    });
     if (!referrer) throw new BadRequestException('invalid referral code');
-    if (referrer.id === userId) throw new BadRequestException('you cannot use your own referral code');
+    if (referrer.id === userId)
+      throw new BadRequestException('you cannot use your own referral code');
     await this.users.update(user.id, { referredByUserId: referrer.id });
     return { applied: true, rewardOnFirstRide: this.config.engagement.referralReward };
   }

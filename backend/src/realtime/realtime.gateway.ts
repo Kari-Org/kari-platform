@@ -18,9 +18,7 @@ import { RealtimeService } from './realtime.service';
  * `user:{id}` room so the platform can dispatch targeted ride/chat events.
  */
 @WebSocketGateway({ cors: { origin: '*' } })
-export class RealtimeGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(RealtimeGateway.name);
 
   @WebSocketServer()

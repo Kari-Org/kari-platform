@@ -29,7 +29,14 @@ import { TokenService } from './services/token.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [JwtStrategy, PasswordService, TokenService, OtpService, GoogleAuthService, AuthService],
+  providers: [
+    JwtStrategy,
+    PasswordService,
+    TokenService,
+    OtpService,
+    GoogleAuthService,
+    AuthService,
+  ],
   exports: [JwtModule, PassportModule, PasswordService],
 })
 export class AuthModule {}

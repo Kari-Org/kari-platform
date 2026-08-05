@@ -32,10 +32,12 @@ build on the opt in pool.
 ## Requirements
 
 **User stories**:
+
 - As a freelance driver, I want to opt in or out of carpool requests so that shared trips only come to me when I want them.
 - As a rider creating a carpool, I want my request to reach only drivers who accept carpools so that offers are not wasted on drivers who will ignore them.
 
 **Acceptance criteria**:
+
 - **AC-1**: A freelance driver can turn carpool mode on or off from the driver app, and the setting persists on the server across app restarts and sessions.
 - **AC-2**: Carpool dispatch only targets drivers who are online, freelance, onboarding complete, and have carpool mode on. Dedicated drivers and freelance drivers with the switch off never receive `carpool:offer`.
 - **AC-3**: Solo ride dispatch is unchanged. Carpool mode on does not remove a driver from solo dispatch, and the `findCandidates` change does not alter either existing call site's behavior for solo rides.
@@ -54,28 +56,34 @@ endpoint beside the existing availability routes, and an optional filter options
 `findCandidates` that only the carpool call site passes.
 
 **Pros**:
+
 - The setting lives with the profile the matcher already loads (`findByUserIds`), so the filter costs no extra query.
 - Optional options argument leaves the solo call site untouched (AC-3 by construction).
 - Matches the existing pattern: availability state changes are POST routes under `/availability`.
 
 **Cons**:
+
 - One more column on an already wide `driver_profiles` entity.
 
 ### Option 2: Keep carpool mode in Redis (a set of opted in driver ids) beside the GEO set
 
 **Pros**:
+
 - No schema change; toggles are one Redis op.
 
 **Cons**:
+
 - The setting is durable state, not ephemeral presence. Redis loss would silently reset every driver's preference (violates AC-1's persistence).
 - Splits driver state across two stores; `/drivers/me` hydration (AC-5) would need a second lookup.
 
 ### Option 3: A separate `driver_settings` entity for this and future preferences
 
 **Pros**:
+
 - Room for future preference sprawl without widening the profile.
 
 **Cons**:
+
 - A new table, join, and module surface for one boolean today (speculative abstraction; `context/code-standards.md` calls this a smell).
 
 ### Option 4: Filter at the carpool call site instead of inside the matcher
@@ -84,9 +92,11 @@ Leave `findCandidates` untouched; in `CarpoolsService.create`, re fetch the retu
 profiles and drop non freelance or opted out drivers there.
 
 **Pros**:
+
 - Solo regression risk becomes structurally impossible (the shared matcher never changes).
 
 **Cons**:
+
 - Duplicates a profile fetch the matcher already did and throws away, and splits eligibility logic across two files; the next variant slice (shuttle, subscription) would copy the same post filter again.
 
 ## Decision
@@ -109,6 +119,7 @@ behavior. A 403 for dedicated drivers (rather than silently ignoring) keeps the 
 ## Feature design
 
 **Data model sketch**:
+
 - `driver_profiles`: add `carpoolMode boolean NOT NULL DEFAULT false`. No other entity changes. Dev applies it via `DB_SYNCHRONIZE`; production ships it as a TypeORM migration per `context/architecture.md` invariants.
 
 **API surface**:
@@ -129,17 +140,20 @@ filters, widen the over fetch multiplier (use `limit * 6` for carpool dispatch) 
 still fills.
 
 **Key invariants**:
+
 - Carpool dispatch never emits `carpool:offer` to a driver whose profile fails any of: online, freelance, onboarding complete, carpool mode on.
 - Solo dispatch behavior is byte for byte the same when `opts` is absent.
 - `carpoolMode` defaults to false; a driver never opts in implicitly.
 - Accepted race: a driver who toggles off between the candidate search and the offer emission may receive one stale `carpool:offer`; they simply ignore it. No locking is added for this.
 
 **Security model**:
+
 - Endpoint gated by the existing `RolesGuard` with `UserRole.DRIVER`.
 - Service layer rejects dedicated drivers with 403 (the guard cannot see driver type; the service loads the profile anyway).
 - No new PII. The flag is not sensitive.
 
 **Critical test scenarios**:
+
 - Happy path: freelance driver toggles on, goes online, a carpool is created nearby, driver receives `carpool:offer`; toggles off, next carpool skips them, verifies **AC-1**, **AC-2**.
 - Eligibility: dedicated driver online nearby never receives `carpool:offer`; POST carpool-mode as dedicated returns 403, verifies **AC-2**, **AC-4**.
 - Regression: solo ride dispatch to a driver with carpool mode off (and on) behaves exactly as before, verifies **AC-3**.
@@ -159,14 +173,17 @@ Tracer bullet order (thin end to end thread first, per the project default; no a
 ## Consequences
 
 **Positive**:
+
 - The eligibility rule in the ride type matrix is enforced in code for carpools, not just documented.
 - Unblocks carpool v2 (per rider PIN, incremental dispatch), which depends on a real opt in pool.
 
 **Negative / tradeoffs**:
+
 - `driver_profiles` widens by one column; the entity is already large.
 - Carpool candidate pools shrink until drivers discover the switch (offers may reach fewer drivers at first; this is the correct product behavior, but adoption needs the UI to be visible).
 
 **Neutral**:
+
 - Production rollout needs the column migration before the code deploy (column has a default, so it is a safe additive migration).
 - `findCandidates` gains a parameter; future ride variant slices (shuttle, subscription) can reuse `opts.driverType` instead of adding new methods.
 

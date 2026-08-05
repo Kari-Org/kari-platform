@@ -34,7 +34,12 @@ export const NAV: NavGroup[] = [
   {
     title: 'Overview',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: 'dashboard:view' },
+      {
+        href: '/dashboard',
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        permission: 'dashboard:view',
+      },
       { href: '/live', label: 'Live Rides', icon: Map, permission: 'fleet:view' },
     ],
   },
@@ -43,7 +48,12 @@ export const NAV: NavGroup[] = [
     items: [
       { href: '/trips', label: 'Trips', icon: Route, permission: 'trips:read' },
       { href: '/users', label: 'Users', icon: Users, permission: 'riders:read' },
-      { href: '/dedicated-drivers', label: 'Dedicated Drivers', icon: IdCard, permission: 'dedicated:read' },
+      {
+        href: '/dedicated-drivers',
+        label: 'Dedicated Drivers',
+        icon: IdCard,
+        permission: 'dedicated:read',
+      },
       { href: '/shuttle', label: 'Shuttle', icon: Bus, permission: 'dedicated:read' },
       { href: '/tickets', label: 'Tickets', icon: Ticket, permission: 'tickets:read' },
     ],
@@ -54,7 +64,12 @@ export const NAV: NavGroup[] = [
       { href: '/revenue', label: 'Revenue', icon: TrendingUp, permission: 'finance:read' },
       { href: '/payouts', label: 'Driver Payouts', icon: Wallet, permission: 'finance:read' },
       { href: '/promotions', label: 'Promotions', icon: Tag, permission: 'finance:manage' },
-      { href: '/fare-config', label: 'Fare Configuration', icon: SlidersHorizontal, permission: 'finance:manage' },
+      {
+        href: '/fare-config',
+        label: 'Fare Configuration',
+        icon: SlidersHorizontal,
+        permission: 'finance:manage',
+      },
     ],
   },
   {

@@ -75,9 +75,7 @@ async function bootstrap(): Promise<void> {
   }
 
   await app.listen(config.port);
-  app
-    .get(Logger)
-    .log(`Kari backend listening on http://localhost:${config.port} (${config.env})`);
+  app.get(Logger).log(`Kari backend listening on http://localhost:${config.port} (${config.env})`);
 }
 
 void bootstrap();

@@ -1,7 +1,7 @@
 # Progress Log
 
 > **What this file governs:** the living record of what has actually been built and decided — newest
-> first. For *why* see [foundation.md](foundation.md) (it wins on conflict); for what's buildable next
+> first. For _why_ see [foundation.md](foundation.md) (it wins on conflict); for what's buildable next
 > see [build-graph.md](build-graph.md). This file replaced `progress-tracker.md` (2026-07-30); its
 > verification history is preserved below.
 
@@ -28,6 +28,7 @@ must never drift from what was decided.
 ## Entries
 
 ### chore · infra · Alpine base for all 3 images + mobile size check — 2026-08-05
+
 **What:** Switched all three service images from `node:22.13.1-slim` to `-alpine`. New sizes (all boot
 verified): **backend 415MB** (was 535MB / originally 1.7GB), **admin 330MB** (was 450MB), **web 337MB**
 (was 456MB). The Next apps (admin/web) get `apk add --no-cache libc6-compat` as a glibc shim for
@@ -37,13 +38,15 @@ Next's native SWC/sharp on musl. Verified: backend boots + runs the baseline mig
 container to slim. Checked what matters anyway: each has 34 prod deps (only `react-native-maps` beyond
 standard Expo/RN + the shared `@kari/mobile-core`/`@kari/types`), assets are small (rider 2.5MB,
 driver 204KB), and graphify + grep confirmed **no cross-app imports** (they pull only `@kari/mobile-core`
-+ own code). So the mobile apps are already lean; their binary size is inherent RN/Expo runtime, not
-bloat. **Gotchas:** admin's first alpine build hit a transient `apk` mirror failure ("unable to select
-packages") — a rebuild fixed it (web built fine with the identical line). Earlier a boot-test falsely
-failed on "Invalid environment configuration" — that was a too-short JWT test secret (schema enforces
-length), not alpine.
+
+- own code). So the mobile apps are already lean; their binary size is inherent RN/Expo runtime, not
+  bloat. **Gotchas:** admin's first alpine build hit a transient `apk` mirror failure ("unable to select
+  packages") — a rebuild fixed it (web built fine with the identical line). Earlier a boot-test falsely
+  failed on "Invalid environment configuration" — that was a too-short JWT test secret (schema enforces
+  length), not alpine.
 
 ### chore · infra · Slim backend image 1.7GB → 535MB — 2026-08-05
+
 **What:** The runtime image did `COPY --from=build /app ./` — the whole workspace, so it shipped the
 entire monorepo's `node_modules` (1GB): Next.js, React Native, Expo, dev tooling, none of which the
 backend runs. Replaced it with a `pnpm --filter @kari/backend deploy --prod --legacy /prod` step that
@@ -57,6 +60,7 @@ deps today but that could change). Root `Dockerfile`-only change, so per the wat
 backend rebuilds.
 
 ### chore · infra · Railway service isolation + watch-path resolution — 2026-08-05
+
 **What:** Vercel decommissioned (admin/web fully on Railway; backend CORS points at the Railway
 domains). Worked the deploy-trigger / watch-path behavior: root-level changes (`Dockerfile`,
 `railway.json`, `packages/**`, lockfile) were being SKIPPED for the backend because it had a dashboard
@@ -80,6 +84,7 @@ isolation (all services read one file); and config-as-code does NOT override a d
 override (had to clear the backend's `backend/**` dashboard override).
 
 ### chore · infra · Clean CI/CD pipeline + Railway migration cutover — 2026-08-04
+
 **What:** Replaced prod `DB_SYNCHRONIZE=true` with TypeORM migrations — committed a self-contained
 baseline (creates `uuid-ossp` + 30 tables), wired `migrationsRun` on boot when synchronize is off;
 wiped the disposable prod DB and cut over live (migration builds the schema on boot, admin reseeded,
@@ -101,6 +106,7 @@ backend service's watch path (`backend/**`) so root `Dockerfile`/`packages/types
 trigger a backend rebuild instead of SKIPPED; backend image is 1.7GB (fat COPY, could slim later).
 
 ### feature · backend+rider · Subscription v2: route pricing + free-at-use (spec 0004) — 2026-08-03
+
 **What:** Subscriptions are now priced from the rider's own route (formula over the ECONOMY quote fare;
 preview endpoint so clients never compute money) and charged upfront; SOLO rides matching the route
 (≤1km endpoints, either direction) are free at use — rider pays nothing, driver's normal net is funded
@@ -115,6 +121,7 @@ and 1km radius are founder-tunable (spec 0004 follow-ups). Graphify study slice 
 screen was found by a graph degree-1 query.
 
 ### feature · backend+rider · Carpool v2: discounted ride-share fares (spec 0003) — 2026-08-03
+
 **What:** Equal split replaced by occupancy-discounted own fares (1.0/0.8/0.7/0.65 of solo fare;
 alone = full). `recompute` prices per member; settlement charges stored shares with commission on the
 collected total (remainder loop deleted); view adds server-computed `projectedShare` + `collectedTotal`;
@@ -125,6 +132,7 @@ founder-tunable defaults (spec 0003 follow-up). Wallet→card fallback still out
 slice A1.
 
 ### feature · types+backend+admin · Shuttle v2: ops route assignment (spec 0002) — 2026-08-03
+
 **What:** New `shuttle:assign` permission in `@kari/types` (OPS + SUPER_ADMIN); `shuttle_routes` gains
 `assignedDriverId`/`busPlateNumber`/`busLabel`; `PATCH /admin/shuttle/routes/:id/assignment` (assign or
 clear, DEDICATED+ACTIVE validation, one-driver-one-route 409, transactional stamping of future
@@ -135,6 +143,7 @@ browser pass pending per convention. ShuttleModule now exports ShuttleService (A
 Part of the Graphify study.
 
 ### feature · backend+driver · Carpool v2: driver carpool-mode toggle (spec 0001) — 2026-08-03
+
 **What:** `carpoolMode` on `driver_profiles`; `POST /availability/carpool-mode` (403 for dedicated);
 `findCandidates` gains an `opts` eligibility filter (`requireCarpoolMode`, `driverType`) with a widened
 GEO over-fetch window; carpool dispatch now targets only opted-in freelance drivers; driver home tab
@@ -145,63 +154,75 @@ rule in code — solo dispatch still has no driverType filter (follow-up in spec
 Graphify before/after study (docs/graphify-study/log.md).
 
 ### docs · context · Context system rebuilt around foundation.md — 2026-07-30
+
 **What:** Derived `foundation.md` (v1, converged) from the codebase; added `build-graph.md` +
 `progress-log.md`; retired `progress-tracker.md` (gaps → build-graph, history → below); repointed all
 cross-references.
 **Notes:** Build constraints confirmed with founder: solo, part-time, real venture (foundation §0, §3).
 
 ### fix · backend · Admins exempt from login OTP (2FA) — 2026-06-23
+
 **What:** Admin email/password login no longer requires the OTP second factor (foundation §7 #7).
 
 ### feature · admin · Admins & Roles page — 2026-06-23
+
 **What:** `admins/page.tsx` built: list admins, invite, change role, change status. Replaces the
 long-standing ComingSoon stub — admin A0–A6 now fully built.
 **Notes:** Not yet runtime-verified (see build-graph → verification).
 
 ### feature · rider · Pixel-perfect Figma redesign + negotiate mode + account tab — 2026-06-22
-**What:** Full rider visual redesign to the *Kari Mobile App* Figma file (R0–R5): onboarding, app
+
+**What:** Full rider visual redesign to the _Kari Mobile App_ Figma file (R0–R5): onboarding, app
 screens, wallet tip flow, negotiate "name your price" mode (keyboard Done bar), account tab
 (Figma 1443:6801) + settings sub-screens (addresses, language, music, personal-info, driver-type).
 **Notes:** EAS dev-build config updated (app.config.js injects Maps key; eas.json env mapping).
 
 ### feature · backend · OTP on re-login (2FA) + longer-lived sessions — 2026-06-18
+
 **What:** Re-login now requires OTP for riders/drivers; session TTLs lengthened. JSON body limit raised
 for selfie/document uploads.
 
 ### docs · context · Cross-cutting + per-product context system — 2026-06-17
+
 **What:** Added root `context/` docs and per-product `context/` folders (backend/rider/driver/admin/web).
 **Notes:** Rider+driver dropped unloaded Poppins for ArchivoExpanded/HankenGrotesk (design-token
 compliance resolved).
 
 ### chore · infra · Railway backend deploy + EAS build pipeline — 2026-06-08/09
+
 **What:** Backend deployed to Railway (Dockerfile, DATABASE_URL, configurable Swagger with basic auth);
 rider + driver linked to EAS projects (dev-client, EAS Update, preview-sim profile, Node pinned 22.13.1,
 `@kari/types` built in eas-build-post-install); apps pointed at the Railway backend.
 
 ### feature · admin · A2–A6: live fleet, actions+audit, dedicated drivers, tickets, financials — 2026-06-05
+
 **What:** Live fleet map, audit interceptor + viewer, admin actions (suspend/verify/override),
 dedicated-driver roster + onboard, multi-source tickets (app/web/email; in-app submit from both mobile
 apps), financials (revenue/payouts/promotions/fare-config).
 **Notes:** Committed, not runtime-verified.
 
 ### feature · rider+driver · Mobile P3–P6: money, engagement, variants, safety & comms — 2026-06-05
+
 **What:** Wallet/payments + earnings, gamification + subscriptions, carpool + shuttle + NIN gate,
 safety (panic, share-trip) + chat + notifications + support — both apps.
 **Notes:** Committed, not device-verified (P0–P2 were device-verified via Expo Go).
 
 ### feature · backend · P5–P6: ride variants + safety & comms — 2026-06-05
+
 **What:** Carpooling (NIN-gated, cost-split, @VersionColumn), shuttle (Lekki/Aba routes seeded, seat
 inventory); notifications via BullMQ, panic SMS, share-trip (public token, 12h TTL, PIN hidden), in-ride
 chat, masked calls.
 **Notes:** E2E: P5 23/23, P6 20/20 (incl. ledger invariant).
 
 ### feature · backend · P3–P4: money + engagement — 2026-06-04
+
 **What:** Double-entry wallet/ledger (kobo, Σ=0), Paystack behind PaymentProvider, commission 20%
 leaderboard-reduced, cancellation penalties, idempotent settlement; gamification (scores/badges/
 leaderboard), referrals, subscriptions (static plans, sticky driver).
 **Notes:** E2E-verified: ledger invariant asserted; leaderboard leader settles at 19%.
 
 ### feature · platform · P0–P2 + web + brand: foundation through core rides — 2026-06-04
+
 **What:** Monorepo (pnpm+Turbo), `@kari/types`, backend P0–P2 (auth/OTP/Google, KYC, NIN/liveness,
 matching via Redis GEO, tiered+traffic pricing, ride state machine, negotiation, start-PIN, socket
 dispatch, mutual ratings), rider + driver P0–P2, admin A0–A1, marketing web (8 sections, light theme),

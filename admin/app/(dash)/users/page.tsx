@@ -53,7 +53,9 @@ export default function UsersPage() {
     {
       key: 'status',
       header: 'Status',
-      render: (u) => <Badge tone={STATUS_TONE[u.status] ?? 'default'}>{u.status.replace(/_/g, ' ')}</Badge>,
+      render: (u) => (
+        <Badge tone={STATUS_TONE[u.status] ?? 'default'}>{u.status.replace(/_/g, ' ')}</Badge>
+      ),
     },
     { key: 'joined', header: 'Joined', render: (u) => new Date(u.createdAt).toLocaleDateString() },
   ];

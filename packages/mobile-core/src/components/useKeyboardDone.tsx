@@ -33,7 +33,9 @@ export function useKeyboardDone(keyboardType?: KeyboardTypeOptions) {
         }}
       >
         <Pressable onPress={() => Keyboard.dismiss()} hitSlop={8}>
-          <Text style={{ color: colors.brand, fontFamily: 'HankenGrotesk_600SemiBold', fontSize: 16 }}>
+          <Text
+            style={{ color: colors.brand, fontFamily: 'HankenGrotesk_600SemiBold', fontSize: 16 }}
+          >
             Done
           </Text>
         </Pressable>

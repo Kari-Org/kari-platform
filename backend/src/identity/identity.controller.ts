@@ -23,7 +23,9 @@ export class IdentityController {
   @Post('documents/:type')
   @ApiOperation({ summary: 'Upload a KYC/onboarding document (multipart)' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } },
+  })
   @UseInterceptors(FileInterceptor('file'))
   @ResponseMessage('Document uploaded')
   upload(

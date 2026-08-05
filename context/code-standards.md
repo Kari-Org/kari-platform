@@ -41,44 +41,45 @@ Write to SOLID. The codebase already leans on these — keep applying them in ne
 
 Use the Gang-of-Four catalog as shared vocabulary. **Reach for a pattern when the problem matches the
 table below — never to decorate code.** Forcing a pattern where the problem doesn't call for it violates
-*Scope is sacred* and *Clean over clever*; speculative abstraction is a smell, not a standard.
+_Scope is sacred_ and _Clean over clever_; speculative abstraction is a smell, not a standard.
 
 **Already in the codebase (extend these, don't reinvent):**
+
 - **Strategy / Adapter** — provider contracts (`PaymentProvider`, `SmsProvider`, …) with swappable real/noop impls; `RedisIoAdapter` adapts Socket.IO onto Redis.
 - **Facade** — `RealtimeService` is a thin facade over the Socket.IO server (feature services never touch the gateway).
 - **Repository** — TypeORM repositories behind the two-tier data services.
 - **State** — the ride state machine (`SEARCHING → … → COMPLETED`) with guarded transitions (`OPEN_STATUSES`).
 - **Observer / pub-sub** — Socket.IO rooms + BullMQ queues decouple emitters from handlers.
-- **Dependency Injection** — NestJS providers throughout (the backbone of SOLID's *D*).
+- **Dependency Injection** — NestJS providers throughout (the backbone of SOLID's _D_).
 - **Singleton** — the lazily-created mobile socket in `@kari/mobile-core` (`realtime/socket.ts`).
 
 **When to reach for which (GoF quick reference):**
 
-| Pattern | Use when you want to… |
-|---|---|
-| Abstract factory | create objects of different families and hide from the client which family is created |
-| Adapter | convert one interface to another |
-| Bridge | maintain a stable client interface while the implementation changes |
-| Builder | flexibility to use different processes and ways to perform the steps of a process |
-| Chain of responsibility | process requests with handlers, but the exact handler is unknown in advance |
-| Command | execute operations flexibly — queuing, scheduling, undoing, redoing |
-| Composite | a uniform interface over objects in recursive, part-whole relationships |
-| Decorator | add (or remove) functionality on objects dynamically |
-| Facade | simplify the client interface to a web of components |
-| Factory method | dynamically change the products created |
-| Flyweight | an economical way to create numerous occurrences of an object |
-| Interpreter | process rules that change frequently and quickly on the fly |
-| Iterator | a traversal mechanism that hides the underlying data structure |
-| Mediator | decouple objects that interact in a complex manner |
-| Memento | store/restore an object's state, accessible only to that object |
-| Observer | decouple event handlers from an event source; add/remove handlers dynamically |
-| Prototype | reduce classes by reusing copies of an object (creation cost, or dynamic loading) |
-| Proxy | remote, delayed, or controlled access — or tracking accesses to an object |
-| Singleton | at most one (or a limited number of) globally accessible instances |
-| State | a low-complexity design to implement a state diagram |
-| Strategy | selectively apply algorithms with the same function but different non-functional traits (memory, perf) |
-| Template method | vary the implementations of steps of a process or algorithm |
-| Visitor | decouple type-dependent operations from their classes (high cohesion, "stupid objects") |
+| Pattern                 | Use when you want to…                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| Abstract factory        | create objects of different families and hide from the client which family is created                  |
+| Adapter                 | convert one interface to another                                                                       |
+| Bridge                  | maintain a stable client interface while the implementation changes                                    |
+| Builder                 | flexibility to use different processes and ways to perform the steps of a process                      |
+| Chain of responsibility | process requests with handlers, but the exact handler is unknown in advance                            |
+| Command                 | execute operations flexibly — queuing, scheduling, undoing, redoing                                    |
+| Composite               | a uniform interface over objects in recursive, part-whole relationships                                |
+| Decorator               | add (or remove) functionality on objects dynamically                                                   |
+| Facade                  | simplify the client interface to a web of components                                                   |
+| Factory method          | dynamically change the products created                                                                |
+| Flyweight               | an economical way to create numerous occurrences of an object                                          |
+| Interpreter             | process rules that change frequently and quickly on the fly                                            |
+| Iterator                | a traversal mechanism that hides the underlying data structure                                         |
+| Mediator                | decouple objects that interact in a complex manner                                                     |
+| Memento                 | store/restore an object's state, accessible only to that object                                        |
+| Observer                | decouple event handlers from an event source; add/remove handlers dynamically                          |
+| Prototype               | reduce classes by reusing copies of an object (creation cost, or dynamic loading)                      |
+| Proxy                   | remote, delayed, or controlled access — or tracking accesses to an object                              |
+| Singleton               | at most one (or a limited number of) globally accessible instances                                     |
+| State                   | a low-complexity design to implement a state diagram                                                   |
+| Strategy                | selectively apply algorithms with the same function but different non-functional traits (memory, perf) |
+| Template method         | vary the implementations of steps of a process or algorithm                                            |
+| Visitor                 | decouple type-dependent operations from their classes (high cohesion, "stupid objects")                |
 
 ---
 
@@ -97,7 +98,9 @@ table below — never to decorate code.** Forcing a pattern where the problem do
 ## Backend (NestJS)
 
 ### Module Structure
+
 Every backend module is a NestJS module folder. Services are split **by concern**, not by tier:
+
 ```
 src/{module}/
 ├── {module}.module.ts          # Module definition (providers, imports, exports)
@@ -111,6 +114,7 @@ src/{module}/
 ```
 
 ### Service Rules
+
 - **Split services by concern, one responsibility each** (`wallet.service`, `ledger.service`, …). There is
   **no separate `-data.service` tier** — a service owns both its logic and its own DB access. (The backend
   ARCHITECTURE.md still describes a two-tier orchestration/data split; that was the original intent but is
@@ -123,13 +127,16 @@ src/{module}/
 - Never let one failure crash the request — wrap external/provider calls in try/catch.
 
 ### API Response Envelope
+
 Every endpoint returns `ApiResponse<T>`:
+
 ```typescript
 { success: true, message: "...", data: T, timestamp: "...", traceId: "..." }
 { success: false, message: "...", error: { code: "...", detail: "..." }, timestamp: "...", traceId: "..." }
 ```
 
 ### Entity Rules
+
 - All entities use `@PrimaryGeneratedColumn('uuid')`
 - Timestamps: `@CreateDateColumn()` and `@UpdateDateColumn()`
 - Contended entities (Ride, Carpool, ShuttleTrip): `@VersionColumn()` for optimistic locking
@@ -137,14 +144,18 @@ Every endpoint returns `ApiResponse<T>`:
 - Relations: always define both sides. Cascade deletes only where semantically correct.
 
 ### Guard / pipeline stack
+
 Global (`APP_GUARD` / `APP_*` in `app.module.ts`) — applied to **every** request:
+
 ```
 JwtAuthGuard (GLOBAL; @Public() opts out) + ThrottlerGuard (GLOBAL)
   -> global ValidationPipe -> [controller] -> ResponseEnvelopeInterceptor -> AllExceptionsFilter
 ```
+
 Per-controller: `RolesGuard` (`@UseGuards` + `@Roles`), and `PermissionsGuard` (`@RequirePermissions`) on admin routes.
 
 ### Auth & Security
+
 - **Passwords: scrypt** (Node built-in, no native dependency), stored `salt:hash` (hex), constant-time compare (`auth/services/password.service.ts`). This is the **canonical choice — not Argon2id** (the docs' Argon2id claim was aspirational). ⚠️ The call uses Node's default cost (N=2¹⁴); raise to current OWASP guidance (N ≥ 2¹⁷) — tracked for P7.
 - **JWT:** self-issued, access 15m + rotating refresh 30d. Never log tokens, passwords, or full card numbers.
 - **OTP / auth endpoints** are rate-limited via `@nestjs/throttler`.
@@ -155,34 +166,40 @@ Per-controller: `RolesGuard` (`@UseGuards` + `@Roles`), and `PermissionsGuard` (
 ## Mobile Apps (Expo / React Native)
 
 ### Routing
+
 - File-based routing via Expo Router v6
 - Route groups: `(auth)/`, `(onboarding)/`, `(tabs)/`
 - Flow screens: `book.tsx`, `ride/[id].tsx`, `ride-history.tsx`
 - Three-way gate pattern: unauthenticated -> auth flow; authenticated + !onboarded -> onboarding; ready -> tabs
 
 ### State Management
+
 - **Zustand** for client state (auth tokens, current ride, UI state)
 - **TanStack Query** for server state (cached API responses)
 - Never mix: Zustand stores don't fetch; TanStack Query doesn't hold client-only state
 
 ### API Client
+
 - Always use `apiFetch()` from `@kari/mobile-core` — handles Bearer tokens, refresh, error unwrapping
 - Endpoint definitions live in each app's `src/api/endpoints.ts`
 - Never call `fetch` directly from screens
 
 ### Socket.IO
+
 - Socket singleton from `@kari/mobile-core`
 - Connect with JWT on `auth` handshake event
 - Driver-specific: `useDriverDispatch` hook mounted in tabs layout
 - Rider-specific: ride store subscribes to ride-scoped events
 
 ### Component Rules
+
 - Import shared primitives from `@kari/mobile-core` (Screen, KariButton, InputField, etc.)
 - App-specific components in each app's `src/components/`
 - Every screen wrapped in `<Screen>` (safe area + keyboard avoidance)
 - All styling via NativeWind — never use `StyleSheet.create` for colors/spacing
 
 ### Store Pattern
+
 ```typescript
 import { create } from 'zustand';
 
@@ -207,12 +224,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 ## Admin (Next.js)
 
 ### Auth
+
 - httpOnly cookie stores JWT — never exposed to client JS
 - All backend requests go through `/api/proxy/[...path]` (injects Bearer)
 - `middleware.ts` gates authenticated routes
 - RBAC: `<Can permission="...">` component + `useCan()` hook, backed by `@kari/types/rbac.ts`
 
 ### Component Rules
+
 - Server Components by default
 - `"use client"` only for interactivity (state, effects, event handlers)
 - Data fetching in Server Components — never in Client Components
@@ -223,11 +242,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 ## Shared Packages
 
 ### @kari/types
+
 - Enums, API contracts, RBAC definitions
 - **Must rebuild after editing:** `pnpm --filter @kari/types run build`
 - Both backend and mobile consume the built `dist/`, not source
 
 ### @kari/mobile-core
+
 - Source-shipped (no build step) — Expo apps transform via Metro/Babel
 - Exports: API client, socket, theme tokens, Tailwind preset, 10 UI primitives
 - Each consumer app's `tailwind.config.js`: `presets: [require('nativewind/preset'), require('@kari/mobile-core/tailwind-preset')]`
@@ -237,15 +258,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 ## File Naming
 
-| Type | Convention | Example |
-|------|-----------|---------|
-| Backend modules | kebab-case folders | `money/`, `ride-variants/` |
-| Backend files | kebab-case | `money-data.service.ts`, `create-ride.dto.ts` |
-| Entities | kebab-case, singular | `ride.entity.ts`, `wallet.entity.ts` |
-| Mobile screens | kebab-case (Expo Router convention) | `ride-history.tsx`, `[id].tsx` |
-| Mobile components | PascalCase | `IncomingRequest.tsx`, `SwipeToAccept.tsx` |
-| Shared types | camelCase | `enums.ts`, `rbac.ts` |
-| Admin pages | kebab-case (Next.js convention) | `users/page.tsx` |
+| Type              | Convention                          | Example                                       |
+| ----------------- | ----------------------------------- | --------------------------------------------- |
+| Backend modules   | kebab-case folders                  | `money/`, `ride-variants/`                    |
+| Backend files     | kebab-case                          | `money-data.service.ts`, `create-ride.dto.ts` |
+| Entities          | kebab-case, singular                | `ride.entity.ts`, `wallet.entity.ts`          |
+| Mobile screens    | kebab-case (Expo Router convention) | `ride-history.tsx`, `[id].tsx`                |
+| Mobile components | PascalCase                          | `IncomingRequest.tsx`, `SwipeToAccept.tsx`    |
+| Shared types      | camelCase                           | `enums.ts`, `rbac.ts`                         |
+| Admin pages       | kebab-case (Next.js convention)     | `users/page.tsx`                              |
 
 ---
 
@@ -263,6 +284,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 ## Environment Variables
 
 ### Backend (.env)
+
 ```
 NODE_ENV, PORT, APP_NAME, LOG_LEVEL, CORS_ORIGINS
 POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
@@ -278,6 +300,7 @@ EXPO_ACCESS_TOKEN
 ```
 
 ### Mobile (Expo)
+
 ```
 EXPO_PUBLIC_API_BASE_URL
 EXPO_PUBLIC_SOCKET_URL
@@ -285,6 +308,7 @@ EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
 ```
 
 ### Admin (Next.js)
+
 ```
 NEXT_PUBLIC_API_URL (proxied through /api/proxy/)
 ```
@@ -297,6 +321,7 @@ Noop providers activate when keys are empty — OTPs logged to console.
 ## Dependencies
 
 Never install a new package without a clear reason. The approved stacks are locked:
+
 - Backend: NestJS ecosystem, TypeORM, BullMQ, Socket.IO, class-validator, pino, Zod (config only)
 - Mobile: Expo SDK, NativeWind, Zustand, TanStack Query, expo-camera, expo-location, expo-task-manager
 - Admin: Next.js, Tailwind, shadcn/ui, Auth.js patterns (custom JWT)

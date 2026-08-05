@@ -1,7 +1,7 @@
 # Kari — Logo & App Icon Kit
 
 The official **Kari** brand mark ("Pin-K"): a location pin with a monogram **K**
-carved into its negative space. One shape, two meanings — *place* and *Kari*.
+carved into its negative space. One shape, two meanings — _place_ and _Kari_.
 Everything here is drawn from scratch as clean vectors, plus ready-to-ship raster
 exports.
 
@@ -101,5 +101,5 @@ so it stays crisp.
 
 ---
 
-*Need other sizes, an animated splash version, or the icons pre-wired into the
-`web/` and Expo apps? Ask and I'll generate them.*
+_Need other sizes, an animated splash version, or the icons pre-wired into the
+`web/` and Expo apps? Ask and I'll generate them._

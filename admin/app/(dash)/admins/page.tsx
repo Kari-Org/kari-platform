@@ -54,7 +54,8 @@ export default function AdminsPage() {
   });
 
   const role = useMutation({
-    mutationFn: (v: { id: string; adminRole: AdminRole }) => adminApi.setAdminRole(v.id, v.adminRole),
+    mutationFn: (v: { id: string; adminRole: AdminRole }) =>
+      adminApi.setAdminRole(v.id, v.adminRole),
     onSuccess: () => {
       setError('');
       invalidate();
@@ -74,8 +75,7 @@ export default function AdminsPage() {
   const busy = create.isPending || role.isPending || status.isPending;
 
   const set =
-    (k: keyof CreateAdminBody) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    (k: keyof CreateAdminBody) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const columns: Column<AdminAccount>[] = [

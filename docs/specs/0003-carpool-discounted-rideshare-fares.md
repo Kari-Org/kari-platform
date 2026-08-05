@@ -34,11 +34,13 @@ rider screens advertising fares the backend will not charge.
 ## Requirements
 
 **User stories**:
+
 - As a rider, I want my carpool fare to be my own discounted price so that sharing always beats riding solo and I am never surprised by someone else's route share.
 - As a rider joining a carpool, I want to see what I would pay before joining so that the decision is informed.
 - As the platform, I want total collections to never fall below the solo fare so that carpooling grows revenue instead of cannibalizing it.
 
 **Acceptance criteria**:
+
 - **AC-1**: A carpool with one active member prices that member at 100% of `totalFare` (alone = full fare), at creation and after everyone else leaves.
 - **AC-2**: Occupancy discounts apply per the table (2 riders → 80% each, 3 → 70%, 4 → 65%), recomputed on every join and leave; each member's `shareAmount` is their own fare.
 - **AC-3**: Settlement charges each active member exactly their `shareAmount` (kobo legs sum exactly to the collected total, ledger stays balanced); commission is taken on the collected total; the driver receives collected minus commission.
@@ -55,27 +57,33 @@ A constant table (1 → 1.00, 2 → 0.80, 3 → 0.70, 4 → 0.65) applied to `to
 `recompute`; `settle` charges stored shares; the view adds `projectedShare` so clients never compute.
 
 **Pros**:
+
 - One place owns pricing; the client drift already found in `carpools.tsx` becomes impossible.
 - Alone = full fare falls out of the table (multiplier(1) = 1); no special case.
 - Economics invariant is checkable arithmetic on four constants.
 
 **Cons**:
+
 - The discount curve is fixed in code; tuning it means a deploy (acceptable pre launch; a config surface is speculative today).
 
 ### Option 2: Distance overlap pricing (each rider priced on their own route segment)
 
 **Pros**:
+
 - The theoretically fair model for mid route pickups.
 
 **Cons**:
+
 - Carpool v1 has a single pickup/dropoff per carpool (members share the creator's route); per member segments do not exist in the data model yet. This is the per rider PIN / incremental dispatch slice's territory, building it now speccs a model with no inputs.
 
 ### Option 3: Keep equal split, discount the total
 
 **Pros**:
+
 - Smallest diff.
 
 **Cons**:
+
 - Still "someone else's fare divided," not "your own fare discounted"; contradicts the product story (a rider's price would still jump when someone leaves), and alone = full fare needs a special case.
 
 ## Decision
@@ -104,6 +112,7 @@ member's own discounted fare; `carpools.totalFare` keeps meaning "solo fare for 
 (the pricing base), display label changes only.
 
 **Pricing math** (backend, one place):
+
 - `multiplier(n)`: the table above; n = active (JOINED) member count.
 - Per member: `shareAmount = Math.round(totalFare × multiplier(n))` (naira, as today; kobo at settle).
 - `projectedShare = Math.round(totalFare × multiplier(min(n + 1, maxSeats)))` — what the next joiner
@@ -124,6 +133,7 @@ member's own discounted fare; `carpools.totalFare` keeps meaning "solo fare for 
 | /carpools?lat&lng (joinable list) | existing | each item gains `projectedShare` |
 
 **Key invariants**:
+
 - n × multiplier(n) ≥ 1 for every n in the table (collected never below solo fare).
 - Settlement legs sum exactly to the transaction amount; Σ(all wallets) = 0 preserved.
 - No client computes a fare: the rider app renders `shareAmount` / `projectedShare` only.
@@ -134,6 +144,7 @@ member's own discounted fare; `carpools.totalFare` keeps meaning "solo fare for 
 **Configuration required**: none (constants in code; tuning is a founder follow up).
 
 **Critical test scenarios**:
+
 - Creator alone: `shareAmount = totalFare`, verifies **AC-1**.
 - Join to 2 then 3: every active member at 80% then 70%; leave back to 2 → 80% again, verifies **AC-2**.
 - Complete at n=2: each charged own share, ledger legs sum, commission on collected total, driver net correct, verifies **AC-3**, **AC-7**.
@@ -152,17 +163,20 @@ Tracer bullet order (project default assumption, as before):
 ## Consequences
 
 **Positive**:
+
 - Pricing story matches the foundation's product promise; riders always save vs solo, platform never collects less than solo.
 - Removes duplicated pricing math from the client (the drift the explore found).
 
 **Negative / tradeoffs**:
+
 - Driver+platform revenue per rider drops as occupancy grows (by design; total still grows), and the discount curve is a guess until real usage data exists.
 - Commission's base changes from `totalFare` to the collected total, so absolute commission RISES with occupancy (2 riders at 80%: commission on 160% of solo). Deliberate, but it changes driver economics messaging: the driver's net also rises with occupancy.
 - `totalFare` now reads as "solo base fare," a naming wrinkle kept to avoid a column rename in this slice.
 
 **Neutral**:
+
 - No migration (no schema change); deploy order free.
-- The later per rider pickup slice replaces the *base* each member is priced on, not this mechanism.
+- The later per rider pickup slice replaces the _base_ each member is priced on, not this mechanism.
 
 ## Follow-up
 

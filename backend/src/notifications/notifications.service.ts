@@ -15,7 +15,12 @@ export interface NotifyInput {
   data?: Record<string, unknown>;
 }
 
-const JOB_OPTS = { removeOnComplete: true, removeOnFail: 50, attempts: 3, backoff: { type: 'fixed', delay: 1000 } } as const;
+const JOB_OPTS = {
+  removeOnComplete: true,
+  removeOnFail: 50,
+  attempts: 3,
+  backoff: { type: 'fixed', delay: 1000 },
+} as const;
 
 /**
  * Notifications. The in-app row is persisted synchronously (so it's instantly
@@ -64,7 +69,11 @@ export class NotificationsService {
   }
 
   list(userId: string, limit = 50) {
-    return this.notifications.find({ where: { userId }, order: { createdAt: 'DESC' }, take: limit });
+    return this.notifications.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
   }
 
   async markRead(userId: string, id: string) {

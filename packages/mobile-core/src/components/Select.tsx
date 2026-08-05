@@ -35,7 +35,9 @@ export function Select({
   return (
     <View className="mb-4">
       {label ? (
-        <Text className={`mb-2 font-pmedium ${labelClassName ?? 'text-sm text-muted'}`}>{label}</Text>
+        <Text className={`mb-2 font-pmedium ${labelClassName ?? 'text-sm text-muted'}`}>
+          {label}
+        </Text>
       ) : null}
       <Pressable
         onPress={() => setOpen(true)}

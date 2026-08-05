@@ -12,12 +12,12 @@ export class PlacesController {
   @Get('autocomplete')
   @ApiOperation({ summary: 'Address autocomplete suggestions (Nigeria)' })
   @ResponseMessage('Suggestions')
-  autocomplete(
-    @Query('q') q?: string,
-    @Query('lat') lat?: string,
-    @Query('lng') lng?: string,
-  ) {
-    return this.places.autocomplete(q ?? '', lat ? Number(lat) : undefined, lng ? Number(lng) : undefined);
+  autocomplete(@Query('q') q?: string, @Query('lat') lat?: string, @Query('lng') lng?: string) {
+    return this.places.autocomplete(
+      q ?? '',
+      lat ? Number(lat) : undefined,
+      lng ? Number(lng) : undefined,
+    );
   }
 
   @Get('reverse')

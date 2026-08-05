@@ -8,15 +8,18 @@ import { adminApi } from '@/lib/admin-api';
 const naira = (n: number) => '₦' + n.toLocaleString('en-NG');
 
 export default function FareConfigPage() {
-  const { data, isLoading } = useQuery({ queryKey: ['admin-fare-config'], queryFn: adminApi.fareConfig });
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-fare-config'],
+    queryFn: adminApi.fareConfig,
+  });
 
   return (
     <div>
       <PageHeader title="Fare Configuration" subtitle="Current pricing & commission (read-only)" />
 
       <div className="mb-4 rounded-card border border-dashed border-hairline px-4 py-3 text-xs text-subtle">
-        These values are sourced from the backend environment config. Runtime editing arrives with the
-        config-store (v2); change them via deployment env vars for now.
+        These values are sourced from the backend environment config. Runtime editing arrives with
+        the config-store (v2); change them via deployment env vars for now.
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -37,8 +40,14 @@ export default function FareConfigPage() {
             <CardTitle>Commission</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Row label="Platform commission" value={isLoading ? '—' : `${data!.commission.commissionPct}%`} />
-            <Row label="Rate (bps)" value={isLoading ? '—' : `${data!.commission.commissionRateBps}`} />
+            <Row
+              label="Platform commission"
+              value={isLoading ? '—' : `${data!.commission.commissionPct}%`}
+            />
+            <Row
+              label="Rate (bps)"
+              value={isLoading ? '—' : `${data!.commission.commissionRateBps}`}
+            />
           </CardContent>
         </Card>
 
@@ -47,10 +56,22 @@ export default function FareConfigPage() {
             <CardTitle>Cancellation</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Row label="Rider cancellation fee" value={isLoading ? '—' : naira(data!.cancellation.cancellationFee)} />
-            <Row label="Free-cancel grace" value={isLoading ? '—' : `${data!.cancellation.cancellationGraceSeconds}s`} />
-            <Row label="Driver share of penalty" value={isLoading ? '—' : `${data!.cancellation.penaltyDriverShareBps / 100}%`} />
-            <Row label="Driver cancel fee" value={isLoading ? '—' : naira(data!.cancellation.driverCancelFee)} />
+            <Row
+              label="Rider cancellation fee"
+              value={isLoading ? '—' : naira(data!.cancellation.cancellationFee)}
+            />
+            <Row
+              label="Free-cancel grace"
+              value={isLoading ? '—' : `${data!.cancellation.cancellationGraceSeconds}s`}
+            />
+            <Row
+              label="Driver share of penalty"
+              value={isLoading ? '—' : `${data!.cancellation.penaltyDriverShareBps / 100}%`}
+            />
+            <Row
+              label="Driver cancel fee"
+              value={isLoading ? '—' : naira(data!.cancellation.driverCancelFee)}
+            />
           </CardContent>
         </Card>
 

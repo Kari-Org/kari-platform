@@ -55,7 +55,9 @@ export default function TripsPage() {
     {
       key: 'status',
       header: 'Status',
-      render: (r) => <Badge tone={STATUS_TONE[r.status] ?? 'default'}>{r.status.replace(/_/g, ' ')}</Badge>,
+      render: (r) => (
+        <Badge tone={STATUS_TONE[r.status] ?? 'default'}>{r.status.replace(/_/g, ' ')}</Badge>
+      ),
     },
     { key: 'when', header: 'When', render: (r) => new Date(r.createdAt).toLocaleString() },
   ];

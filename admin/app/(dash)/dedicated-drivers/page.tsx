@@ -48,11 +48,29 @@ export default function DedicatedDriversPage() {
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const columns: Column<AdminDriverRow>[] = [
-    { key: 'name', header: 'Name', render: (d) => [d.firstName, d.lastName].filter(Boolean).join(' ') || '—' },
-    { key: 'vehicle', header: 'Vehicle', render: (d) => (d.vehicle ? `${d.vehicle.model} · ${d.vehicle.plateNumber}` : '—') },
+    {
+      key: 'name',
+      header: 'Name',
+      render: (d) => [d.firstName, d.lastName].filter(Boolean).join(' ') || '—',
+    },
+    {
+      key: 'vehicle',
+      header: 'Vehicle',
+      render: (d) => (d.vehicle ? `${d.vehicle.model} · ${d.vehicle.plateNumber}` : '—'),
+    },
     { key: 'class', header: 'Class', render: (d) => d.vehicle?.category ?? '—' },
-    { key: 'avail', header: 'Status', render: (d) => <Badge tone={d.availability === 'OFFLINE' ? 'default' : 'success'}>{d.availability}</Badge> },
-    { key: 'rating', header: 'Rating', render: (d) => (d.ratingCount > 0 ? `★ ${d.ratingAvg.toFixed(1)}` : '—') },
+    {
+      key: 'avail',
+      header: 'Status',
+      render: (d) => (
+        <Badge tone={d.availability === 'OFFLINE' ? 'default' : 'success'}>{d.availability}</Badge>
+      ),
+    },
+    {
+      key: 'rating',
+      header: 'Rating',
+      render: (d) => (d.ratingCount > 0 ? `★ ${d.ratingAvg.toFixed(1)}` : '—'),
+    },
   ];
 
   return (
@@ -78,8 +96,16 @@ export default function DedicatedDriversPage() {
               <Input placeholder="Email" value={form.email} onChange={set('email')} />
               <Input placeholder="Phone (+234…)" value={form.phone} onChange={set('phone')} />
               <Input placeholder="Temp password" value={form.password} onChange={set('password')} />
-              <Input placeholder="Vehicle model" value={form.vehicleModel} onChange={set('vehicleModel')} />
-              <Input placeholder="Plate number" value={form.plateNumber} onChange={set('plateNumber')} />
+              <Input
+                placeholder="Vehicle model"
+                value={form.vehicleModel}
+                onChange={set('vehicleModel')}
+              />
+              <Input
+                placeholder="Plate number"
+                value={form.plateNumber}
+                onChange={set('plateNumber')}
+              />
             </div>
             {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
             <div className="mt-4 flex gap-2">
@@ -94,7 +120,12 @@ export default function DedicatedDriversPage() {
         </Card>
       )}
 
-      <DataTable columns={columns} rows={dedicated} loading={isLoading} empty="No dedicated drivers yet" />
+      <DataTable
+        columns={columns}
+        rows={dedicated}
+        loading={isLoading}
+        empty="No dedicated drivers yet"
+      />
     </div>
   );
 }

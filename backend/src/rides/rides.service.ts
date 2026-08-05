@@ -238,7 +238,9 @@ export class RidesService {
       throw new ConflictException('ride is no longer open');
     }
     if (amount > ride.quotedPrice) {
-      throw new BadRequestException(`offer cannot exceed the standard fare of ₦${ride.quotedPrice}`);
+      throw new BadRequestException(
+        `offer cannot exceed the standard fare of ₦${ride.quotedPrice}`,
+      );
     }
     const offer = await this.offers.save(this.offers.create({ rideId, driverId, amount }));
     if (ride.status !== RideStatus.NEGOTIATING) {
@@ -280,7 +282,11 @@ export class RidesService {
     );
     await this.drivers.setAvailability(offer.driverId, DriverAvailability.ON_TRIP);
     await this.subscriptions.noteServingDriver(ride.riderId, offer.driverId).catch(() => undefined);
-    this.realtime.emitToUser(offer.driverId, 'ride:accepted', await this.view(saved, UserRole.DRIVER));
+    this.realtime.emitToUser(
+      offer.driverId,
+      'ride:accepted',
+      await this.view(saved, UserRole.DRIVER),
+    );
     return this.view(saved, UserRole.RIDER);
   }
 
@@ -371,7 +377,11 @@ export class RidesService {
     } catch (err) {
       this.logger.error(`engagement hooks failed for ride ${ride.id}`, err as Error);
     }
-    this.realtime.emitToUser(ride.riderId, 'ride:completed', await this.view(saved, UserRole.RIDER));
+    this.realtime.emitToUser(
+      ride.riderId,
+      'ride:completed',
+      await this.view(saved, UserRole.RIDER),
+    );
     return this.view(saved, UserRole.DRIVER);
   }
 

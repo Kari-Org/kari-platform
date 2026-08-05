@@ -69,7 +69,9 @@ export class GamificationService {
   }
 
   /** Called when a ride completes: award points to the week + all-time, unlock badges. */
-  async awardForRide(driverId: string): Promise<{ points: number; weekKey: string; newBadges: AchievementBadge[] }> {
+  async awardForRide(
+    driverId: string,
+  ): Promise<{ points: number; weekKey: string; newBadges: AchievementBadge[] }> {
     const points = this.config.engagement.pointsPerRide;
     const wk = this.weekKey();
     await this.bump(driverId, wk, points, 1);
@@ -78,14 +80,23 @@ export class GamificationService {
     return { points, weekKey: wk, newBadges };
   }
 
-  private async evaluateBadges(driverId: string, allTimeRides: number): Promise<AchievementBadge[]> {
+  private async evaluateBadges(
+    driverId: string,
+    allTimeRides: number,
+  ): Promise<AchievementBadge[]> {
     const want: AchievementBadge[] = [];
     for (const m of RIDE_MILESTONES) if (allTimeRides >= m.rides) want.push(m.badge);
     const driver = await this.drivers.findByUser(driverId);
-    if (driver && driver.ratingAvg >= TOP_RATED_MIN_AVG && driver.ratingCount >= TOP_RATED_MIN_COUNT) {
+    if (
+      driver &&
+      driver.ratingAvg >= TOP_RATED_MIN_AVG &&
+      driver.ratingCount >= TOP_RATED_MIN_COUNT
+    ) {
       want.push(AchievementBadge.TOP_RATED);
     }
-    const have = new Set((await this.achievements.find({ where: { driverId } })).map((a) => a.badge));
+    const have = new Set(
+      (await this.achievements.find({ where: { driverId } })).map((a) => a.badge),
+    );
     const unlocked: AchievementBadge[] = [];
     for (const badge of want) {
       if (have.has(badge)) continue;
@@ -124,7 +135,10 @@ export class GamificationService {
     });
     const profiles = await this.drivers.findByUserIds(rows.map((r) => r.driverId));
     const nameById = new Map(
-      profiles.map((p) => [p.userId, [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Driver']),
+      profiles.map((p) => [
+        p.userId,
+        [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Driver',
+      ]),
     );
     return {
       weekKey: wk,

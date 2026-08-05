@@ -34,7 +34,7 @@ specifically tuned for the Nigerian market.
    driven by traffic and fuel. Subscriptions assign a **sticky driver** — the same driver each time, for
    trust.
 
-3. **Control over pricing — standard *and* negotiate.** Kari blends two pricing models: **standard**
+3. **Control over pricing — standard _and_ negotiate.** Kari blends two pricing models: **standard**
    (accept the quoted fare) and **negotiate** (the rider names their own price with no floor; the driver
    can counter, capped at the standard fare). Riders pick per ride.
 
@@ -58,19 +58,20 @@ specifically tuned for the Nigerian market.
    and pay from — designed as a fallback for the common Nigerian case of bank apps or transfers failing
    mid-transaction.
 
-9. **Spotify / music sharing.** *(Roadmap — not yet built.)* The vision: a rider connects their Spotify
+9. **Spotify / music sharing.** _(Roadmap — not yet built.)_ The vision: a rider connects their Spotify
    account and shares playlists with the driver in-app. **Today** the app ships a music-preference setting
    (own playlist / driver's choice / silence), a driver "Spotify installed" attestation, and a manual
    "paste your Spotify link" share on the ride screen. **Full account integration is post-MVP.**
 
-*(Also built, supporting the above: carpooling with NIN-gated cost-splitting, referrals, and mutual
-driver↔rider ratings.)*
+_(Also built, supporting the above: carpooling with NIN-gated cost-splitting, referrals, and mutual
+driver↔rider ratings.)_
 
 ---
 
 ## How It Works (user stories)
 
 ### Rider
+
 Signs up with a phone number (OTP via **SMS or WhatsApp**), adds their details and an optional **NIN**,
 passes a **selfie liveness** check, and answers a short ride-preferences survey (driver vibe, music,
 accessibility). On the home screen they enter a destination, pick a **ride type** (solo / carpool /
@@ -80,6 +81,7 @@ track the trip live (and can share it or hit **panic**), then pay by **wallet, c
 the driver.
 
 ### Driver (freelance)
+
 Signs up and completes a **gated KYC wizard** — personal info, personality quiz, vehicle, NIN,
 face-liveness, and payout + next-of-kin. Only after passing can they **go online**. Online, dispatched
 requests arrive as a **countdown bottom-sheet**; the driver **accepts or counter-offers**, navigates to
@@ -87,11 +89,13 @@ pickup, enters the rider's **PIN** to start, completes the trip, and watches **e
 standing, and commission** update.
 
 ### Driver (dedicated)
+
 Onboarded and managed by Kari ops **through the admin console** (not in-app self-signup); salaried; can be
 **reserved for subscription routes**. **Shuttle drivers** are dedicated drivers assigned to fixed bus
 routes.
 
 ### Admin / Operations
+
 Kari staff sign in to a **role-gated** console to: watch a **live fleet map**, manage **rider/driver
 lifecycles and KYC verification**, **override or resolve** trips and disputes, **onboard dedicated
 drivers**, work a **multi-source support-ticket inbox** (app / web / email), and oversee **financials**
@@ -102,14 +106,16 @@ audit-logged**.
 
 ## Ride Flows (by type)
 
-The four ride types, rider + driver perspective. This is the **target spec** — items marked *(gap)* are
+The four ride types, rider + driver perspective. This is the **target spec** — items marked _(gap)_ are
 not built yet or are built differently today; the gaps are tracked in
 [build-graph.md](build-graph.md), and the per-type contract is in
 [architecture.md](architecture.md) → Ride Type Matrix.
 
 ### 1. Solo — freelance drivers only (for now)
+
 **Rider:** Ride tab (or "Solo" on Home, which opens the Ride tab) → enter destination; pickup is
 prefilled but editable, with autocomplete → confirm addresses → choose a pricing method:
+
 - **Standard** → the 3-tier car screen (Economy / Comfort / Premium) → send the request at the quoted fare.
 - **Negotiate** → name a price (**no floor**). A too-low price warns "you may not get a response" but can
   still be sent. **Tier-agnostic** — no car class is chosen on the negotiate path.
@@ -121,38 +127,42 @@ accepts/rejects the counter.
 entered by the driver at pickup to start the trip.
 
 ### 2. Carpool — freelance, opt-in, 1–3 riders
+
 **Rider:** picks Carpool on Home → pickup + dropoff (**NIN verification** required if not done at setup) →
 **standard pricing only**. Paired with other riders heading a **similar route/radius** — not necessarily
 the same pickup/dropoff.
 
-**Driver:** after going online, toggles **"accept carpool requests"** (carpool mode) *(gap)*. Carries
+**Driver:** after going online, toggles **"accept carpool requests"** (carpool mode) _(gap)_. Carries
 **1–3 riders** at once (min 1). Accepts request 1 → rider 1 gets a PIN, driver heads to pickup; while en
-route, a compatible request 2 may be offered → rider 2 gets their **own** PIN *(gap)*. The driver enters
+route, a compatible request 2 may be offered → rider 2 gets their **own** PIN _(gap)_. The driver enters
 **each rider's PIN at their pickup**. Pickup **and** dropoff order is **optimized for fuel / distance /
-time** — adding a rider can reorder the route *(gap)*.
+time** — adding a rider can reorder the route _(gap)_.
 
 **Pricing:** **discounted ride-share** — each rider pays their **own discounted fare** (full fare if they
-end up riding alone), **not** an equal split *(gap — current build splits one fare equally)*. Paid by
+end up riding alone), **not** an equal split _(gap — current build splits one fare equally)_. Paid by
 **wallet, falling back to the saved card** when the wallet is short. No cash.
 
 ### 3. Shuttle — dedicated drivers on fixed routes
+
 **Rider:** explores routes ahead of time (**search/filter by route + timing**) → picks Shuttle, enters
 pickup + dropoff → matched to the nearest route by the closest bus stop to pickup. **Wallet must be
 funded.** Boards by **scanning a QR on the front of the bus** to mark entry, scans again on exit → charged
-for the distance between the board and alight stops. **QR replaces seat reservation** *(gap)*.
+for the distance between the board and alight stops. **QR replaces seat reservation** _(gap)_.
 
-**Driver:** a **dedicated** driver, assigned a **bus + route** by operations **via the admin web app** *(gap)*.
+**Driver:** a **dedicated** driver, assigned a **bus + route** by operations **via the admin web app** _(gap)_.
 
 ### 4. Subscription — sticky dedicated driver, with fallback
+
 **Rider:** pays a **monthly fee priced per route** (e.g. ₦50,000, from the route's config) → sets
 home/work, **frequency** (Mon–Fri, Sat–Thurs, …), **time(s)**, and **one-way or two-way** (e.g. two-way:
 home 07:00 → work 17:30). On the set days the rider is **not charged at ride time** — the month covers it.
 
-**Driver:** a **scheduled job** fires ahead of each set time *(gap)* → assigns the **sticky dedicated**
+**Driver:** a **scheduled job** fires ahead of each set time _(gap)_ → assigns the **sticky dedicated**
 driver; if unavailable → another **dedicated** driver; if none → dispatches a **request to nearby
 freelance** drivers. The driver arrives **5–10 minutes early**.
 
 ### Cross-cutting rules
+
 - **Driver eligibility:** Solo = freelance · Carpool = freelance (opt-in) · Shuttle = dedicated (assigned)
   · Subscription = dedicated-sticky → dedicated → freelance fallback.
 - **Start PIN:** minted on driver accept; carpool issues **one PIN per rider**.
@@ -185,26 +195,28 @@ split was a hiring artifact (different contractors), not a design choice.
 
 ### Products
 
-| Product | Path | Tech | Purpose |
-|---------|------|------|---------|
-| Backend | `backend/` | NestJS 11, PostgreSQL 16, Redis 7 | Unified API + WebSocket server |
-| Rider App | `rider/` | Expo SDK 54, React Native 0.81 | Passenger mobile app |
-| Driver App | `driver/` | Expo SDK 54, React Native 0.81 | Driver mobile app |
-| Admin Dashboard | `admin/` | Next.js 15, App Router | Operations console |
-| Web | `web/` | Next.js 15 (light theme) | Single-page marketing site (8 sections) |
-| Shared Types | `packages/types/` | TypeScript | Enums, API contracts, RBAC |
-| Mobile Core | `packages/mobile-core/` | TypeScript + NativeWind | Shared mobile UI + API client + socket |
-| Brand | `brand/` | Static assets | Logo, icons, fonts, design kit |
+| Product         | Path                    | Tech                              | Purpose                                 |
+| --------------- | ----------------------- | --------------------------------- | --------------------------------------- |
+| Backend         | `backend/`              | NestJS 11, PostgreSQL 16, Redis 7 | Unified API + WebSocket server          |
+| Rider App       | `rider/`                | Expo SDK 54, React Native 0.81    | Passenger mobile app                    |
+| Driver App      | `driver/`               | Expo SDK 54, React Native 0.81    | Driver mobile app                       |
+| Admin Dashboard | `admin/`                | Next.js 15, App Router            | Operations console                      |
+| Web             | `web/`                  | Next.js 15 (light theme)          | Single-page marketing site (8 sections) |
+| Shared Types    | `packages/types/`       | TypeScript                        | Enums, API contracts, RBAC              |
+| Mobile Core     | `packages/mobile-core/` | TypeScript + NativeWind           | Shared mobile UI + API client + socket  |
+| Brand           | `brand/`                | Static assets                     | Logo, icons, fonts, design kit          |
 
 ### Build status at a glance
+
 - **Backend:** P0–P6 done; **P7 (hardening)** is the only phase left.
 - **Rider + Driver apps:** P0–P6 done (P0–P2 device-verified, P3–P6 committed but **not yet runtime-verified**); rider visually redesigned to Figma; P7 left.
-- **Admin:** A0–A6 done, including the *Admins & Roles* management page.
+- **Admin:** A0–A6 done, including the _Admins & Roles_ management page.
 - **Web:** built single-page marketing site (8 sections, its own light design system); not backend-wired (by design).
 
 → Full breakdown and verification history live in [progress-log.md](progress-log.md); known gaps and what's buildable next in [build-graph.md](build-graph.md).
 
 ### Key domain concepts (the vocabulary)
+
 - **Driver types:** `FREELANCE` (self-onboarded) vs `DEDICATED` (admin-onboarded, salaried).
 - **Ride types:** `SOLO`, `CARPOOL` (NIN-gated, cost-split), `SHUTTLE` (fixed routes), `SUBSCRIPTION` (sticky driver).
 - **Price types:** `STANDARD` (accept quote) vs `NEGOTIATE` (rider proposes, driver counters).
@@ -216,15 +228,18 @@ split was a hiring artifact (different contractors), not a design choice.
 - **Optimistic locking:** `@VersionColumn` on Ride / Carpool / ShuttleTrip — first concurrent actor wins.
 
 ### Out of scope (current phase)
+
 Autonomous vehicles · multi-country (Nigeria only) · email/password auth (phone + OTP + Google only) ·
 crypto payments · third-party delivery/logistics · an in-app driver-training product (dedicated-driver
 training is an ops process) · scheduled rides · multiple active rides per rider (enforced: one at a time).
 
 ### Current priorities
+
 What's buildable next, ranked with dependencies, lives in [build-graph.md](build-graph.md). The broad
 strokes: runtime verification, P7 hardening, real provider implementations, and the ride-variant v2 gaps.
 
 ### Roadmap (post-MVP)
+
 Full **Spotify** account integration + playlist sharing · "Kari Wrapped" · watchlist address + push ·
 emergency car-alarm integration · **Fare-split with friends** (an in-app friendship/social graph — a
 booker selects known people to split one ride's fare, auto-charging their accounts; distinct from

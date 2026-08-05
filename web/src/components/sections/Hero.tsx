@@ -5,7 +5,9 @@ export function Hero() {
   return (
     <section className="mx-auto grid max-w-container grid-cols-1 items-center gap-10 px-10 pb-20 pt-10 min-[900px]:grid-cols-[1.1fr_.9fr]">
       <div>
-        <p className="mb-4 text-sm font-semibold uppercase tracking-[1px] text-[#9a8a00]">Get there with Kari</p>
+        <p className="mb-4 text-sm font-semibold uppercase tracking-[1px] text-[#9a8a00]">
+          Get there with Kari
+        </p>
         <h1 className="kari-h1 m-0">
           <span className="text-brand" style={{ WebkitTextStroke: '1px var(--ink)' }}>
             Seamless Rides,

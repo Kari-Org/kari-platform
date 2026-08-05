@@ -35,11 +35,13 @@ driver app slices have nothing to hang an assignment on.
 ## Requirements
 
 **User stories**:
+
 - As an operations admin, I want to assign a dedicated driver and a bus to a route so that every upcoming trip on that route has a responsible driver and vehicle.
 - As an operations admin, I want to unassign or replace a route's driver so that staffing changes are reflected quickly.
 - As a compliance reviewer, I want every assignment change audit logged so that staffing actions are traceable.
 
 **Acceptance criteria**:
+
 - **AC-1**: `@kari/types` exposes a new `shuttle:assign` permission, granted to `SUPER_ADMIN` (automatic) and `OPS`; the settings RBAC matrix shows it without further admin code changes.
 - **AC-2**: `GET /admin/shuttle/routes` returns every route with its assignment (driver id and name, bus fields) and its count of upcoming `SCHEDULED` trips; readable with `dedicated:read`.
 - **AC-3**: `PATCH /admin/shuttle/routes/:id/assignment` with a dedicated driver and bus details persists the assignment on the route and stamps `driverId` on that route's future `SCHEDULED` trips.
@@ -59,10 +61,12 @@ Add `assignedDriverId`, `busPlateNumber`, `busLabel` to `shuttle_routes`; assign
 stamp future `SCHEDULED` trips and the seeder inherits.
 
 **Pros**:
+
 - Matches the ops mental model ("this driver runs the Lekki corridor"), one action covers all trips.
 - Uses the existing empty `shuttle_trips.driverId` column as designed; no new table.
 
 **Cons**:
+
 - One driver per route (no per trip override this slice); a substitute driver for a single day needs a later per trip surface.
 
 ### Option 2: Per trip assignment only
@@ -70,17 +74,21 @@ stamp future `SCHEDULED` trips and the seeder inherits.
 An endpoint that sets `driverId` trip by trip, and an admin table of trips.
 
 **Pros**:
+
 - Maximum flexibility (substitutes, split shifts).
 
 **Cons**:
+
 - Operationally tedious as the default (trips are seeded in batches; ops would repeat the same assignment daily), and the vision text describes route level assignment.
 
 ### Option 3: A dedicated `shuttle_assignments` entity (driver, bus, route, effective dates)
 
 **Pros**:
+
 - Models history and future dated assignments cleanly.
 
 **Cons**:
+
 - A new table, joins, and lifecycle for a capability the product hasn't validated yet; the audit log already records the history this slice needs (speculative abstraction).
 
 ## Decision
@@ -104,6 +112,7 @@ caller lacking `shuttle:assign`), so clients can tell policy from input errors.
 ## Feature design
 
 **Data model sketch**:
+
 - `shuttle_routes`: add `assignedDriverId uuid NULL`, `busPlateNumber varchar(20) NULL`, `busLabel varchar(60) NULL`. Dev applies via `DB_SYNCHRONIZE`; production ships a TypeORM migration (additive, nullable, safe).
 - `shuttle_trips`: no schema change; the existing `driverId` column starts being written.
 - `@kari/types` `rbac.ts`: `'shuttle:assign'` added to `PERMISSIONS`; `ROLE_PERMISSIONS[OPS]` gains it; `SUPER_ADMIN` inherits automatically.
@@ -118,6 +127,7 @@ One endpoint covers assign and clear (`driverId: null`): one audit action, less 
 cross check's simplification, adopted).
 
 **Key invariants**:
+
 - Only a driver whose profile is `DEDICATED` and whose user account is `ACTIVE` can hold a shuttle route assignment.
 - One driver holds at most one route (409 on a second assignment until cleared).
 - Assignment changes update the route and its future `SCHEDULED` trips in one transaction (no route/trip drift).
@@ -126,6 +136,7 @@ cross check's simplification, adopted).
 - Accepted risk: concurrent admin edits of the same route are last write wins (`ShuttleRoute` has no version column; admin writes are rare and audit logged, so optimistic locking is deliberately not added here).
 
 **Security model**:
+
 - Reads: `dedicated:read` (OPS, SUPER_ADMIN, READ_ONLY see the page).
 - Writes: `shuttle:assign` (OPS, SUPER_ADMIN), enforced by the existing `PermissionsGuard`; UI controls wrapped in `<Can permission="shuttle:assign">`.
 - All writes flow through the existing admin audit interceptor (AC-9); no new PII (plate numbers are operational data).
@@ -133,6 +144,7 @@ cross check's simplification, adopted).
 **Configuration required**: none (no new env vars).
 
 **Critical test scenarios**:
+
 - Happy path: assign a dedicated driver + bus → route shows assignment, future `SCHEDULED` trips carry `driverId`, audit row exists, verifies **AC-3**, **AC-9**.
 - Validation: assign a freelance driver → 400, route and trips untouched, verifies **AC-4**.
 - Permission: a `SUPPORT` admin calling assign → 403; a `READ_ONLY` admin sees the page but no controls, verifies **AC-6**, **AC-7**.
@@ -152,14 +164,17 @@ Tracer bullet order (no recorded approach; end to end default noted):
 ## Consequences
 
 **Positive**:
+
 - Shuttle trips gain a responsible driver on record, unblocking the QR boarding and driver app "my route" slices.
 - The RBAC catalog pattern proves out for new permissions (one line in types ripples to guard, `<Can>`, and the matrix).
 
 **Negative / tradeoffs**:
+
 - One driver per route: single day substitutions need a per trip override later (recorded as follow up).
 - Bus data is two loose fields, not a registry; plate typos are possible until a Bus entity exists.
 
 **Neutral**:
+
 - `@kari/types` change requires the package rebuild before backend or admin typechecks (existing standing instruction).
 - Production rollout: additive nullable columns, safe to migrate before deploy.
 

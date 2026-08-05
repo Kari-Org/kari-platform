@@ -235,11 +235,23 @@ export class PaymentsService {
         metadata,
       });
     }
-    return { settled: true, paymentMethod, rateBps, fareKobo, commissionKobo: commission, driverNetKobo: driverNet };
+    return {
+      settled: true,
+      paymentMethod,
+      rateBps,
+      fareKobo,
+      commissionKobo: commission,
+      driverNetKobo: driverNet,
+    };
   }
 
   // ─── tip (rider → driver, wallet-funded, no commission) ──────────────────────
-  async tipDriver(input: { rideId: string; riderId: string; driverId: string | null; amountNaira: number }) {
+  async tipDriver(input: {
+    rideId: string;
+    riderId: string;
+    driverId: string | null;
+    amountNaira: number;
+  }) {
     const { rideId, riderId, driverId, amountNaira } = input;
     if (!driverId) throw new BadRequestException('this ride had no driver to tip');
     const tipKobo = toKobo(amountNaira);
@@ -369,7 +381,8 @@ export class PaymentsService {
       await this.transactions.update(
         { reference },
         {
-          status: transfer.status === 'success' ? TransactionStatus.SUCCESS : TransactionStatus.PENDING,
+          status:
+            transfer.status === 'success' ? TransactionStatus.SUCCESS : TransactionStatus.PENDING,
           providerRef: transfer.providerRef ?? null,
         },
       );
@@ -413,7 +426,10 @@ export class PaymentsService {
       userId: txn.userId,
       metadata: { reversalOf: txn.reference },
     });
-    await this.transactions.update({ reference: txn.reference }, { status: TransactionStatus.FAILED });
+    await this.transactions.update(
+      { reference: txn.reference },
+      { status: TransactionStatus.FAILED },
+    );
   }
 
   // ─── driver earnings summary ──────────────────────────────────────────────────
@@ -423,11 +439,17 @@ export class PaymentsService {
     const sumOf = (pred: (t: TransactionType, d: LedgerDirection) => boolean) =>
       entries.filter((e) => pred(e.type, e.direction)).reduce((s, e) => s + e.amount, 0);
 
-    const grossEarnings = sumOf((t, d) => t === TransactionType.RIDE_CHARGE && d === LedgerDirection.CREDIT);
-    const commissionPaid = sumOf((t, d) => t === TransactionType.COMMISSION && d === LedgerDirection.DEBIT);
+    const grossEarnings = sumOf(
+      (t, d) => t === TransactionType.RIDE_CHARGE && d === LedgerDirection.CREDIT,
+    );
+    const commissionPaid = sumOf(
+      (t, d) => t === TransactionType.COMMISSION && d === LedgerDirection.DEBIT,
+    );
     const penalties = sumOf((t, d) => t === TransactionType.PENALTY && d === LedgerDirection.DEBIT);
     const bonuses = sumOf((t, d) => t === TransactionType.PENALTY && d === LedgerDirection.CREDIT);
-    const paidOut = sumOf((t, d) => t === TransactionType.RIDE_PAYOUT && d === LedgerDirection.DEBIT);
+    const paidOut = sumOf(
+      (t, d) => t === TransactionType.RIDE_PAYOUT && d === LedgerDirection.DEBIT,
+    );
 
     return {
       balanceKobo: wallet.balance,

@@ -2,9 +2,21 @@ import Image from 'next/image';
 import { ArrowRight, Smartphone } from '@/components/icons';
 
 const STEPS = [
-  { n: '1', title: 'Request a ride', desc: 'Enter your destination, set your price or accept fixed pricing.' },
-  { n: '2', title: 'Match with a driver', desc: 'View ratings and pick the driver that works for you.' },
-  { n: '3', title: 'Enjoy your trip', desc: 'Safe, comfortable and reliable — track every minute.' },
+  {
+    n: '1',
+    title: 'Request a ride',
+    desc: 'Enter your destination, set your price or accept fixed pricing.',
+  },
+  {
+    n: '2',
+    title: 'Match with a driver',
+    desc: 'View ratings and pick the driver that works for you.',
+  },
+  {
+    n: '3',
+    title: 'Enjoy your trip',
+    desc: 'Safe, comfortable and reliable — track every minute.',
+  },
 ];
 
 export function Steps() {
@@ -19,7 +31,13 @@ export function Steps() {
           >
             {i === 1 && (
               <>
-                <Image src="/assets/app-screen.png" alt="" fill className="object-cover" sizes="380px" />
+                <Image
+                  src="/assets/app-screen.png"
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="380px"
+                />
                 <div className="absolute inset-0 bg-gradient-to-b from-surface/50 to-surface/[.92]" />
               </>
             )}

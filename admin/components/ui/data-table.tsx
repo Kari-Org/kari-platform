@@ -26,7 +26,10 @@ export function DataTable<T extends { id: string }>({
         <thead>
           <tr className="border-b border-hairline bg-surface text-left text-subtle">
             {columns.map((c) => (
-              <th key={c.key} className={cn('whitespace-nowrap px-4 py-3 font-medium', c.className)}>
+              <th
+                key={c.key}
+                className={cn('whitespace-nowrap px-4 py-3 font-medium', c.className)}
+              >
                 {c.header}
               </th>
             ))}
@@ -57,7 +60,9 @@ export function DataTable<T extends { id: string }>({
               >
                 {columns.map((c) => (
                   <td key={c.key} className={cn('px-4 py-3 text-white', c.className)}>
-                    {c.render ? c.render(row) : ((row as Record<string, unknown>)[c.key] as React.ReactNode)}
+                    {c.render
+                      ? c.render(row)
+                      : ((row as Record<string, unknown>)[c.key] as React.ReactNode)}
                   </td>
                 ))}
               </tr>

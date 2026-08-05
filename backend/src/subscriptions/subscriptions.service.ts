@@ -8,7 +8,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Redis } from 'ioredis';
 import { Repository } from 'typeorm';
-import { CarCategory, LedgerDirection, SubscriptionStatus, SystemAccount, TransactionType } from '@kari/types';
+import {
+  CarCategory,
+  LedgerDirection,
+  SubscriptionStatus,
+  SystemAccount,
+  TransactionType,
+} from '@kari/types';
 import { haversineKm } from '../common/geo';
 import { LedgerService } from '../money/ledger.service';
 import { REDIS_CLIENT } from '../redis/redis.constants';
@@ -21,7 +27,10 @@ const MONTHLY_TRIPS = 44;
 const COMMUTE_DISCOUNT = 0.6;
 const FEE_ROUNDING_NAIRA = 500;
 export function monthlyFeeFor(soloFareNaira: number): number {
-  return Math.ceil((soloFareNaira * MONTHLY_TRIPS * COMMUTE_DISCOUNT) / FEE_ROUNDING_NAIRA) * FEE_ROUNDING_NAIRA;
+  return (
+    Math.ceil((soloFareNaira * MONTHLY_TRIPS * COMMUTE_DISCOUNT) / FEE_ROUNDING_NAIRA) *
+    FEE_ROUNDING_NAIRA
+  );
 }
 const PERIOD_DAYS = 30;
 

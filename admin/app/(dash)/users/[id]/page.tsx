@@ -23,7 +23,10 @@ const STATUS_TONE: Record<string, Tone> = {
 export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({ queryKey: ['admin-user', id], queryFn: () => adminApi.user(id) });
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-user', id],
+    queryFn: () => adminApi.user(id),
+  });
 
   const canManageUser = useCan('riders:manage');
   const canVerify = useCan('drivers:verify');
@@ -60,10 +63,16 @@ export default function UserDetailPage() {
 
   return (
     <div>
-      <Link href="/users" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-white">
+      <Link
+        href="/users"
+        className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-white"
+      >
         <ArrowLeft size={15} /> Users
       </Link>
-      <PageHeader title={name === '—' ? user.email : name} subtitle={`${user.role} · ${user.email}`} />
+      <PageHeader
+        title={name === '—' ? user.email : name}
+        subtitle={`${user.role} · ${user.email}`}
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="md:col-span-1">
@@ -71,14 +80,24 @@ export default function UserDetailPage() {
             <CardTitle>Account</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <Field label="Status" value={<Badge tone={STATUS_TONE[user.status] ?? 'default'}>{user.status.replace(/_/g, ' ')}</Badge>} />
+            <Field
+              label="Status"
+              value={
+                <Badge tone={STATUS_TONE[user.status] ?? 'default'}>
+                  {user.status.replace(/_/g, ' ')}
+                </Badge>
+              }
+            />
             <Field label="Phone" value={user.phone} />
             <Field label="Joined" value={new Date(user.createdAt).toLocaleDateString()} />
             {isDriver ? (
               <>
                 <Field label="NIN status" value={String(p.ninStatus ?? '—')} />
                 <Field label="Liveness" value={p.livenessVerified ? 'Verified' : 'Pending'} />
-                <Field label="Onboarding" value={p.onboardingComplete ? 'Complete' : 'Incomplete'} />
+                <Field
+                  label="Onboarding"
+                  value={p.onboardingComplete ? 'Complete' : 'Incomplete'}
+                />
               </>
             ) : null}
 
@@ -86,20 +105,42 @@ export default function UserDetailPage() {
             <div className="space-y-2 pt-3">
               {canManageUser &&
                 (user.status === 'SUSPENDED' ? (
-                  <Button size="sm" className="w-full" disabled={busy} onClick={() => statusMut.mutate('ACTIVE')}>
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    disabled={busy}
+                    onClick={() => statusMut.mutate('ACTIVE')}
+                  >
                     Reactivate account
                   </Button>
                 ) : (
-                  <Button size="sm" variant="danger" className="w-full" disabled={busy} onClick={() => statusMut.mutate('SUSPENDED')}>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    className="w-full"
+                    disabled={busy}
+                    onClick={() => statusMut.mutate('SUSPENDED')}
+                  >
                     Suspend account
                   </Button>
                 ))}
               {isDriver && canVerify && (
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1" disabled={busy} onClick={() => verifyMut.mutate(true)}>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    disabled={busy}
+                    onClick={() => verifyMut.mutate(true)}
+                  >
                     Approve KYC
                   </Button>
-                  <Button size="sm" variant="outline" className="flex-1" disabled={busy} onClick={() => verifyMut.mutate(false)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    disabled={busy}
+                    onClick={() => verifyMut.mutate(false)}
+                  >
                     Reject
                   </Button>
                 </div>
@@ -126,13 +167,21 @@ export default function UserDetailPage() {
                           {r.pickupAddress ?? 'Pickup'} → {r.dropoffAddress ?? 'Destination'}
                         </p>
                         <p className="text-xs text-subtle">
-                          {new Date(r.createdAt).toLocaleString()} · {naira(r.agreedPrice ?? r.quotedPrice)}
+                          {new Date(r.createdAt).toLocaleString()} ·{' '}
+                          {naira(r.agreedPrice ?? r.quotedPrice)}
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
-                        <Badge tone={active ? 'brand' : 'default'}>{r.status.replace(/_/g, ' ')}</Badge>
+                        <Badge tone={active ? 'brand' : 'default'}>
+                          {r.status.replace(/_/g, ' ')}
+                        </Badge>
                         {active && canOverride && (
-                          <Button size="sm" variant="danger" disabled={cancelMut.isPending} onClick={() => cancelMut.mutate(r.id)}>
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            disabled={cancelMut.isPending}
+                            onClick={() => cancelMut.mutate(r.id)}
+                          >
                             Cancel
                           </Button>
                         )}

@@ -20,7 +20,11 @@ export default function PayoutsPage() {
   });
 
   const columns: Column<Payout>[] = [
-    { key: 'reference', header: 'Reference', render: (p) => <span className="font-mono text-xs">{p.reference}</span> },
+    {
+      key: 'reference',
+      header: 'Reference',
+      render: (p) => <span className="font-mono text-xs">{p.reference}</span>,
+    },
     { key: 'amount', header: 'Amount', render: (p) => naira(p.amount) },
     {
       key: 'status',

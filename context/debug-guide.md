@@ -12,11 +12,13 @@ Patterns for diagnosing and fixing issues in KariPlatform. This file replaces th
 3. Reproduce the issue — never fix what you can't reproduce
 
 ### Known non-bugs (documented to avoid re-investigation)
+
 - Figma frames scoped OUT of the build: standalone Chat, multi-screen Payment, light-themed Account redesign.
 - Pricing formula (`base + ₦120/km + ₦15/min`) yields absurd fares for test locations **outside Nigeria**
   — correct math, wrong test location.
 
 ### Environment prerequisites (user steps, not agent steps)
+
 - Google SSO needs the user's own OAuth client IDs in app config (`extra.googleWebClientId` / `googleIosClientId`).
 - EAS dev build needs the user's Expo account (`eas login && eas build --profile development --platform ios`)
   — required for driver background location + push.
@@ -26,6 +28,7 @@ Patterns for diagnosing and fixing issues in KariPlatform. This file replaces th
 ## Common Diagnosis Patterns
 
 ### Backend Not Starting
+
 ```bash
 # Check if Postgres + Redis are running
 brew services list | grep -E 'postgres|redis'
@@ -43,6 +46,7 @@ LOG_LEVEL=debug pnpm --filter @kari/backend run dev
 ```
 
 ### Mobile App Crashing
+
 ```bash
 # Clear Metro cache
 pnpm --filter @kari/rider exec expo start -c
@@ -56,6 +60,7 @@ pnpm --filter @kari/types run build  # MUST rebuild after editing types
 ```
 
 ### Socket Events Not Arriving
+
 1. Backend: is the event emitted to the right room? The real model is `emitToUser(userId, …)` → `user:{userId}`. There are **no** `ride:{id}`/`driver:{id}` rooms (`'ops'` is the only non-user room, for panic).
 2. Mobile: is the socket connected? Check `socket.connected` state
 3. Mobile: is the listener registered before the event fires? (Race condition)
@@ -63,17 +68,21 @@ pnpm --filter @kari/types run build  # MUST rebuild after editing types
 5. JWT: is the socket auth token valid? Expired tokens fail silently.
 
 ### Ride State Machine Issues
+
 The ride state machine is the most complex flow. Valid transitions:
+
 ```
 SEARCHING -> OFFERED -> ACCEPTED -> DRIVER_ARRIVED -> IN_PROGRESS -> COMPLETED
          \-> CANCELLED (from any state)
          \-> NEGOTIATING -> ACCEPTED (for NEGOTIATE priceType)
 ```
+
 - `@VersionColumn` prevents concurrent mutations — check for OptimisticLockVersionMismatchError (409)
 - One active ride per rider — `POST /rides` returns 409 if another is in progress
 - Start OTP (`startOtp`) is shown to rider only — driver must enter it to start the ride
 
 ### Payment / Money Issues
+
 - All amounts in **kobo** (1 naira = 100 kobo)
 - Every balance change must post balanced ledger entries (debit + credit)
 - Check wallet balance: `SELECT balance FROM wallets WHERE "ownerId" = '...'`
@@ -81,24 +90,29 @@ SEARCHING -> OFFERED -> ACCEPTED -> DRIVER_ARRIVED -> IN_PROGRESS -> COMPLETED
 - Idempotency: duplicate payment requests should be no-ops, not double-charges
 
 ### Admin Auth Issues
+
 - JWT stored in httpOnly cookie — not visible in browser JS
 - All API calls go through `/api/proxy/[...path]` — check the proxy is injecting the Bearer
 - `middleware.ts` gates routes — check the matcher pattern
 - RBAC: permissions come from `@kari/types/rbac.ts` `ROLE_PERMISSIONS` map
 
 ### Notifications Not Delivering
+
 - One real BullMQ queue: **`notifications`** (worker = `notifications.processor.ts`); jobs are `deliver` (fan-out) and `sms` (raw, for non-users like emergency contacts).
 - The in-app `notification` row is persisted **synchronously**; push/SMS/email go through the queued `deliver` job. A missing in-app row ≠ a missing delivery — check both.
 - Is Redis up and the processor running? BullMQ needs Redis; no worker = jobs pile up.
 - Push/Email/SMS providers are **noop by default** → they just log to console. "Not delivered" in dev usually means noop, not a bug.
 
 ### Ride Variants (Carpool / Shuttle / Subscription)
+
 > As-built — these diverge from the target Ride Flows (see project-overview.md → Ride Flows; the gaps are in this file's tracker counterpart).
-- **Carpool:** NIN-gated — create *and* join require `ninStatus = VERIFIED` (else 403). Seat claims are `@VersionColumn` (409 on concurrent last seat). Fare is currently **equal-split**, recomputed on join/leave.
+
+- **Carpool:** NIN-gated — create _and_ join require `ninStatus = VERIFIED` (else 403). Seat claims are `@VersionColumn` (409 on concurrent last seat). Fare is currently **equal-split**, recomputed on join/leave.
 - **Shuttle:** routes/stops/trips are **seeded on boot** (idempotent) — empty shuttle UI usually means the seeder didn't run. Trips use `@VersionColumn` seat inventory; bookings charge wallet → REVENUE.
 - **Subscription:** static plan catalog; `assignedDriverId` is captured from the first serving driver; matching then dispatches **exclusively** to that sticky driver while they're online.
 
 ### Admin Data Pages (A2–A6)
+
 - All admin data is `GET /admin/*` via the proxy: `stats`, `fleet`, `rides`, `users`, `drivers`, `finance/summary`, `finance/payouts`, `fare-config`, `tickets`, `audit`.
 - Empty page → check the proxy injected the Bearer **and** the admin's role has the gating permission (`ROLE_PERMISSIONS`).
 - **Audit log empty?** The `AuditInterceptor` records only **non-GET** `/admin/*` requests by design — GETs aren't audited.
@@ -139,6 +153,7 @@ ORDER BY le."postedAt" DESC LIMIT 10;
 ## Testing Patterns
 
 ### Backend API Testing (curl)
+
 ```bash
 # Login
 curl -s localhost:3000/auth/login -H 'Content-Type: application/json' \
@@ -152,6 +167,7 @@ grep "Your Kari code" /tmp/kari-backend.log | tail -5
 ```
 
 ### Driver Ride Simulation
+
 ```bash
 # Use the E2E simulator (if available)
 node /tmp/kari-p2-e2e.mjs
@@ -161,6 +177,7 @@ node /tmp/kari-dispatch.mjs [negotiate]
 ```
 
 ### Mobile Testing
+
 - Expo Go works for P0-P1 (auth + onboarding) and P2 foreground flows
 - Background location (driver) requires EAS dev build
 - `env.ts` auto-derives API host from Metro `hostUri` — no manual IP edits needed
