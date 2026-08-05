@@ -6,11 +6,11 @@
     "watchPatterns": [
       "backend/**",
       "packages/**",
-      "Dockerfile",
-      ".dockerignore",
-      "pnpm-lock.yaml",
-      "pnpm-workspace.yaml",
-      "tsconfig.base.json",
+      "/Dockerfile",
+      "/.dockerignore",
+      "/pnpm-lock.yaml",
+      "/pnpm-workspace.yaml",
+      "/tsconfig.base.json",
       "backend/railway.json"
     ]
   },
