@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Share, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Share, Text, View } from 'react-native';
 import { AchievementBadge } from '@kari/types';
 import { InputField, KariButton, Screen, ScreenHeader, colors } from '@kari/mobile-core';
 import { driversApi, gamificationApi, referralsApi } from '@/api/endpoints';

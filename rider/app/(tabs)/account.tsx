@@ -15,7 +15,8 @@ export default function Account() {
   const router = useRouter();
   const logout = useAuthStore((s) => s.logout);
   const { data: profile } = useQuery({ queryKey: ['rider-me'], queryFn: ridersApi.me });
-  const { data: user } = useQuery({ queryKey: ['auth-me'], queryFn: authApi.me });
+  // Warm the auth-me cache for downstream screens; the result isn't rendered here.
+  useQuery({ queryKey: ['auth-me'], queryFn: authApi.me });
   const name = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'Rider';
 
   const soon = (what: string) => Alert.alert('Coming soon', `${what} is coming in a later update.`);

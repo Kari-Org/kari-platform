@@ -7,7 +7,7 @@
     "start": "expo start",
     "ios": "expo start --ios",
     "android": "expo start --android",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node ../scripts/gen-expo-router-types.cjs && tsc --noEmit",
     "eas-build-post-install": "pnpm --filter @kari/types build"
   },
   "dependencies": {

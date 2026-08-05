@@ -17,7 +17,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PaymentMethod, PriceType, RideStatus } from '@kari/types';
 import { commsApi, ridesApi, safetyApi, walletApi } from '@/api/endpoints';
-import type { Ride } from '@/api/types';
 import { InputField } from '@/components/InputField';
 import { KariButton } from '@/components/KariButton';
 import { RideMap } from '@/components/RideMap';

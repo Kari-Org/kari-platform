@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { CarpoolStatus } from '@kari/types';
 import { KariButton, Screen, ScreenHeader, colors } from '@kari/mobile-core';
 import { carpoolsApi } from '@/api/endpoints';

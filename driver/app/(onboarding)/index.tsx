@@ -20,7 +20,6 @@ import {
   Select,
   StepDots,
   type SelectOption,
-  colors,
 } from '@kari/mobile-core';
 import { driversApi } from '@/api/endpoints';
 import { errorMessage } from '@/lib/error';

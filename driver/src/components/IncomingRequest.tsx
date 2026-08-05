@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Text, TextInput, View } from 'react-native';
 import { PriceType } from '@kari/types';
 import { KariButton, colors } from '@kari/mobile-core';
 import { ridesApi } from '@/api/endpoints';
