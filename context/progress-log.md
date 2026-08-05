@@ -27,6 +27,26 @@ must never drift from what was decided.
 
 ## Entries
 
+### chore · infra · Railway service isolation + watch-path resolution — 2026-08-05
+**What:** Vercel decommissioned (admin/web fully on Railway; backend CORS points at the Railway
+domains). Worked the deploy-trigger / watch-path behavior: root-level changes (`Dockerfile`,
+`railway.json`, `packages/**`, lockfile) were being SKIPPED for the backend because it had a dashboard
+"Watch Paths" override of `backend/**`. Cleared that override (dashboard) — confirmed a root-only push
+now redeploys the backend.
+**Notes / honest record:** I first tried broadening deploys via a shared `build.watchPatterns` union in
+the root `railway.json`. Two findings: (1) config-as-code `watchPatterns` does NOT override a service's
+dashboard Watch-Paths (unlike `dockerfilePath`, which does) — so the shared file only governs services
+with no dashboard override; (2) a **shared** `railway.json` is read by all three services, so a union
+`watchPatterns` breaks per-service isolation — an admin-only change rebuilt backend + web too (verified
+in deploy history). Reverted the union. **Correct model (per-service isolation) is a per-service
+setting** — either per-service dashboard Watch Paths, or per-service config via `railway config`
+(`.railway/railway.ts`, needs the Railway TS SDK + a whole-project `apply`, deemed too risky for prod
+right now). Chosen path: per-service dashboard Watch Paths (pending). Target values —
+backend: `backend/**,packages/**,Dockerfile,.dockerignore,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.base.json,railway.json`;
+admin: `admin/**,packages/**,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.base.json,railway.json`;
+web: `web/**,packages/**,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.base.json,railway.json`.
+`driver`/`rider` are EAS (not Railway), so they never trigger a Railway build regardless.
+
 ### chore · infra · Clean CI/CD pipeline + Railway migration cutover — 2026-08-04
 **What:** Replaced prod `DB_SYNCHRONIZE=true` with TypeORM migrations — committed a self-contained
 baseline (creates `uuid-ossp` + 30 tables), wired `migrationsRun` on boot when synchronize is off;
