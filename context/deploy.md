@@ -66,11 +66,11 @@ Two long-lived branches map to two isolated Railway environments (optionally a
 third, ephemeral tier for PR previews). This replaces the earlier "every push to
 `main` deploys production" flow.
 
-| Git branch   | Railway environment | Deploys                    | Advances when…                                          |
-| ------------ | ------------------- | -------------------------- | ------------------------------------------------------- |
-| `main`       | **staging**         | staging stack, every merge | a reviewed PR merges (trunk)                            |
-| `production` | **production**      | production stack           | a reviewed **promotion PR** `main → production` merges  |
-| `feature/*`  | PR preview (opt-in) | ephemeral fork of staging  | a PR is opened/updated; torn down on close              |
+| Git branch   | Railway environment | Deploys                    | Advances when…                                         |
+| ------------ | ------------------- | -------------------------- | ------------------------------------------------------ |
+| `main`       | **staging**         | staging stack, every merge | a reviewed PR merges (trunk)                           |
+| `production` | **production**      | production stack           | a reviewed **promotion PR** `main → production` merges |
+| `feature/*`  | PR preview (opt-in) | ephemeral fork of staging  | a PR is opened/updated; torn down on close             |
 
 **Trunk-based:** cut `feature/*` off `main`, PR back into `main`; every merge
 auto-deploys **staging**. Production advances only through an explicit, reviewed
@@ -94,12 +94,12 @@ branch protection, not a manual deploy button.
 An environment is a **fully isolated stack** — its own copy of all three services
 **and its own Postgres, Redis, and bucket**, with its own variables.
 
-| Layer                 | Scope                           | Behaviour                                                                     |
-| --------------------- | ------------------------------- | ----------------------------------------------------------------------------- |
-| Tracked branch        | per service, per environment    | production-env services track `production`; staging-env services track `main`. |
-| `railway.json`        | read from the repo, per service | same file on both branches → identical build/deploy/watch in every env; no per-env file. |
+| Layer                 | Scope                           | Behaviour                                                                                                      |
+| --------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Tracked branch        | per service, per environment    | production-env services track `production`; staging-env services track `main`.                                 |
+| `railway.json`        | read from the repo, per service | same file on both branches → identical build/deploy/watch in every env; no per-env file.                       |
 | `build.watchPatterns` | per push, per service, per env  | a push rebuilds only the services whose patterns match the changed files — same isolation in staging and prod. |
-| Variables / refs      | **per environment**             | `${{Postgres.DATABASE_URL}}` resolves to *that env's* DB, so staging code hits the staging DB unchanged. |
+| Variables / refs      | **per environment**             | `${{Postgres.DATABASE_URL}}` resolves to _that env's_ DB, so staging code hits the staging DB unchanged.       |
 
 > Both warnings from _Per-service config + build isolation_ apply **per
 > environment**: set each staging service's Config-as-Code path, and never add a
