@@ -12,6 +12,10 @@
 pnpm-lock.yaml
 graphify-out/
 
+# Editor/agent config — tool-managed, not hand-formatted. Keeps prettier from
+# making stray edits to the tracked .claude/settings.json.
+.claude/
+
 # Native build output (Expo prebuild), if ever present.
 **/android
 **/ios
