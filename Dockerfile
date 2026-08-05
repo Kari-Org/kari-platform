@@ -3,8 +3,9 @@
 # Build from the repository ROOT — this is a pnpm workspace and the backend
 # depends on the @kari/types workspace package, so it cannot be built from
 # backend/ in isolation. Railway picks this Dockerfile via the backend service's
-# RAILWAY_DOCKERFILE_PATH (default ./Dockerfile); root changes redeploy it via
-# railway.json build.watchPatterns.
+# RAILWAY_DOCKERFILE_PATH (default ./Dockerfile). Root changes redeploy it via
+# railway.json build.watchPatterns (the service has no dashboard Watch-Paths
+# override, so the committed patterns govern).
 #
 # Node is pinned to 22.13.1 to match .nvmrc / EAS / engines (pnpm 11.5.1 needs
 # Node >= 22.13). Keep this version in lockstep with CI and the app builds.
