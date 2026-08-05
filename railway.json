@@ -1,7 +1,21 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "builder": "DOCKERFILE"
+    "builder": "DOCKERFILE",
+    "watchPatterns": [
+      "backend/**",
+      "admin/**",
+      "web/**",
+      "packages/**",
+      "Dockerfile",
+      ".dockerignore",
+      "railway.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "tsconfig.base.json",
+      "turbo.json",
+      ".nvmrc"
+    ]
   },
   "deploy": {
     "healthcheckPath": "/health",
