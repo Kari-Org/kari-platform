@@ -97,7 +97,10 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-          packager: pnpm
+          # npm (not pnpm) for the eas-cli install: pnpm 11 aborts on eas-cli's
+          # optional native dep dtrace-provider (ERR_PNPM_IGNORED_BUILDS); npm
+          # treats it as optional and skips it.
+          packager: npm
       # --no-wait: return once the build is queued (EAS emails / dashboard track
       # it, and --auto-submit chains the store submission server-side). The build
       # profile carries channel + environment + versioning, so no extra flags.
