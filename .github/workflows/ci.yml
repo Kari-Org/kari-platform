@@ -4,7 +4,9 @@ name: CI
 # enabled per service). If it's red, nothing ships — keep it green.
 on:
   push:
-    branches: [main]
+    # main → staging env; production → production env — both gated by this CI
+    # run before Railway deploys (per-service "Wait for CI").
+    branches: [main, production]
   pull_request:
 
 # One active run per branch/PR; a new push cancels the stale run instead of
@@ -84,9 +86,9 @@ jobs:
         env:
           TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
 
-      # main: full run across every workspace. This is the gate production
-      # deploys wait on, so it must not be scoped down.
-      - name: Verify all (main)
+      # main/production: full run across every workspace. The gate the staging
+      # (main) and production (production) deploys wait on — do not scope down.
+      - name: Verify all (deploy branches)
         if: github.event_name != 'pull_request'
         run: pnpm exec turbo run typecheck lint build test --cache-dir=.turbo
 
