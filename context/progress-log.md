@@ -27,6 +27,22 @@ must never drift from what was decided.
 
 ## Entries
 
+### chore · infra · Alpine base for all 3 images + mobile size check — 2026-08-05
+**What:** Switched all three service images from `node:22.13.1-slim` to `-alpine`. New sizes (all boot
+verified): **backend 415MB** (was 535MB / originally 1.7GB), **admin 330MB** (was 450MB), **web 337MB**
+(was 456MB). The Next apps (admin/web) get `apk add --no-cache libc6-compat` as a glibc shim for
+Next's native SWC/sharp on musl. Verified: backend boots + runs the baseline migration + serves
+`/health`; admin serves `/login` 200 + `/` 307 (auth) ; web serves `/` 200 — no musl/native errors.
+**Mobile check (rider/driver):** they are **EAS-built native binaries, not Docker images** — no
+container to slim. Checked what matters anyway: each has 34 prod deps (only `react-native-maps` beyond
+standard Expo/RN + the shared `@kari/mobile-core`/`@kari/types`), assets are small (rider 2.5MB,
+driver 204KB), and graphify + grep confirmed **no cross-app imports** (they pull only `@kari/mobile-core`
++ own code). So the mobile apps are already lean; their binary size is inherent RN/Expo runtime, not
+bloat. **Gotchas:** admin's first alpine build hit a transient `apk` mirror failure ("unable to select
+packages") — a rebuild fixed it (web built fine with the identical line). Earlier a boot-test falsely
+failed on "Invalid environment configuration" — that was a too-short JWT test secret (schema enforces
+length), not alpine.
+
 ### chore · infra · Slim backend image 1.7GB → 535MB — 2026-08-05
 **What:** The runtime image did `COPY --from=build /app ./` — the whole workspace, so it shipped the
 entire monorepo's `node_modules` (1GB): Next.js, React Native, Expo, dev tooling, none of which the

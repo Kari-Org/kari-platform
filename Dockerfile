@@ -10,7 +10,7 @@
 # Node >= 22.13). Keep this version in lockstep with CI and the app builds.
 
 # ---- build ----------------------------------------------------------------
-FROM node:22.13.1-slim AS build
+FROM node:22.13.1-alpine AS build
 WORKDIR /app
 ENV CI=1
 # Install pnpm directly (not via corepack): corepack bundled with pinned Node
@@ -33,7 +33,7 @@ RUN pnpm --filter @kari/types build && pnpm --filter @kari/backend build
 RUN pnpm --filter @kari/backend deploy --prod --legacy /prod
 
 # ---- runtime --------------------------------------------------------------
-FROM node:22.13.1-slim AS runtime
+FROM node:22.13.1-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 # Only the production bundle: dist/ (incl. compiled migrations, which run on boot

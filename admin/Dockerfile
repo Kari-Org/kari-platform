@@ -12,9 +12,12 @@
 # with static assets and public/ copied in beside it.
 
 # ---- build ----------------------------------------------------------------
-FROM node:22.13.1-slim AS build
+FROM node:22.13.1-alpine AS build
 WORKDIR /app
 ENV CI=1
+# libc6-compat: Next's native SWC + sharp ship musl builds, but the glibc shim
+# avoids musl edge cases during `next build` on Alpine.
+RUN apk add --no-cache libc6-compat
 # Direct pnpm install — corepack in pinned Node patches fails signature checks.
 RUN npm i -g pnpm@11.5.1
 
@@ -25,8 +28,9 @@ RUN pnpm install --frozen-lockfile --filter @kari/admin...
 RUN pnpm --filter @kari/types build && pnpm --filter @kari/admin build
 
 # ---- runtime --------------------------------------------------------------
-FROM node:22.13.1-slim AS runtime
+FROM node:22.13.1-alpine AS runtime
 WORKDIR /app
+RUN apk add --no-cache libc6-compat
 ENV NODE_ENV=production
 # Next standalone binds to process.env.HOSTNAME (Docker sets it to the container
 # ID), so without this it listens only on the container's own IP and Railway's
