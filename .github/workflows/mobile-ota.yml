@@ -1,0 +1,122 @@
+name: Mobile OTA
+
+# expo-updates OTA — ship JS-only changes to a channel with no store round-trip.
+#   • push to main (mobile paths)  -> auto-publish to the `preview` channel
+#   • manual dispatch              -> publish to preview OR production (JS hotfix)
+#
+# An OTA only reaches installed binaries whose runtimeVersion matches (policy =
+# appVersion, i.e. the app.json `version`). A `version` bump or ANY native change
+# (deps, plugins, permissions, app.json native fields, eas.json) needs a fresh
+# binary instead — see mobile-release.yml.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'rider/**'
+      - 'driver/**'
+      - 'packages/**'
+  workflow_dispatch:
+    inputs:
+      app:
+        description: Which app(s) to update
+        type: choice
+        options: [both, rider, driver]
+        default: both
+      channel:
+        description: Target channel
+        type: choice
+        options: [preview, production]
+        default: preview
+      message:
+        description: Update message (defaults to the commit)
+        type: string
+        required: false
+
+# Don't cancel an in-flight publish; queue per channel instead.
+concurrency:
+  group: mobile-ota-${{ github.ref }}-${{ github.event.inputs.channel || 'preview' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  # Resolve the app matrix + channel from either the push (changed apps -> preview)
+  # or the dispatch inputs.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.plan.outputs.apps }}
+      channel: ${{ steps.plan.outputs.channel }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        if: github.event_name == 'push'
+        id: filter
+        with:
+          filters: |
+            rider:
+              - 'rider/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+            driver:
+              - 'driver/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+      - id: plan
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          IN_APP: ${{ github.event.inputs.app }}
+          IN_CHANNEL: ${{ github.event.inputs.channel }}
+          CHANGED: ${{ steps.filter.outputs.changes }}
+        run: |
+          if [ "$EVENT" = "push" ]; then
+            echo "apps=${CHANGED:-[]}" >> "$GITHUB_OUTPUT"
+            echo "channel=preview" >> "$GITHUB_OUTPUT"
+          else
+            case "$IN_APP" in
+              both) echo 'apps=["rider","driver"]' >> "$GITHUB_OUTPUT" ;;
+              *)    echo "apps=[\"$IN_APP\"]" >> "$GITHUB_OUTPUT" ;;
+            esac
+            echo "channel=$IN_CHANNEL" >> "$GITHUB_OUTPUT"
+          fi
+
+  update:
+    needs: plan
+    if: needs.plan.outputs.apps != '[]' && needs.plan.outputs.apps != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.plan.outputs.apps) }}
+    name: update ${{ matrix.app }} → ${{ needs.plan.outputs.channel }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/mobile-setup
+      # Re-gate before shipping: a direct push to main (no PR) would otherwise
+      # skip the PR gate. Turbo-cached, so it's near-instant on an already-gated sha.
+      - name: typecheck · lint · test
+        run: pnpm exec turbo run typecheck lint test --filter=@kari/${{ matrix.app }} --cache-dir=.turbo
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+          packager: pnpm
+      # --environment loads that environment's EAS env vars (EXPO_PUBLIC_API_URL /
+      # EXPO_PUBLIC_SOCKET_URL) into the JS bundle, so the update points at the
+      # right backend. runtimeVersion is derived from app.json `version`.
+      - name: eas update
+        working-directory: ${{ matrix.app }}
+        env:
+          CHANNEL: ${{ needs.plan.outputs.channel }}
+          MSG: ${{ github.event.inputs.message || github.event.head_commit.message || github.sha }}
+        run: |
+          eas update \
+            --channel "$CHANNEL" \
+            --environment "$CHANNEL" \
+            --message "$MSG" \
+            --non-interactive

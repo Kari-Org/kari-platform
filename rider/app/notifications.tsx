@@ -35,7 +35,7 @@ export default function NotificationsScreen() {
         {isLoading ? (
           <ActivityIndicator color={colors.brand} className="mt-6 self-center" />
         ) : !items || items.length === 0 ? (
-          <Text className="mt-8 text-center font-sans text-sm text-subtle">You're all caught up.</Text>
+          <Text className="mt-8 text-center font-sans text-sm text-subtle">You&apos;re all caught up.</Text>
         ) : (
           items.map((n) => (
             <Pressable

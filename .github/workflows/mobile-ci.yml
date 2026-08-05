@@ -1,0 +1,106 @@
+name: Mobile CI
+
+# Correctness gate for the Expo apps (rider + driver): typecheck + lint + test.
+# Fully independent of the root CI (ci.yml) and the Railway deploys — it triggers
+# only on mobile-relevant paths and neither gates nor is gated by the
+# backend/web/admin pipeline. `gate-ok` is the single check to require in branch
+# protection.
+on:
+  pull_request:
+    paths:
+      - 'rider/**'
+      - 'driver/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.nvmrc'
+      - '.github/workflows/mobile-ci.yml'
+      - '.github/actions/mobile-setup/**'
+  push:
+    branches: [main]
+    paths:
+      - 'rider/**'
+      - 'driver/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.nvmrc'
+      - '.github/workflows/mobile-ci.yml'
+      - '.github/actions/mobile-setup/**'
+
+# One active run per branch/PR; a new push cancels the stale run.
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  # Which app(s) did this change touch? Shared packages / lockfile / Node version
+  # fan out to BOTH apps; an app-only change gates just that app. `changes` is a
+  # JSON array of the matched filter names, e.g. ["rider","driver"].
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            rider:
+              - 'rider/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.nvmrc'
+            driver:
+              - 'driver/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.nvmrc'
+
+  gate:
+    needs: changes
+    if: needs.changes.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
+    name: gate (${{ matrix.app }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/mobile-setup
+      # Turbo builds @kari/types first (^build), runs the expo-router codegen
+      # baked into the typecheck script, then tsc / eslint / jest for the app.
+      - name: typecheck · lint · test
+        run: pnpm exec turbo run typecheck lint test --filter=@kari/${{ matrix.app }} --cache-dir=.turbo
+
+  # Single stable status check for branch protection. Green when the gate passed
+  # for every affected app, and trivially green when no mobile app was affected
+  # (matrix empty -> gate skipped). Required because the matrix legs' names are
+  # dynamic and a "required" leg that never runs would block the PR forever.
+  gate-ok:
+    needs: [changes, gate]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify gate result
+        env:
+          GATE: ${{ needs.gate.result }}
+          CHANGES: ${{ needs.changes.result }}
+        run: |
+          for r in "$CHANGES" "$GATE"; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+              echo "Mobile gate failed"; exit 1
+            fi
+          done
+          echo "Mobile gate passed (or no mobile app affected)"

@@ -1,0 +1,26 @@
+# Shared setup for every mobile-pipeline job: pnpm + Node (pinned by .nvmrc) +
+# a frozen install + a Turbo cache scoped to the mobile pipeline. Kept separate
+# from the root CI so the mobile pipeline stays fully independent of the
+# backend/web/admin (Railway) pipeline. The caller checks out the repo first
+# (required before a local `uses: ./...` action can resolve).
+name: Mobile setup
+description: pnpm + Node (.nvmrc) + frozen install + Turbo cache for the Expo apps.
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v4
+    # .nvmrc is the single source of truth for the Node version (22.13.1),
+    # shared with the Dockerfiles, the root CI, and the EAS build profiles.
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+    - name: Turbo cache
+      uses: actions/cache@v4
+      with:
+        path: .turbo
+        key: turbo-mobile-${{ runner.os }}-${{ github.sha }}
+        restore-keys: turbo-mobile-${{ runner.os }}-
+    - name: Install (frozen)
+      shell: bash
+      run: pnpm install --frozen-lockfile
