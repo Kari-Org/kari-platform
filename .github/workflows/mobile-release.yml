@@ -65,11 +65,14 @@ jobs:
           IN_SUBMIT: ${{ github.event.inputs.submit }}
         run: |
           if [ "$EVENT" = "push" ]; then
-            # Tag push = production release of both apps, all platforms, submit.
+            # Tag push = production release. iOS and store submit are deferred
+            # until their credentials exist, so a tag builds Android only and does
+            # not submit. Flip platform to "all" / submit to "true" (or use manual
+            # dispatch) once the Apple + Play credentials are set up.
             echo 'apps=["rider","driver"]' >> "$GITHUB_OUTPUT"
-            echo "platform=all" >> "$GITHUB_OUTPUT"
+            echo "platform=android" >> "$GITHUB_OUTPUT"
             echo "profile=production" >> "$GITHUB_OUTPUT"
-            echo "submit=true" >> "$GITHUB_OUTPUT"
+            echo "submit=false" >> "$GITHUB_OUTPUT"
           else
             case "$IN_APP" in
               both) echo 'apps=["rider","driver"]' >> "$GITHUB_OUTPUT" ;;
@@ -91,11 +94,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/mobile-setup
-      - name: typecheck · lint · test
-        run: pnpm exec turbo run typecheck lint test --filter=@kari/${{ matrix.app }} --cache-dir=.turbo
+      - uses: ./.github/actions/mobile-gate
+        with:
+          app: ${{ matrix.app }}
       - uses: expo/expo-github-action@v8
         with:
-          eas-version: latest
+          eas-version: '21.5.0'
           token: ${{ secrets.EXPO_TOKEN }}
           # npm (not pnpm) for the eas-cli install: pnpm 11 aborts on eas-cli's
           # optional native dep dtrace-provider (ERR_PNPM_IGNORED_BUILDS); npm
