@@ -5,11 +5,11 @@ Dedicated pipeline for the Expo apps, **fully separate** from the backend/web/ad
 updates, and store submissions run on **EAS** servers. Nothing here gates or is
 gated by `ci.yml` or Railway.
 
-| Workflow | File | Trigger | Does |
-| --- | --- | --- | --- |
-| **Mobile CI** | `.github/workflows/mobile-ci.yml` | PR / push to `main` on mobile paths | typecheck + lint + test (the gate) |
-| **Mobile OTA** | `.github/workflows/mobile-ota.yml` | push to `main` → `preview`; manual dispatch → any channel | `eas update` (ship JS, no store round-trip) |
-| **Mobile Release** | `.github/workflows/mobile-release.yml` | tag `mobile-v*`; manual dispatch | `eas build` (+ `eas submit` on production) |
+| Workflow           | File                                   | Trigger                                                   | Does                                        |
+| ------------------ | -------------------------------------- | --------------------------------------------------------- | ------------------------------------------- |
+| **Mobile CI**      | `.github/workflows/mobile-ci.yml`      | PR / push to `main` on mobile paths                       | typecheck + lint + test (the gate)          |
+| **Mobile OTA**     | `.github/workflows/mobile-ota.yml`     | push to `main` → `preview`; manual dispatch → any channel | `eas update` (ship JS, no store round-trip) |
+| **Mobile Release** | `.github/workflows/mobile-release.yml` | tag `mobile-v*`; manual dispatch                          | `eas build` (+ `eas submit` on production)  |
 
 Shared setup (pnpm + Node from `.nvmrc` + frozen install + Turbo cache) lives in the
 composite action `.github/actions/mobile-setup`.
@@ -20,11 +20,11 @@ composite action `.github/actions/mobile-setup`.
   affected app(s). Require **`Mobile CI / gate-ok`** in branch protection.
 - **Merge to `main`** → gate re-runs, then an **OTA to the `preview` channel** for the
   changed app(s). Internal testers on a `preview` build get the JS immediately.
-- **Ship a preview/prod binary now** → run **Mobile Release** via *Run workflow*
+- **Ship a preview/prod binary now** → run **Mobile Release** via _Run workflow_
   (pick app / platform / profile; tick `submit` for a store submission).
 - **Cut a production release** → push a tag: `git tag mobile-v0.2.0 && git push origin
-  mobile-v0.2.0` → production build **and** store submit for both apps.
-- **Production JS hotfix (no store review)** → run **Mobile OTA** via *Run workflow*
+mobile-v0.2.0` → production build **and** store submit for both apps.
+- **Production JS hotfix (no store review)** → run **Mobile OTA** via _Run workflow_
   with `channel = production`.
 
 ## OTA vs. build — which one?
@@ -81,6 +81,6 @@ starts a fresh OTA lineage — see above).
 4. **Store submit credentials** (only for `eas submit` / production releases):
    - iOS: an App Store Connect API key (Key ID, Issuer ID, `.p8`).
    - Android: a Google Play service-account JSON.
-   Configure via `eas credentials` or the `submit.production` block in `eas.json`. Until
-   these exist, run Mobile Release with `submit = false` (build only) and don't push a
-   `mobile-v*` tag.
+     Configure via `eas credentials` or the `submit.production` block in `eas.json`. Until
+     these exist, run Mobile Release with `submit = false` (build only) and don't push a
+     `mobile-v*` tag.
