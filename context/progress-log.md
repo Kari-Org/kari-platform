@@ -27,6 +27,19 @@ must never drift from what was decided.
 
 ## Entries
 
+### chore · infra · Slim backend image 1.7GB → 535MB — 2026-08-05
+**What:** The runtime image did `COPY --from=build /app ./` — the whole workspace, so it shipped the
+entire monorepo's `node_modules` (1GB): Next.js, React Native, Expo, dev tooling, none of which the
+backend runs. Replaced it with a `pnpm --filter @kari/backend deploy --prod --legacy /prod` step that
+emits a self-contained bundle (backend `dist` + prod deps only, `@kari/types` resolved; 165MB), and the
+runtime stage now copies only that. Result: 1.7GB → **535MB** (68% smaller), verified booting + running
+the baseline migration on a fresh DB + serving `/health`.
+**Notes:** `--legacy` is required by the repo's hoisted linker (plain `pnpm deploy` errors). `typescript`
+(23M) still rides in as a transitive prod dep — minor, left alone. Further slimming to ~380MB is
+possible with an `alpine` base, deferred (musl/native-module risk not worth it; backend has no native
+deps today but that could change). Root `Dockerfile`-only change, so per the watch-isolation only the
+backend rebuilds.
+
 ### chore · infra · Railway service isolation + watch-path resolution — 2026-08-05
 **What:** Vercel decommissioned (admin/web fully on Railway; backend CORS points at the Railway
 domains). Worked the deploy-trigger / watch-path behavior: root-level changes (`Dockerfile`,

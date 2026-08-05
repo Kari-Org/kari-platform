@@ -2,10 +2,9 @@
 #
 # Build from the repository ROOT — this is a pnpm workspace and the backend
 # depends on the @kari/types workspace package, so it cannot be built from
-# backend/ in isolation. Railway picks this Dockerfile via the backend service's
-# RAILWAY_DOCKERFILE_PATH (default ./Dockerfile). Root changes redeploy it via
-# railway.json build.watchPatterns (the service has no dashboard Watch-Paths
-# override, so the committed patterns govern).
+# backend/ in isolation. The backend Railway service selects this file via
+# `backend/railway.json` (build.dockerfilePath: "Dockerfile"); root changes
+# redeploy it via that file's build.watchPatterns.
 #
 # Node is pinned to 22.13.1 to match .nvmrc / EAS / engines (pnpm 11.5.1 needs
 # Node >= 22.13). Keep this version in lockstep with CI and the app builds.
@@ -22,20 +21,24 @@ RUN npm i -g pnpm@11.5.1
 # Whole workspace (the .dockerignore keeps node_modules/dist/.env out).
 COPY . .
 
-# Install only the backend + its workspace deps — skips the heavy Expo/RN app deps.
+# Install the backend + its workspace deps, then build shared types and backend.
 RUN pnpm install --frozen-lockfile --filter @kari/backend...
-# Shared types must be built before the backend can compile against them.
 RUN pnpm --filter @kari/types build && pnpm --filter @kari/backend build
+
+# Produce a lean, self-contained production bundle: the backend's built dist plus
+# ONLY its production dependencies (with @kari/types resolved). This is what keeps
+# the runtime image small — without it, copying the whole workspace ships the
+# entire monorepo's node_modules (Next.js, React Native, Expo, dev tooling) and
+# the image balloons to ~1.7GB. --legacy is required by this repo's hoisted linker.
+RUN pnpm --filter @kari/backend deploy --prod --legacy /prod
 
 # ---- runtime --------------------------------------------------------------
 FROM node:22.13.1-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-# Carry the installed workspace across: node_modules (with the @kari/types
-# symlink), the built backend dist, and packages/types/dist. Migrations run on
-# boot (synchronize is off in prod), so the compiled migrations ship here too.
-COPY --from=build /app ./
-WORKDIR /app/backend
+# Only the production bundle: dist/ (incl. compiled migrations, which run on boot
+# since synchronize is off in prod) + prod node_modules. No source, no dev deps.
+COPY --from=build /prod ./
 # Informational only — Railway injects PORT and the app binds config.port (3000 default).
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
