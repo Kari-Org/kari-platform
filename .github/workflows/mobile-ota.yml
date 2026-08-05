@@ -105,7 +105,10 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-          packager: pnpm
+          # npm (not pnpm) for the eas-cli install: pnpm 11 aborts on eas-cli's
+          # optional native dep dtrace-provider (ERR_PNPM_IGNORED_BUILDS); npm
+          # treats it as optional and skips it.
+          packager: npm
       # --environment loads that environment's EAS env vars (EXPO_PUBLIC_API_URL /
       # EXPO_PUBLIC_SOCKET_URL) into the JS bundle, so the update points at the
       # right backend. runtimeVersion is derived from app.json `version`.
