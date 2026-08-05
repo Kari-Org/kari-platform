@@ -1,13 +1,27 @@
 name: CI
 
+# This workflow is the gate every Railway deploy waits on ("Wait for CI" is
+# enabled per service). If it's red, nothing ships — keep it green.
 on:
   push:
     branches: [main]
   pull_request:
 
+# One active run per branch/PR; a new push cancels the stale run instead of
+# piling up (and wasting the Postgres/Redis service containers).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # Postgres + Redis mirror the backend's runtime deps. The credentials match
+    # the env.schema defaults (kari/kari/kari on localhost:5432), so `test` and
+    # the migration gate need no extra DB env beyond host/port below.
     services:
       postgres:
         image: postgres:16-alpine
@@ -31,8 +45,15 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 5
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: '5432'
+      REDIS_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history so Turbo's --affected can diff a PR against its base.
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       # .nvmrc is the single source of truth for the Node version (22.13.1),
       # shared with the Dockerfiles and EAS so CI tests what prod runs.
@@ -40,15 +61,40 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # Persist Turbo's cache between runs so unchanged task inputs are cache
+      # hits instead of re-running typecheck/lint/build/test from scratch.
+      - name: Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
-      # Typecheck every workspace (backend, admin, web, both mobile apps, and the
-      # shared packages). This is the only correctness gate the Expo apps have,
-      # so it must run — a type error in rider/driver used to sail through CI.
-      - run: pnpm typecheck
-      - run: pnpm lint
-      - run: pnpm build
-      - run: pnpm test
+
+      # Formatting gate (non-mobile). rider/driver are excluded in .prettierignore
+      # and gated by the mobile pipeline instead. Cheap, so it runs first.
+      - run: pnpm format:check
+
+      # PRs: only the workspaces affected vs the base branch — fast feedback that
+      # mirrors Railway's per-service watchPatterns (change backend/ → only
+      # backend runs; change packages/ → everything downstream runs).
+      - name: Verify affected (pull request)
+        if: github.event_name == 'pull_request'
+        run: pnpm exec turbo run typecheck lint build test --affected --cache-dir=.turbo
         env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: '5432'
-          REDIS_URL: redis://localhost:6379
+          TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
+
+      # main: full run across every workspace. This is the gate production
+      # deploys wait on, so it must not be scoped down.
+      - name: Verify all (main)
+        if: github.event_name != 'pull_request'
+        run: pnpm exec turbo run typecheck lint build test --cache-dir=.turbo
+
+      # Prove the TypeORM migration chain applies cleanly on a fresh database
+      # before it ever runs on a Railway boot (the backend runs migrations on
+      # start; a bad one there means a crash-loop). @kari/types is built first
+      # so the entities the DataSource loads resolve.
+      - name: Validate migrations on a fresh DB
+        run: |
+          pnpm --filter @kari/types build
+          pnpm --filter @kari/backend migration:run

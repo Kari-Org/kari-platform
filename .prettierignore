@@ -1,0 +1,22 @@
+# Generated / vendored — not hand-formatted, must not gate `format:check`.
+**/node_modules
+**/dist
+**/dist-verify
+**/.next
+**/.expo
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+
+# Lockfile + machine-authored graph artifacts.
+pnpm-lock.yaml
+graphify-out/
+
+# Native build output (Expo prebuild), if ever present.
+**/android
+**/ios
+
+# TEMPORARY: the mobile apps (EAS) are formatted + gated by the separate mobile
+# pipeline, not this one. Remove these two lines once that chat formats them.
+rider/
+driver/

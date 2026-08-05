@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # JS/TS dependencies for the non-mobile workspaces. rider/driver (EAS) are
+  # intentionally excluded — their dependency + release cadence belongs to the
+  # separate mobile pipeline, not this one.
+  - package-ecosystem: npm
+    directories:
+      - '/'
+      - '/backend'
+      - '/web'
+      - '/admin'
+      - '/packages/*'
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # One PR per week for all minor/patch bumps; majors come as their own PRs.
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Keep the CI workflow's actions (checkout, setup-node, cache, …) current.
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - '*'
