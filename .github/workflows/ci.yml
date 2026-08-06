@@ -9,11 +9,14 @@ on:
     branches: [main, production]
   pull_request:
 
-# One active run per branch/PR; a new push cancels the stale run instead of
-# piling up (and wasting the Postgres/Redis service containers).
+# One active run per branch/PR. Cancel superseded PR runs, but NEVER cancel a
+# push run on main/production: Railway's Wait-for-CI keys on each commit's own
+# `verify`, so if two merges land seconds apart, cancelling the intermediate
+# run leaves that commit with no verify and its deploy stuck. Only PR runs
+# (which nothing deploys) are safe to cancel-in-progress.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   TURBO_TELEMETRY_DISABLED: '1'

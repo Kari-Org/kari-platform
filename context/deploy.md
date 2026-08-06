@@ -153,9 +153,10 @@ the split.
 5. **Seed a staging admin** against the staging DB proxy (separate DB → its own
    admin row).
 6. **Branch protection** (GitHub → Settings → Branches) on `main` **and**
-   `production`: require a PR, require the `verify` check, ≥ 1 approval, block
-   force-push/delete. Leave `production` without a linear-history requirement so
-   merge-commit promotions are allowed.
+   `production`: require a PR, require the `verify` check (plus `gate-ok` on
+   `main` — the mobile gate), ≥ 1 approval, block force-push/delete. Leave
+   `production` without a linear-history requirement so merge-commit promotions
+   are allowed.
 
 ### PR preview environments (optional)
 
