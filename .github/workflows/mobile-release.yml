@@ -92,12 +92,12 @@ jobs:
         app: ${{ fromJSON(needs.plan.outputs.apps) }}
     name: build ${{ matrix.app }} (${{ needs.plan.outputs.profile }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/mobile-setup
       - uses: ./.github/actions/mobile-gate
         with:
           app: ${{ matrix.app }}
-      - uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v9
         with:
           eas-version: '21.5.0'
           token: ${{ secrets.EXPO_TOKEN }}

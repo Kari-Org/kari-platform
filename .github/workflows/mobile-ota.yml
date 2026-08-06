@@ -52,7 +52,7 @@ jobs:
       apps: ${{ steps.plan.outputs.apps }}
       channel: ${{ steps.plan.outputs.channel }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v3
         if: github.event_name == 'push'
         id: filter
@@ -95,14 +95,14 @@ jobs:
         app: ${{ fromJSON(needs.plan.outputs.apps) }}
     name: update ${{ matrix.app }} → ${{ needs.plan.outputs.channel }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/mobile-setup
       # Re-gate before shipping: a direct push to main (no PR) would otherwise
       # skip the PR gate. Turbo-cached, so it's near-instant on an already-gated sha.
       - uses: ./.github/actions/mobile-gate
         with:
           app: ${{ matrix.app }}
-      - uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v9
         with:
           eas-version: '21.5.0'
           token: ${{ secrets.EXPO_TOKEN }}

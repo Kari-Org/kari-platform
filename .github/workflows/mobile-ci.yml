@@ -47,7 +47,7 @@ jobs:
     outputs:
       apps: ${{ steps.filter.outputs.changes }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -75,7 +75,7 @@ jobs:
         app: ${{ fromJSON(needs.changes.outputs.apps) }}
     name: gate (${{ matrix.app }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/mobile-setup
       - uses: ./.github/actions/mobile-gate
         with:
