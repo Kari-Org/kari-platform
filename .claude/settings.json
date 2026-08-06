@@ -18,6 +18,16 @@
             "command": "/Users/allison.dimkpa/.local/bin/graphify hook-guard read"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/require-progress-log.sh\"",
+            "statusMessage": "Checking progress-log entry…"
+          }
+        ]
       }
     ]
   }
