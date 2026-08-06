@@ -41,7 +41,9 @@ export default function Music() {
     <Screen className="px-5">
       <ScreenHeader title="Music" />
       <View className="mt-4 flex-1">
-        <Text className="mb-4 font-sans text-sm text-muted">What would you like to hear on your rides?</Text>
+        <Text className="mb-4 font-sans text-sm text-muted">
+          What would you like to hear on your rides?
+        </Text>
         {OPTIONS.map((o) => (
           <OptionRow
             key={o.value}

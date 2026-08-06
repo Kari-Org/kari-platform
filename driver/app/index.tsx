@@ -34,10 +34,21 @@ export default function Index() {
 
   return (
     <View
-      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.bg,
+      }}
     >
-      <Image source={require('../assets/logo.png')} style={{ width: 96, height: 96 }} resizeMode="contain" />
-      <Text style={{ color: colors.text, fontFamily: 'ArchivoExpanded', fontSize: 24, marginTop: 12 }}>
+      <Image
+        source={require('../assets/logo.png')}
+        style={{ width: 96, height: 96 }}
+        resizeMode="contain"
+      />
+      <Text
+        style={{ color: colors.text, fontFamily: 'ArchivoExpanded', fontSize: 24, marginTop: 12 }}
+      >
         Kari <Text style={{ color: colors.brand }}>Driver</Text>
       </Text>
       <ActivityIndicator color={colors.brand} style={{ marginTop: 16 }} />

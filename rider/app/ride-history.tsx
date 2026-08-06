@@ -9,7 +9,12 @@ import { Screen } from '@/components/Screen';
 import { colors } from '@/theme/tokens';
 
 const naira = (n: number | null) =>
-  n == null ? '—' : '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  n == null
+    ? '—'
+    : '₦' +
+      Math.round(n)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 export default function RideHistory() {
   const router = useRouter();

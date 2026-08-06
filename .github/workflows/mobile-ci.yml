@@ -6,17 +6,13 @@ name: Mobile CI
 # backend/web/admin pipeline. `gate-ok` is the single check to require in branch
 # protection.
 on:
+  # Runs on EVERY PR into main so `gate-ok` always reports a status — that is a hard
+  # requirement for it to be a branch-protection required check. Path scoping happens
+  # in the `changes` job below (dorny/paths-filter), NOT here: a workflow-level path
+  # filter would skip the entire workflow on non-mobile PRs, leaving a required
+  # `gate-ok` that never posts and blocking those PRs (and thus deploys) forever.
   pull_request:
-    paths:
-      - 'rider/**'
-      - 'driver/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.nvmrc'
-      - '.github/workflows/mobile-ci.yml'
-      - '.github/actions/mobile-setup/**'
-      - '.github/actions/mobile-gate/**'
+    branches: [main]
   push:
     branches: [main]
     paths:

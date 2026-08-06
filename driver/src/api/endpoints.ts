@@ -67,8 +67,12 @@ export const authApi = {
 
 export const driversApi = {
   me: () => apiFetch<DriverProfile>('/drivers/me'),
-  setPersonal: (body: { firstName: string; lastName: string; dateOfBirth: string; origin: string }) =>
-    apiFetch<DriverProfile>('/drivers/onboarding/personal', { method: 'POST', body }),
+  setPersonal: (body: {
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    origin: string;
+  }) => apiFetch<DriverProfile>('/drivers/onboarding/personal', { method: 'POST', body }),
   setQuiz: (body: { answers: number[] }) =>
     apiFetch<DriverProfile>('/drivers/onboarding/quiz', { method: 'POST', body }),
   setVehicle: (body: {
@@ -193,8 +197,7 @@ export const safetyApi = {
     apiFetch<{ removed: boolean }>(`/safety/contacts/${id}`, { method: 'DELETE' }),
   panic: (body: { rideId?: string; lat: number; lng: number }) =>
     apiFetch<PanicEvent>('/safety/panic', { method: 'POST', body }),
-  share: (rideId: string) =>
-    apiFetch<SharedTripLink>(`/rides/${rideId}/share`, { method: 'POST' }),
+  share: (rideId: string) => apiFetch<SharedTripLink>(`/rides/${rideId}/share`, { method: 'POST' }),
   stopShare: (rideId: string) =>
     apiFetch<{ stopped: number }>(`/rides/${rideId}/share/stop`, { method: 'POST' }),
 };

@@ -23,3 +23,9 @@ runs:
     - name: test
       shell: bash
       run: pnpm --filter @kari/${{ inputs.app }} exec jest --passWithNoTests
+    # Formatting is owned by the mobile pipeline, not root format:check — the root
+    # .prettierignore excludes rider/ + driver/, so this check passes a mobile-scoped
+    # --ignore-path instead of re-coupling them to root.
+    - name: format
+      shell: bash
+      run: pnpm exec prettier --check --ignore-path .github/prettier/mobile.prettierignore "${{ inputs.app }}/**/*.{ts,tsx,js,jsx,json}"

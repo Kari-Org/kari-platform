@@ -9,7 +9,11 @@ import type { WalletTxn } from '@/api/types';
 import { errorMessage } from '@/lib/error';
 
 const MIN_PAYOUT = 1000;
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const PRESETS = [1000, 5000, 10000];
 
 const TXN_META: Record<string, { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
@@ -30,7 +34,10 @@ export default function EarningsScreen() {
   const [custom, setCustom] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const { data: earnings, isLoading } = useQuery({ queryKey: ['earnings'], queryFn: paymentsApi.earnings });
+  const { data: earnings, isLoading } = useQuery({
+    queryKey: ['earnings'],
+    queryFn: paymentsApi.earnings,
+  });
   const { data: wallet } = useQuery({ queryKey: ['wallet'], queryFn: walletApi.summary });
   const { data: txns } = useQuery({ queryKey: ['wallet-txns'], queryFn: walletApi.transactions });
 
@@ -71,7 +78,10 @@ export default function EarningsScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Earnings" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {/* Balance */}
         <View className="mt-4 rounded-card bg-brand p-6">
           <Text className="font-pmedium text-sm text-bg/70">Available to withdraw</Text>
@@ -86,9 +96,17 @@ export default function EarningsScreen() {
         <Text className="mb-2 mt-6 font-psemibold text-lg text-white">This is how it adds up</Text>
         <View className="rounded-card bg-card p-4">
           <StatRow label="Gross trip earnings" value={naira(earnings?.grossEarnings ?? 0)} />
-          <StatRow label="Commission paid" value={`− ${naira(earnings?.commissionPaid ?? 0)}`} muted />
+          <StatRow
+            label="Commission paid"
+            value={`− ${naira(earnings?.commissionPaid ?? 0)}`}
+            muted
+          />
           {(earnings?.penalties ?? 0) > 0 ? (
-            <StatRow label="Cancellation fees" value={`− ${naira(earnings?.penalties ?? 0)}`} muted />
+            <StatRow
+              label="Cancellation fees"
+              value={`− ${naira(earnings?.penalties ?? 0)}`}
+              muted
+            />
           ) : null}
           {(earnings?.cancellationCompensation ?? 0) > 0 ? (
             <StatRow
@@ -114,7 +132,9 @@ export default function EarningsScreen() {
                 }}
                 className={`rounded-pill border px-4 py-2 ${active ? 'border-brand bg-brand' : 'border-hairline'}`}
               >
-                <Text className={`font-pmedium text-sm ${active ? 'text-bg' : 'text-muted'}`}>{naira(p)}</Text>
+                <Text className={`font-pmedium text-sm ${active ? 'text-bg' : 'text-muted'}`}>
+                  {naira(p)}
+                </Text>
               </Pressable>
             );
           })}
@@ -147,7 +167,9 @@ export default function EarningsScreen() {
         {/* Transactions */}
         <Text className="mb-2 mt-8 font-psemibold text-lg text-white">Recent activity</Text>
         {!txns || txns.length === 0 ? (
-          <Text className="font-sans text-sm text-subtle">No transactions yet — complete a trip to start earning.</Text>
+          <Text className="font-sans text-sm text-subtle">
+            No transactions yet — complete a trip to start earning.
+          </Text>
         ) : (
           <View className="overflow-hidden rounded-card bg-card">
             {txns.map((t, i) => (
@@ -174,9 +196,13 @@ function StatRow({
   last?: boolean;
 }) {
   return (
-    <View className={`flex-row items-center justify-between py-2.5 ${last ? '' : 'border-b border-hairline'}`}>
+    <View
+      className={`flex-row items-center justify-between py-2.5 ${last ? '' : 'border-b border-hairline'}`}
+    >
       <Text className="font-sans text-sm text-muted">{label}</Text>
-      <Text className={`font-psemibold text-sm ${good ? 'text-success' : muted ? 'text-subtle' : 'text-white'}`}>
+      <Text
+        className={`font-psemibold text-sm ${good ? 'text-success' : muted ? 'text-subtle' : 'text-white'}`}
+      >
         {value}
       </Text>
     </View>

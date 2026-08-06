@@ -25,8 +25,10 @@ function devApiBase(): string | null {
 const apiOverride = process.env.EXPO_PUBLIC_API_URL;
 const socketOverride = process.env.EXPO_PUBLIC_SOCKET_URL ?? process.env.EXPO_PUBLIC_API_URL;
 
-const base = apiOverride || (__DEV__ && devApiBase()) || extra.apiBaseUrl || 'http://localhost:5001';
-const socket = socketOverride || (__DEV__ && devApiBase()) || extra.socketUrl || 'http://localhost:5001';
+const base =
+  apiOverride || (__DEV__ && devApiBase()) || extra.apiBaseUrl || 'http://localhost:5001';
+const socket =
+  socketOverride || (__DEV__ && devApiBase()) || extra.socketUrl || 'http://localhost:5001';
 
 export const env = {
   apiBaseUrl: base,

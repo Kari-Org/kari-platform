@@ -27,15 +27,27 @@ export default function Account() {
     ]);
 
   const account: RowItem[] = [
-    { icon: 'person-outline', label: 'Personal Information', onPress: () => router.push('/personal-info') },
+    {
+      icon: 'person-outline',
+      label: 'Personal Information',
+      onPress: () => router.push('/personal-info'),
+    },
     { icon: 'wallet-outline', label: 'Wallet', onPress: () => router.push('/wallet') },
     { icon: 'gift-outline', label: 'Rewards & referrals', onPress: () => router.push('/rewards') },
   ];
   const preferences: RowItem[] = [
     { icon: 'musical-notes-outline', label: 'Music', onPress: () => router.push('/music') },
     { icon: 'car-outline', label: 'Driver Type', onPress: () => router.push('/driver-type') },
-    { icon: 'language-outline', label: 'Language Preference', onPress: () => router.push('/language') },
-    { icon: 'notifications-outline', label: 'Notifications', onPress: () => router.push('/notifications') },
+    {
+      icon: 'language-outline',
+      label: 'Language Preference',
+      onPress: () => router.push('/language'),
+    },
+    {
+      icon: 'notifications-outline',
+      label: 'Notifications',
+      onPress: () => router.push('/notifications'),
+    },
   ];
   const addresses: RowItem[] = [
     { icon: 'home-outline', label: 'Home address', onPress: () => router.push('/addresses') },
@@ -44,12 +56,20 @@ export default function Account() {
   ];
   const rides: RowItem[] = [
     { icon: 'receipt-outline', label: 'My rides', onPress: () => router.push('/ride-history') },
-    { icon: 'repeat-outline', label: 'Subscriptions', onPress: () => router.push('/subscriptions') },
+    {
+      icon: 'repeat-outline',
+      label: 'Subscriptions',
+      onPress: () => router.push('/subscriptions'),
+    },
     { icon: 'people-outline', label: 'Carpools', onPress: () => router.push('/carpools') },
     { icon: 'bus-outline', label: 'Shuttle', onPress: () => router.push('/shuttle') },
   ];
   const safety: RowItem[] = [
-    { icon: 'shield-checkmark-outline', label: 'Emergency Contacts', onPress: () => router.push('/safety') },
+    {
+      icon: 'shield-checkmark-outline',
+      label: 'Emergency Contacts',
+      onPress: () => router.push('/safety'),
+    },
     { icon: 'mic-outline', label: 'Audio Recordings', onPress: () => soon('Audio recordings') },
     { icon: 'warning-outline', label: 'Report Driver', onPress: () => soon('Reporting a driver') },
   ];

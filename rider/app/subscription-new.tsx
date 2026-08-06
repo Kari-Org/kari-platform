@@ -10,7 +10,11 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { errorMessage } from '@/lib/error';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 type Coords = { lat: number; lng: number };
 
@@ -145,8 +149,8 @@ export default function NewSubscription() {
             <>
               <Text className="mt-2 font-pbold text-2xl text-brand">{naira(fee)}</Text>
               <Text className="mt-1 font-sans text-xs text-subtle">
-                Solo fare on this route is {naira(soloFare ?? 0)} — your month covers unlimited trips
-                on it, both directions, and rides cost nothing at pickup.
+                Solo fare on this route is {naira(soloFare ?? 0)} — your month covers unlimited
+                trips on it, both directions, and rides cost nothing at pickup.
               </Text>
             </>
           ) : (

@@ -13,7 +13,11 @@ import { InputField } from '@/components/InputField';
 import { errorMessage } from '@/lib/error';
 import { colors } from '@/theme/tokens';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const PRESETS = [1000, 2000, 5000, 10000];
 
 const TXN_META: Record<string, { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
@@ -34,7 +38,10 @@ export default function WalletScreen() {
   const [custom, setCustom] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const { data: wallet, isLoading } = useQuery({ queryKey: ['wallet'], queryFn: walletApi.summary });
+  const { data: wallet, isLoading } = useQuery({
+    queryKey: ['wallet'],
+    queryFn: walletApi.summary,
+  });
   const { data: txns } = useQuery({ queryKey: ['wallet-txns'], queryFn: walletApi.transactions });
 
   const chosen = custom ? Number(custom) : amount;
@@ -59,7 +66,10 @@ export default function WalletScreen() {
         setCustom('');
         Alert.alert('Wallet funded', `${naira(chosen)} added to your wallet.`);
       } else {
-        Alert.alert('Payment pending', "We couldn't confirm your payment yet — it'll reflect shortly.");
+        Alert.alert(
+          'Payment pending',
+          "We couldn't confirm your payment yet — it'll reflect shortly.",
+        );
       }
     } catch (e) {
       Alert.alert('Top-up failed', errorMessage(e));
@@ -71,7 +81,10 @@ export default function WalletScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Wallet" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {/* Balance */}
         <View className="mt-4 rounded-card bg-brand p-6">
           <Text className="font-pmedium text-sm text-bg/70">Available balance</Text>
@@ -96,7 +109,9 @@ export default function WalletScreen() {
                 }}
                 className={`rounded-pill border px-4 py-2 ${active ? 'border-brand bg-brand' : 'border-hairline'}`}
               >
-                <Text className={`font-pmedium text-sm ${active ? 'text-bg' : 'text-muted'}`}>{naira(p)}</Text>
+                <Text className={`font-pmedium text-sm ${active ? 'text-bg' : 'text-muted'}`}>
+                  {naira(p)}
+                </Text>
               </Pressable>
             );
           })}
@@ -110,7 +125,12 @@ export default function WalletScreen() {
             placeholder="e.g. 3500"
           />
         </View>
-        <KariButton label={`Top up ${naira(chosen || 0)}`} onPress={topup} loading={busy} disabled={!chosen} />
+        <KariButton
+          label={`Top up ${naira(chosen || 0)}`}
+          onPress={topup}
+          loading={busy}
+          disabled={!chosen}
+        />
 
         {/* Transactions */}
         <Text className="mb-2 mt-8 font-psemibold text-lg text-white">Recent activity</Text>

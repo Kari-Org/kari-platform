@@ -21,13 +21,20 @@ export default function SafetyScreen() {
   const [adding, setAdding] = useState(false);
   const [sosing, setSosing] = useState(false);
 
-  const { data: contacts, isLoading } = useQuery({ queryKey: ['contacts'], queryFn: safetyApi.contacts });
+  const { data: contacts, isLoading } = useQuery({
+    queryKey: ['contacts'],
+    queryFn: safetyApi.contacts,
+  });
 
   const add = async () => {
     if (!name.trim() || phone.trim().length < 7) return;
     setAdding(true);
     try {
-      await safetyApi.addContact({ name: name.trim(), phone: phone.trim(), relationship: relationship.trim() || undefined });
+      await safetyApi.addContact({
+        name: name.trim(),
+        phone: phone.trim(),
+        relationship: relationship.trim() || undefined,
+      });
       await qc.invalidateQueries({ queryKey: ['contacts'] });
       setName('');
       setPhone('');
@@ -68,11 +75,17 @@ export default function SafetyScreen() {
         }
       }
       if (!loc) {
-        Alert.alert('Location needed', 'Enable location so we can send your position with the alert.');
+        Alert.alert(
+          'Location needed',
+          'Enable location so we can send your position with the alert.',
+        );
         return;
       }
       const ev = await safetyApi.panic(loc);
-      Alert.alert('SOS sent', `${ev.contactsAlerted} emergency contact${ev.contactsAlerted === 1 ? '' : 's'} and our safety team were alerted.`);
+      Alert.alert(
+        'SOS sent',
+        `${ev.contactsAlerted} emergency contact${ev.contactsAlerted === 1 ? '' : 's'} and our safety team were alerted.`,
+      );
     } catch (e) {
       Alert.alert('Could not send SOS', errorMessage(e));
     } finally {
@@ -81,15 +94,22 @@ export default function SafetyScreen() {
   };
 
   const confirmSos = () =>
-    Alert.alert('Send SOS?', 'This alerts your emergency contacts and our safety team with your location.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Send SOS', style: 'destructive', onPress: () => void sendSos() },
-    ]);
+    Alert.alert(
+      'Send SOS?',
+      'This alerts your emergency contacts and our safety team with your location.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Send SOS', style: 'destructive', onPress: () => void sendSos() },
+      ],
+    );
 
   return (
     <Screen className="px-5">
       <ScreenHeader title="Safety" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {/* SOS */}
         <Pressable
           onPress={confirmSos}
@@ -97,8 +117,12 @@ export default function SafetyScreen() {
           className="mt-4 items-center rounded-card border border-danger bg-danger/10 py-6"
         >
           <Ionicons name="alert-circle" size={40} color={colors.danger} />
-          <Text className="mt-2 font-pbold text-lg text-white">{sosing ? 'Sending…' : 'Send SOS'}</Text>
-          <Text className="mt-1 font-sans text-xs text-subtle">Alerts your contacts + safety team</Text>
+          <Text className="mt-2 font-pbold text-lg text-white">
+            {sosing ? 'Sending…' : 'Send SOS'}
+          </Text>
+          <Text className="mt-1 font-sans text-xs text-subtle">
+            Alerts your contacts + safety team
+          </Text>
         </Pressable>
 
         {/* Contacts */}
@@ -106,7 +130,9 @@ export default function SafetyScreen() {
         {isLoading ? (
           <ActivityIndicator color={colors.brand} className="self-start" />
         ) : !contacts || contacts.length === 0 ? (
-          <Text className="font-sans text-sm text-subtle">No contacts yet — add someone who should be alerted.</Text>
+          <Text className="font-sans text-sm text-subtle">
+            No contacts yet — add someone who should be alerted.
+          </Text>
         ) : (
           <View className="overflow-hidden rounded-card bg-card">
             {contacts.map((c, i) => (
@@ -146,7 +172,13 @@ export default function SafetyScreen() {
           onChangeText={setRelationship}
           placeholder="e.g. Sister"
         />
-        <KariButton label="Add contact" variant="outline" onPress={add} loading={adding} disabled={!name.trim() || phone.trim().length < 7} />
+        <KariButton
+          label="Add contact"
+          variant="outline"
+          onPress={add}
+          loading={adding}
+          disabled={!name.trim() || phone.trim().length < 7}
+        />
       </ScrollView>
     </Screen>
   );

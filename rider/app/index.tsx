@@ -24,14 +24,24 @@ export default function Splash() {
         Animated.delay(300),
         Animated.parallel([
           Animated.timing(pinOpacity, { toValue: 1, duration: 160, useNativeDriver: true }),
-          Animated.timing(pinY, { toValue: 0, duration: 1100, easing: Easing.bounce, useNativeDriver: true }),
+          Animated.timing(pinY, {
+            toValue: 0,
+            duration: 1100,
+            easing: Easing.bounce,
+            useNativeDriver: true,
+          }),
         ]),
       ]),
       Animated.sequence([
         Animated.delay(1300),
         Animated.parallel([
           Animated.timing(wordOpacity, { toValue: 1, duration: 420, useNativeDriver: true }),
-          Animated.timing(wordY, { toValue: 0, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+          Animated.timing(wordY, {
+            toValue: 0,
+            duration: 420,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
         ]),
       ]),
       Animated.sequence([
@@ -66,7 +76,9 @@ export default function Splash() {
           <Text style={styles.word}>Kari</Text>
           <Text style={styles.rider}> Rider</Text>
         </Animated.View>
-        <Animated.Text style={[styles.tag, { opacity: tagOpacity }]}>Get there with kari</Animated.Text>
+        <Animated.Text style={[styles.tag, { opacity: tagOpacity }]}>
+          Get there with kari
+        </Animated.Text>
       </View>
     </ImageBackground>
   );
@@ -77,7 +89,12 @@ const styles = StyleSheet.create({
   pin: { width: 96, height: 96, marginBottom: 12 },
   wordRow: { flexDirection: 'row', alignItems: 'flex-end' },
   word: { color: colors.text, fontFamily: 'ArchivoExpanded', fontSize: 28, lineHeight: 30 },
-  rider: { color: colors.text, fontFamily: 'HankenGrotesk_400Regular', fontSize: 12, marginBottom: 3 },
+  rider: {
+    color: colors.text,
+    fontFamily: 'HankenGrotesk_400Regular',
+    fontSize: 12,
+    marginBottom: 3,
+  },
   tag: {
     marginTop: 14,
     color: colors.text,

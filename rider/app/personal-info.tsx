@@ -56,7 +56,12 @@ export default function PersonalInfo() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ flexGrow: 1, paddingTop: 8, paddingBottom: 24 }}
       >
-        <InputField label="First name" value={first} onChangeText={setFirst} placeholder="First name" />
+        <InputField
+          label="First name"
+          value={first}
+          onChangeText={setFirst}
+          placeholder="First name"
+        />
         <InputField label="Last name" value={last} onChangeText={setLast} placeholder="Last name" />
 
         <ReadOnly icon="call-outline" label="Phone" value={user?.phone ?? '—'} onEdit={soon} />

@@ -1,7 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import { Checkbox, InputField, KariButton, PhoneInput, Screen, ScreenHeader } from '@kari/mobile-core';
+import {
+  Checkbox,
+  InputField,
+  KariButton,
+  PhoneInput,
+  Screen,
+  ScreenHeader,
+} from '@kari/mobile-core';
 import { BrandMark } from '@/components/BrandMark';
 import { useSignupDraft } from '@/stores/signup.store';
 
@@ -21,7 +28,10 @@ export default function SignUp() {
 
   return (
     <Screen className="px-5">
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1"
+      >
         <ScreenHeader />
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
           <View className="mt-2 items-center">
@@ -51,8 +61,9 @@ export default function SignUp() {
           <View className="mb-6 mt-1">
             <Checkbox checked={agree} onChange={setAgree}>
               <Text className="font-sans text-sm text-muted">
-                By signing up, you agree to Kari&apos;s <Text className="text-brand">Terms of Service</Text>{' '}
-                and <Text className="text-brand">Privacy Policy</Text>.
+                By signing up, you agree to Kari&apos;s{' '}
+                <Text className="text-brand">Terms of Service</Text> and{' '}
+                <Text className="text-brand">Privacy Policy</Text>.
               </Text>
             </Checkbox>
           </View>

@@ -1,7 +1,13 @@
 import { Image, Text, View } from 'react-native';
 
 /** The small Kari pin + wordmark shown at the top of auth/onboarding screens. */
-export function BrandMark({ size = 40, showWordmark = true }: { size?: number; showWordmark?: boolean }) {
+export function BrandMark({
+  size = 40,
+  showWordmark = true,
+}: {
+  size?: number;
+  showWordmark?: boolean;
+}) {
   return (
     <View className="items-center">
       <Image

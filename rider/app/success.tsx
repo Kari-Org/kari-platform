@@ -35,7 +35,9 @@ export default function Success() {
       ) : null}
       <View className="flex-1 items-center justify-center">
         <SuccessBadge />
-        <Text className="mt-8 text-center font-pmedium text-lg text-white">{title ?? 'Success'}</Text>
+        <Text className="mt-8 text-center font-pmedium text-lg text-white">
+          {title ?? 'Success'}
+        </Text>
         {subtitle ? (
           <Text className="mt-2 text-center font-sans text-sm text-muted">{subtitle}</Text>
         ) : null}

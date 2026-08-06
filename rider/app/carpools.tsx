@@ -11,8 +11,16 @@ import { errorMessage } from '@/lib/error';
 import { useLocationStore } from '@/stores/location.store';
 import { colors } from '@/theme/tokens';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-const LIVE: CarpoolStatus[] = [CarpoolStatus.OPEN, CarpoolStatus.MATCHED, CarpoolStatus.IN_PROGRESS];
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const LIVE: CarpoolStatus[] = [
+  CarpoolStatus.OPEN,
+  CarpoolStatus.MATCHED,
+  CarpoolStatus.IN_PROGRESS,
+];
 
 export default function CarpoolsScreen() {
   const router = useRouter();
@@ -46,7 +54,10 @@ export default function CarpoolsScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Carpools" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {!verified ? (
           <Pressable
             onPress={() => router.push('/verify-nin')}
@@ -73,7 +84,9 @@ export default function CarpoolsScreen() {
                   {active.dropoffAddress ?? 'Carpool'}
                 </Text>
                 <Text className="font-sans text-xs text-subtle">
-                  {active.status.replace('_', ' ')} · {active.seatsTaken}/{active.maxSeats} seats · your share {naira(
+                  {active.status.replace('_', ' ')} · {active.seatsTaken}/{active.maxSeats} seats ·
+                  your share{' '}
+                  {naira(
                     active.members.find((m) => m.riderId === profile?.userId)?.shareAmount ?? 0,
                   )}
                 </Text>
@@ -85,9 +98,13 @@ export default function CarpoolsScreen() {
 
         <Text className="mb-2 mt-6 font-psemibold text-base text-white">Carpools near you</Text>
         {!current ? (
-          <Text className="font-sans text-sm text-subtle">Set your location on Home to find nearby carpools.</Text>
+          <Text className="font-sans text-sm text-subtle">
+            Set your location on Home to find nearby carpools.
+          </Text>
         ) : !verified ? (
-          <Text className="font-sans text-sm text-subtle">Verify your NIN to see joinable carpools.</Text>
+          <Text className="font-sans text-sm text-subtle">
+            Verify your NIN to see joinable carpools.
+          </Text>
         ) : !nearby || nearby.length === 0 ? (
           <Text className="font-sans text-sm text-subtle">No open carpools nearby right now.</Text>
         ) : (
@@ -97,7 +114,8 @@ export default function CarpoolsScreen() {
                 → {c.dropoffAddress ?? 'Destination'}
               </Text>
               <Text className="mt-0.5 font-sans text-xs text-subtle">
-                {c.seatsAvailable} seat{c.seatsAvailable === 1 ? '' : 's'} left · you&apos;d pay {naira(c.projectedShare ?? c.totalFare)}
+                {c.seatsAvailable} seat{c.seatsAvailable === 1 ? '' : 's'} left · you&apos;d pay{' '}
+                {naira(c.projectedShare ?? c.totalFare)}
               </Text>
               <View className="mt-3 self-start">
                 <Pressable
@@ -105,7 +123,9 @@ export default function CarpoolsScreen() {
                   disabled={busy === c.id}
                   className="rounded-pill bg-brand px-5 py-2"
                 >
-                  <Text className="font-psemibold text-sm text-bg">{busy === c.id ? 'Joining…' : 'Join'}</Text>
+                  <Text className="font-psemibold text-sm text-bg">
+                    {busy === c.id ? 'Joining…' : 'Join'}
+                  </Text>
                 </Pressable>
               </View>
             </View>

@@ -216,10 +216,7 @@ export default function RidesBooking() {
   const showSaved = !suggestions.length && addresses && addresses.length > 0;
 
   return (
-    <View
-      className="flex-1 bg-bg"
-      onLayout={(e) => setContentH(e.nativeEvent.layout.height)}
-    >
+    <View className="flex-1 bg-bg" onLayout={(e) => setContentH(e.nativeEvent.layout.height)}>
       <RideMap
         pickup={pickupCoords ?? (current ? { lat: current.lat, lng: current.lng } : null)}
         bottomInset={Math.round(H * 0.34)}
@@ -244,113 +241,127 @@ export default function RidesBooking() {
       </SafeAreaView>
 
       {contentH > 0 ? (
-      <Animated.View
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: sheetH,
-          transform: [{ translateY: ty }],
-          backgroundColor: colors.card,
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-        }}
-      >
-        {/* Draggable handle + header */}
-        <View {...pan.panHandlers} className="px-5 pb-1 pt-3">
-          <View className="h-1 w-10 self-center rounded-full bg-hairline" />
-          <View className="mt-3 flex-row items-center justify-between">
-            <Text className="font-sans text-[11px] text-muted">Current Location (Pick Up)</Text>
-            <Pressable onPress={() => focusField('pickup')} hitSlop={8}>
-              <Text className="font-sans text-[11px] text-brand">Change</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <ScrollView
-          className="flex-1"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        <Animated.View
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: sheetH,
+            transform: [{ translateY: ty }],
+            backgroundColor: colors.card,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
+          }}
         >
-          {/* Pickup — editable, pre-filled */}
-          <View
-            className={`flex-row items-center rounded-input bg-surface px-4 ${
-              active === 'pickup' ? 'border border-brand' : ''
-            }`}
-          >
-            <View className="h-2.5 w-2.5 rounded-full bg-brand" />
-            <TextInput
-              value={pickupText}
-              onChangeText={setPickupText}
-              onFocus={() => focusField('pickup')}
-              placeholder="Pickup location"
-              placeholderTextColor={colors.subtle}
-              style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 14, color: '#fff', fontSize: 14 }}
-            />
-          </View>
-
-          {/* Dropoff — tapping snaps the sheet to the middle */}
-          <View
-            className={`mt-3 flex-row items-center rounded-input bg-surface px-4 ${
-              active === 'drop' ? 'border border-brand' : ''
-            }`}
-          >
-            <Ionicons name="location" size={16} color={colors.danger} />
-            <TextInput
-              value={dropText}
-              onChangeText={setDropText}
-              onFocus={() => focusField('drop')}
-              placeholder="Where do you want to go?"
-              placeholderTextColor={colors.subtle}
-              style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 14, color: '#fff', fontSize: 14 }}
-            />
-            {sugLoading ? <ActivityIndicator color={colors.subtle} /> : null}
-          </View>
-
-          {/* Suggestions */}
-          {suggestions.map((s) => (
-            <Pressable
-              key={s.placeId}
-              onPress={() => choose(s)}
-              className="flex-row items-center border-b border-hairline py-3.5"
-            >
-              <Ionicons name="location-outline" size={16} color={colors.brand} />
-              <Text numberOfLines={2} className="ml-3 flex-1 font-sans text-sm text-white">
-                {s.description}
-              </Text>
-            </Pressable>
-          ))}
-
-          {/* Saved places */}
-          {showSaved ? (
-            <View className="mt-3">
-              <Text className="mb-1 font-pmedium text-xs text-subtle">Saved places</Text>
-              {addresses.slice(0, 5).map((a: SavedAddress) => (
-                <Pressable
-                  key={a.id}
-                  onPress={() => {
-                    setDropText(a.address);
-                    setActive(null);
-                    proceed({ lat: a.lat, lng: a.lng, address: a.address });
-                  }}
-                  className="flex-row items-center border-b border-hairline py-3.5"
-                >
-                  <Ionicons
-                    name={a.label === 'HOME' ? 'home' : a.label === 'WORK' ? 'briefcase' : 'location'}
-                    size={18}
-                    color={colors.subtle}
-                  />
-                  <Text numberOfLines={1} className="ml-3 flex-1 font-sans text-sm text-white">
-                    {a.address}
-                  </Text>
-                </Pressable>
-              ))}
+          {/* Draggable handle + header */}
+          <View {...pan.panHandlers} className="px-5 pb-1 pt-3">
+            <View className="h-1 w-10 self-center rounded-full bg-hairline" />
+            <View className="mt-3 flex-row items-center justify-between">
+              <Text className="font-sans text-[11px] text-muted">Current Location (Pick Up)</Text>
+              <Pressable onPress={() => focusField('pickup')} hitSlop={8}>
+                <Text className="font-sans text-[11px] text-brand">Change</Text>
+              </Pressable>
             </View>
-          ) : null}
-        </ScrollView>
-      </Animated.View>
+          </View>
+
+          <ScrollView
+            className="flex-1"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+          >
+            {/* Pickup — editable, pre-filled */}
+            <View
+              className={`flex-row items-center rounded-input bg-surface px-4 ${
+                active === 'pickup' ? 'border border-brand' : ''
+              }`}
+            >
+              <View className="h-2.5 w-2.5 rounded-full bg-brand" />
+              <TextInput
+                value={pickupText}
+                onChangeText={setPickupText}
+                onFocus={() => focusField('pickup')}
+                placeholder="Pickup location"
+                placeholderTextColor={colors.subtle}
+                style={{
+                  flex: 1,
+                  paddingHorizontal: 12,
+                  paddingVertical: 14,
+                  color: '#fff',
+                  fontSize: 14,
+                }}
+              />
+            </View>
+
+            {/* Dropoff — tapping snaps the sheet to the middle */}
+            <View
+              className={`mt-3 flex-row items-center rounded-input bg-surface px-4 ${
+                active === 'drop' ? 'border border-brand' : ''
+              }`}
+            >
+              <Ionicons name="location" size={16} color={colors.danger} />
+              <TextInput
+                value={dropText}
+                onChangeText={setDropText}
+                onFocus={() => focusField('drop')}
+                placeholder="Where do you want to go?"
+                placeholderTextColor={colors.subtle}
+                style={{
+                  flex: 1,
+                  paddingHorizontal: 12,
+                  paddingVertical: 14,
+                  color: '#fff',
+                  fontSize: 14,
+                }}
+              />
+              {sugLoading ? <ActivityIndicator color={colors.subtle} /> : null}
+            </View>
+
+            {/* Suggestions */}
+            {suggestions.map((s) => (
+              <Pressable
+                key={s.placeId}
+                onPress={() => choose(s)}
+                className="flex-row items-center border-b border-hairline py-3.5"
+              >
+                <Ionicons name="location-outline" size={16} color={colors.brand} />
+                <Text numberOfLines={2} className="ml-3 flex-1 font-sans text-sm text-white">
+                  {s.description}
+                </Text>
+              </Pressable>
+            ))}
+
+            {/* Saved places */}
+            {showSaved ? (
+              <View className="mt-3">
+                <Text className="mb-1 font-pmedium text-xs text-subtle">Saved places</Text>
+                {addresses.slice(0, 5).map((a: SavedAddress) => (
+                  <Pressable
+                    key={a.id}
+                    onPress={() => {
+                      setDropText(a.address);
+                      setActive(null);
+                      proceed({ lat: a.lat, lng: a.lng, address: a.address });
+                    }}
+                    className="flex-row items-center border-b border-hairline py-3.5"
+                  >
+                    <Ionicons
+                      name={
+                        a.label === 'HOME' ? 'home' : a.label === 'WORK' ? 'briefcase' : 'location'
+                      }
+                      size={18}
+                      color={colors.subtle}
+                    />
+                    <Text numberOfLines={1} className="ml-3 flex-1 font-sans text-sm text-white">
+                      {a.address}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+          </ScrollView>
+        </Animated.View>
       ) : null}
     </View>
   );

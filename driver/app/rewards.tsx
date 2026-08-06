@@ -7,10 +7,17 @@ import { InputField, KariButton, Screen, ScreenHeader, colors } from '@kari/mobi
 import { driversApi, gamificationApi, referralsApi } from '@/api/endpoints';
 import { errorMessage } from '@/lib/error';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const MEDAL = ['🥇', '🥈', '🥉'];
 
-const BADGE_META: Record<AchievementBadge, { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
+const BADGE_META: Record<
+  AchievementBadge,
+  { label: string; icon: keyof typeof Ionicons.glyphMap }
+> = {
   [AchievementBadge.FIRST_RIDE]: { label: 'First trip', icon: 'flag' },
   [AchievementBadge.TEN_RIDES]: { label: '10 trips', icon: 'ribbon' },
   [AchievementBadge.FIFTY_RIDES]: { label: '50 trips', icon: 'medal' },
@@ -24,9 +31,18 @@ export default function RewardsScreen() {
   const [busy, setBusy] = useState(false);
 
   const { data: me } = useQuery({ queryKey: ['driver-me'], queryFn: driversApi.me });
-  const { data: summary, isLoading } = useQuery({ queryKey: ['gamification-me'], queryFn: gamificationApi.me });
-  const { data: achievements } = useQuery({ queryKey: ['achievements'], queryFn: gamificationApi.achievements });
-  const { data: board } = useQuery({ queryKey: ['leaderboard'], queryFn: gamificationApi.leaderboard });
+  const { data: summary, isLoading } = useQuery({
+    queryKey: ['gamification-me'],
+    queryFn: gamificationApi.me,
+  });
+  const { data: achievements } = useQuery({
+    queryKey: ['achievements'],
+    queryFn: gamificationApi.achievements,
+  });
+  const { data: board } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: gamificationApi.leaderboard,
+  });
   const { data: ref } = useQuery({ queryKey: ['referral'], queryFn: referralsApi.me });
 
   const reductionPct = (summary?.commissionReductionBps ?? 0) / 100;
@@ -57,10 +73,15 @@ export default function RewardsScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Rewards" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {/* Weekly standing */}
         <View className="mt-4 rounded-card bg-brand p-5">
-          <Text className="font-pmedium text-sm text-bg/70">This week ({summary?.weekKey ?? '—'})</Text>
+          <Text className="font-pmedium text-sm text-bg/70">
+            This week ({summary?.weekKey ?? '—'})
+          </Text>
           {isLoading ? (
             <ActivityIndicator color={colors.bg} className="mt-3 self-start" />
           ) : (
@@ -76,7 +97,8 @@ export default function RewardsScreen() {
               {reductionPct > 0 ? (
                 <View className="mt-3 self-start rounded-pill bg-bg/15 px-3 py-1">
                   <Text className="font-psemibold text-xs text-bg">
-                    🔥 −{reductionPct % 1 === 0 ? reductionPct : reductionPct.toFixed(1)}% commission this week
+                    🔥 −{reductionPct % 1 === 0 ? reductionPct : reductionPct.toFixed(1)}%
+                    commission this week
                   </Text>
                 </View>
               ) : (
@@ -98,7 +120,9 @@ export default function RewardsScreen() {
             <Text className="font-pbold text-2xl text-white">
               ★ {(me?.ratingAvg ?? 0).toFixed(1)}
             </Text>
-            <Text className="mt-0.5 font-sans text-xs text-subtle">{me?.ratingCount ?? 0} ratings</Text>
+            <Text className="mt-0.5 font-sans text-xs text-subtle">
+              {me?.ratingCount ?? 0} ratings
+            </Text>
           </View>
         </View>
 
@@ -112,7 +136,11 @@ export default function RewardsScreen() {
                 key={a.badge}
                 className={`w-[30%] items-center rounded-card p-3 ${a.unlocked ? 'bg-card' : 'bg-card/40'}`}
               >
-                <Ionicons name={meta.icon} size={26} color={a.unlocked ? colors.brand : colors.subtle} />
+                <Ionicons
+                  name={meta.icon}
+                  size={26}
+                  color={a.unlocked ? colors.brand : colors.subtle}
+                />
                 <Text
                   className={`mt-2 text-center font-pmedium text-xs ${a.unlocked ? 'text-white' : 'text-subtle'}`}
                 >
@@ -126,7 +154,9 @@ export default function RewardsScreen() {
         {/* Leaderboard */}
         <Text className="mb-2 mt-8 font-psemibold text-lg text-white">Top drivers this week</Text>
         {!board || board.entries.length === 0 ? (
-          <Text className="font-sans text-sm text-subtle">No rankings yet this week — complete a trip to get on the board.</Text>
+          <Text className="font-sans text-sm text-subtle">
+            No rankings yet this week — complete a trip to get on the board.
+          </Text>
         ) : (
           <View className="overflow-hidden rounded-card bg-card">
             {board.entries.slice(0, 10).map((e, i, arr) => {
@@ -136,7 +166,9 @@ export default function RewardsScreen() {
                   key={e.driverId}
                   className={`flex-row items-center px-4 py-3 ${i === arr.length - 1 ? '' : 'border-b border-hairline'} ${isMe ? 'bg-brand/10' : ''}`}
                 >
-                  <Text className="w-8 font-pbold text-base text-brand">{MEDAL[e.rank - 1] ?? e.rank}</Text>
+                  <Text className="w-8 font-pbold text-base text-brand">
+                    {MEDAL[e.rank - 1] ?? e.rank}
+                  </Text>
                   <Text className="ml-2 flex-1 font-pmedium text-sm text-white" numberOfLines={1}>
                     {isMe ? 'You' : e.name}
                   </Text>
@@ -152,7 +184,9 @@ export default function RewardsScreen() {
         <View className="rounded-card bg-card p-5">
           <View className="items-center rounded-card border border-dashed border-brand bg-brand/10 py-4">
             <Text className="font-sans text-xs text-muted">YOUR CODE</Text>
-            <Text className="mt-1 font-mono text-2xl tracking-[4px] text-brand">{ref?.code ?? '—'}</Text>
+            <Text className="mt-1 font-mono text-2xl tracking-[4px] text-brand">
+              {ref?.code ?? '—'}
+            </Text>
           </View>
           <View className="mt-3 flex-row">
             <View className="flex-1 items-center">

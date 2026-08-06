@@ -2,7 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Share, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Pressable,
+  ScrollView,
+  Share,
+  Text,
+  View,
+} from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { OtpInput } from 'react-native-otp-entry';
 import { RideStatus } from '@kari/types';
@@ -17,7 +26,12 @@ import { useRideStore } from '@/stores/ride.store';
 
 const TERMINAL: RideStatus[] = [RideStatus.COMPLETED, RideStatus.CANCELLED];
 const naira = (n: number | null | undefined) =>
-  n == null ? '—' : '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  n == null
+    ? '—'
+    : '₦' +
+      Math.round(n)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -42,7 +56,9 @@ function SafetyButton({
   return (
     <Pressable onPress={onPress} className="flex-1 items-center rounded-card bg-card py-3">
       <Ionicons name={icon} size={20} color={danger ? colors.danger : colors.brand} />
-      <Text className={`mt-1 font-pmedium text-xs ${danger ? 'text-danger' : 'text-white'}`}>{label}</Text>
+      <Text className={`mt-1 font-pmedium text-xs ${danger ? 'text-danger' : 'text-white'}`}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -58,11 +74,29 @@ function RideMap({ ride, here }: { ride: Ride; here: { lat: number; lng: number 
     <MapView
       style={{ height: 220, borderRadius: 16 }}
       pointerEvents="none"
-      region={{ latitude: midLat, longitude: midLng, latitudeDelta: latDelta, longitudeDelta: lngDelta }}
+      region={{
+        latitude: midLat,
+        longitude: midLng,
+        latitudeDelta: latDelta,
+        longitudeDelta: lngDelta,
+      }}
     >
-      <Marker coordinate={{ latitude: ride.pickupLat, longitude: ride.pickupLng }} title="Pickup" pinColor={colors.brand} />
-      <Marker coordinate={{ latitude: ride.dropoffLat, longitude: ride.dropoffLng }} title="Destination" />
-      {here && <Marker coordinate={{ latitude: here.lat, longitude: here.lng }} title="You" pinColor="#4F9DFF" />}
+      <Marker
+        coordinate={{ latitude: ride.pickupLat, longitude: ride.pickupLng }}
+        title="Pickup"
+        pinColor={colors.brand}
+      />
+      <Marker
+        coordinate={{ latitude: ride.dropoffLat, longitude: ride.dropoffLng }}
+        title="Destination"
+      />
+      {here && (
+        <Marker
+          coordinate={{ latitude: here.lat, longitude: here.lng }}
+          title="You"
+          pinColor="#4F9DFF"
+        />
+      )}
     </MapView>
   );
 }
@@ -245,7 +279,8 @@ export default function DriverRideScreen() {
             <View className="mt-4 rounded-card bg-card p-4">
               <Text className="font-pbold text-lg text-white">On the way to pick up</Text>
               <Text className="mt-1 font-sans text-sm text-muted">
-                Picking up {ride.rider?.name ?? 'your rider'} at {ride.pickupAddress ?? 'the pickup point'}.
+                Picking up {ride.rider?.name ?? 'your rider'} at{' '}
+                {ride.pickupAddress ?? 'the pickup point'}.
               </Text>
             </View>
             <RouteCard />
@@ -256,7 +291,11 @@ export default function DriverRideScreen() {
                 onPress={() => navigateTo(ride.pickupLat, ride.pickupLng)}
               />
               <View className="mt-2">
-                <KariButton label="I’ve arrived" onPress={() => act(() => ridesApi.arrived(rideId), 'Could not update')} loading={busy} />
+                <KariButton
+                  label="I’ve arrived"
+                  onPress={() => act(() => ridesApi.arrived(rideId), 'Could not update')}
+                  loading={busy}
+                />
               </View>
             </View>
           </View>
@@ -276,7 +315,10 @@ export default function DriverRideScreen() {
                 onTextChange={setPin}
                 onFilled={setPin}
                 theme={{
-                  pinCodeContainerStyle: { backgroundColor: colors.surface, borderColor: colors.hairline },
+                  pinCodeContainerStyle: {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.hairline,
+                  },
                   pinCodeTextStyle: { color: '#ffffff' },
                 }}
               />
@@ -311,7 +353,11 @@ export default function DriverRideScreen() {
                 onPress={() => navigateTo(ride.dropoffLat, ride.dropoffLng)}
               />
               <View className="mt-2">
-                <KariButton label="Complete trip" onPress={() => act(() => ridesApi.complete(rideId), 'Could not complete')} loading={busy} />
+                <KariButton
+                  label="Complete trip"
+                  onPress={() => act(() => ridesApi.complete(rideId), 'Could not complete')}
+                  loading={busy}
+                />
               </View>
             </View>
           </View>
@@ -371,7 +417,10 @@ export default function DriverRideScreen() {
 
   return (
     <Screen className="px-5">
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+      >
         <Text className="mt-2 font-pmedium text-sm text-subtle" style={{ marginTop: 8 }}>
           TRIP · {ride.status.replace(/_/g, ' ')}
         </Text>
@@ -386,7 +435,12 @@ export default function DriverRideScreen() {
         )}
         {showCancel && (
           <View className="pt-4">
-            <KariButton label="Cancel trip" variant="outline" onPress={confirmCancel} loading={busy} />
+            <KariButton
+              label="Cancel trip"
+              variant="outline"
+              onPress={confirmCancel}
+              loading={busy}
+            />
           </View>
         )}
       </ScrollView>

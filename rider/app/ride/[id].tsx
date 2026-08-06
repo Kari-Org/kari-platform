@@ -32,7 +32,12 @@ const CAR = require('../../assets/ride/car.png');
 const { height: SCREEN_H } = Dimensions.get('window');
 const TERMINAL: RideStatus[] = [RideStatus.COMPLETED, RideStatus.CANCELLED];
 const naira = (n: number | null | undefined) =>
-  n == null ? '—' : '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  n == null
+    ? '—'
+    : '₦' +
+      Math.round(n)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const etaMin = (m: number) => Math.max(1, Math.round(m / 400)); // ~urban 24km/h estimate
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -163,10 +168,14 @@ export default function RideScreen() {
     } catch (e) {
       const msg = errorMessage(e);
       if (/insufficient/i.test(msg)) {
-        Alert.alert('Wallet balance too low', 'Top up to tip from your wallet, or switch the tip to cash.', [
-          { text: 'Top up', onPress: () => router.push('/wallet') },
-          { text: 'OK', style: 'cancel' },
-        ]);
+        Alert.alert(
+          'Wallet balance too low',
+          'Top up to tip from your wallet, or switch the tip to cash.',
+          [
+            { text: 'Top up', onPress: () => router.push('/wallet') },
+            { text: 'OK', style: 'cancel' },
+          ],
+        );
       } else {
         Alert.alert('Could not submit', msg);
       }
@@ -216,7 +225,10 @@ export default function RideScreen() {
               const lat = current?.lat ?? ride?.pickupLat ?? 0;
               const lng = current?.lng ?? ride?.pickupLng ?? 0;
               await safetyApi.panic({ rideId, lat, lng });
-              Alert.alert('SOS sent', 'Your emergency contacts and our safety team have been alerted.');
+              Alert.alert(
+                'SOS sent',
+                'Your emergency contacts and our safety team have been alerted.',
+              );
             } catch (e) {
               Alert.alert('Could not send SOS', errorMessage(e));
             }
@@ -239,7 +251,9 @@ export default function RideScreen() {
     const walletTip = tipMethod === PaymentMethod.WALLET ? effectiveTip : 0;
     const total = fare + walletTip;
     const lowBalance =
-      tipMethod === PaymentMethod.WALLET && effectiveTip > 0 && (wallet?.balance ?? 0) < effectiveTip;
+      tipMethod === PaymentMethod.WALLET &&
+      effectiveTip > 0 &&
+      (wallet?.balance ?? 0) < effectiveTip;
 
     if (done) {
       return (
@@ -258,7 +272,10 @@ export default function RideScreen() {
             <View className="rounded-card bg-card px-4 py-4">
               <ReceiptRow label="From" value={ride.pickupAddress ?? 'Pickup'} />
               <ReceiptRow label="To" value={ride.dropoffAddress ?? 'Destination'} />
-              <ReceiptRow label="Distance" value={`${(ride.distanceMeters / 1000).toFixed(1)} km`} />
+              <ReceiptRow
+                label="Distance"
+                value={`${(ride.distanceMeters / 1000).toFixed(1)} km`}
+              />
               <ReceiptRow label="Trip time" value={`${etaMin(ride.distanceMeters)} min`} />
               <ReceiptRow label="Fare" value={naira(fare)} />
               {effectiveTip > 0 ? (
@@ -332,7 +349,9 @@ export default function RideScreen() {
               onPress={() => setTipSel('custom')}
               className={`rounded-pill border px-5 py-2.5 ${tipSel === 'custom' ? 'border-brand bg-brand' : 'border-hairline bg-card'}`}
             >
-              <Text className={`font-pmedium text-sm ${tipSel === 'custom' ? 'text-bg' : 'text-white'}`}>
+              <Text
+                className={`font-pmedium text-sm ${tipSel === 'custom' ? 'text-bg' : 'text-white'}`}
+              >
                 Custom
               </Text>
             </Pressable>
@@ -343,7 +362,9 @@ export default function RideScreen() {
               }}
               className={`rounded-pill border px-5 py-2.5 ${tipSel === null ? 'border-brand bg-brand' : 'border-hairline bg-card'}`}
             >
-              <Text className={`font-pmedium text-sm ${tipSel === null ? 'text-bg' : 'text-white'}`}>
+              <Text
+                className={`font-pmedium text-sm ${tipSel === null ? 'text-bg' : 'text-white'}`}
+              >
                 No tip
               </Text>
             </Pressable>
@@ -387,7 +408,8 @@ export default function RideScreen() {
               {tipMethod === PaymentMethod.WALLET ? (
                 <View className="mt-2 flex-row items-center justify-between">
                   <Text className="font-sans text-xs text-subtle">
-                    Wallet balance: <Text className="text-white">{naira(wallet?.balance ?? 0)}</Text>
+                    Wallet balance:{' '}
+                    <Text className="text-white">{naira(wallet?.balance ?? 0)}</Text>
                   </Text>
                   {lowBalance ? (
                     <Pressable onPress={() => router.push('/wallet')} hitSlop={8}>
@@ -426,8 +448,7 @@ export default function RideScreen() {
   }
 
   // ── Live states: persistent map + bottom sheet ──
-  const matched =
-    ride.status === RideStatus.ACCEPTED || ride.status === RideStatus.DRIVER_ARRIVED;
+  const matched = ride.status === RideStatus.ACCEPTED || ride.status === RideStatus.DRIVER_ARRIVED;
 
   return (
     <View className="flex-1 bg-bg">
@@ -492,7 +513,12 @@ export default function RideScreen() {
               </View>
             )}
             <View className="mt-4">
-              <KariButton label="Cancel ride" variant="outline" onPress={confirmCancel} loading={busy} />
+              <KariButton
+                label="Cancel ride"
+                variant="outline"
+                onPress={confirmCancel}
+                loading={busy}
+              />
             </View>
           </View>
         )}
@@ -510,8 +536,10 @@ export default function RideScreen() {
                 </Text>
                 {ride.driver?.vehicle ? (
                   <Text numberOfLines={1} className="font-sans text-xs text-subtle">
-                    {[ride.driver.vehicle.color, ride.driver.vehicle.model].filter(Boolean).join(' ')} ·{' '}
-                    {ride.driver.vehicle.plateNumber}
+                    {[ride.driver.vehicle.color, ride.driver.vehicle.model]
+                      .filter(Boolean)
+                      .join(' ')}{' '}
+                    · {ride.driver.vehicle.plateNumber}
                   </Text>
                 ) : null}
                 {ride.driver && ride.driver.ratingCount > 0 ? (
@@ -525,7 +553,11 @@ export default function RideScreen() {
               </Text>
             </View>
 
-            <Image source={CAR} resizeMode="contain" style={{ width: '100%', height: 110, marginTop: 8 }} />
+            <Image
+              source={CAR}
+              resizeMode="contain"
+              style={{ width: '100%', height: 110, marginTop: 8 }}
+            />
 
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
@@ -608,7 +640,9 @@ export default function RideScreen() {
 
             <View className="mt-4 flex-row items-center rounded-card bg-surface p-4">
               <Ionicons name="shield-checkmark-outline" size={18} color={colors.brand} />
-              <Text className="ml-2 flex-1 font-sans text-sm text-white">Are you feeling unsafe?</Text>
+              <Text className="ml-2 flex-1 font-sans text-sm text-white">
+                Are you feeling unsafe?
+              </Text>
               <Pressable
                 onPress={() => setSafety((s) => !s)}
                 className="rounded-pill border border-brand px-4 py-1.5"
