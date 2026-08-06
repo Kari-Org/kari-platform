@@ -26,7 +26,10 @@ export default function Account() {
 
   return (
     <Screen className="px-5">
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <Text className="mb-5 mt-2 font-pbold text-2xl text-white">Account</Text>
 
         <View className="items-center rounded-card bg-card p-6">
@@ -35,8 +38,12 @@ export default function Account() {
           </View>
           <Text className="mt-3 font-pbold text-xl text-white">{name}</Text>
           <View className="mt-1 flex-row items-center">
-            <Text className="font-pmedium text-sm text-brand">★ {(p?.ratingAvg ?? 0).toFixed(1)}</Text>
-            <Text className="ml-1 font-sans text-sm text-subtle">· {p?.ratingCount ?? 0} trips</Text>
+            <Text className="font-pmedium text-sm text-brand">
+              ★ {(p?.ratingAvg ?? 0).toFixed(1)}
+            </Text>
+            <Text className="ml-1 font-sans text-sm text-subtle">
+              · {p?.ratingCount ?? 0} trips
+            </Text>
           </View>
           <View className="mt-3 flex-row items-center rounded-pill bg-surface px-3 py-1.5">
             <View className="mr-2 h-2 w-2 rounded-full" style={{ backgroundColor: avail.color }} />
@@ -45,17 +52,38 @@ export default function Account() {
         </View>
 
         <View className="mt-4 overflow-hidden rounded-card bg-card px-4">
-          <NavRow icon="cash-outline" label="Earnings & payouts" onPress={() => router.push('/earnings')} />
-          <NavRow icon="trophy-outline" label="Rewards & referrals" onPress={() => router.push('/rewards')} />
+          <NavRow
+            icon="cash-outline"
+            label="Earnings & payouts"
+            onPress={() => router.push('/earnings')}
+          />
+          <NavRow
+            icon="trophy-outline"
+            label="Rewards & referrals"
+            onPress={() => router.push('/rewards')}
+          />
           <NavRow icon="people-outline" label="Carpool" onPress={() => router.push('/carpool')} />
-          <NavRow icon="bus-outline" label="Shuttle schedule" onPress={() => router.push('/shuttle')} />
-          <NavRow icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
+          <NavRow
+            icon="bus-outline"
+            label="Shuttle schedule"
+            onPress={() => router.push('/shuttle')}
+          />
+          <NavRow
+            icon="notifications-outline"
+            label="Notifications"
+            onPress={() => router.push('/notifications')}
+          />
           <NavRow
             icon="shield-checkmark-outline"
             label="Emergency contacts"
             onPress={() => router.push('/safety')}
           />
-          <NavRow icon="help-buoy-outline" label="Help & support" onPress={() => router.push('/support')} last />
+          <NavRow
+            icon="help-buoy-outline"
+            label="Help & support"
+            onPress={() => router.push('/support')}
+            last
+          />
         </View>
 
         <Card title="Contact">
@@ -68,7 +96,9 @@ export default function Account() {
             <InfoRow
               icon="car"
               label="Car"
-              value={[p.vehicle.color, p.vehicle.brand, p.vehicle.model].filter(Boolean).join(' ') || '—'}
+              value={
+                [p.vehicle.color, p.vehicle.brand, p.vehicle.model].filter(Boolean).join(' ') || '—'
+              }
             />
             <InfoRow icon="pricetag" label="Plate" value={p.vehicle.plateNumber} />
             <InfoRow icon="grid" label="Class" value={p.vehicle.category} last />
@@ -100,13 +130,20 @@ export default function Account() {
         <Card title="Payout">
           <InfoRow icon="business" label="Bank" value={p?.bankName ?? '—'} />
           <InfoRow icon="wallet" label="Account" value={acct} />
-          <InfoRow icon="person-circle" label="Account name" value={p?.bankAccountName ?? '—'} last />
+          <InfoRow
+            icon="person-circle"
+            label="Account name"
+            value={p?.bankAccountName ?? '—'}
+            last
+          />
         </Card>
 
         <View className="mt-6">
           <KariButton label="Log out" variant="outline" onPress={() => void logout()} />
         </View>
-        <Text className="mt-4 text-center font-sans text-xs text-subtle">Kari Driver · v1.0.0 (dev)</Text>
+        <Text className="mt-4 text-center font-sans text-xs text-subtle">
+          Kari Driver · v1.0.0 (dev)
+        </Text>
       </ScrollView>
     </Screen>
   );
@@ -165,7 +202,12 @@ function InfoRow({
         {value}
       </Text>
       {ok ? (
-        <Ionicons name="checkmark-circle" size={16} color={colors.success} style={{ marginLeft: 6 }} />
+        <Ionicons
+          name="checkmark-circle"
+          size={16}
+          color={colors.success}
+          style={{ marginLeft: 6 }}
+        />
       ) : null}
     </View>
   );

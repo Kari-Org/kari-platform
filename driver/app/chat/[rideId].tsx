@@ -86,7 +86,9 @@ export default function ChatScreen() {
                     mine ? 'self-end bg-brand' : 'self-start bg-card'
                   }`}
                 >
-                  <Text className={`font-sans text-sm ${mine ? 'text-bg' : 'text-white'}`}>{m.body}</Text>
+                  <Text className={`font-sans text-sm ${mine ? 'text-bg' : 'text-white'}`}>
+                    {m.body}
+                  </Text>
                 </View>
               );
             })

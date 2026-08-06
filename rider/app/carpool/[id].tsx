@@ -12,7 +12,12 @@ import { errorMessage } from '@/lib/error';
 import { colors } from '@/theme/tokens';
 
 const naira = (n: number | null | undefined) =>
-  n == null ? '—' : '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  n == null
+    ? '—'
+    : '₦' +
+      Math.round(n)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const TERMINAL: CarpoolStatus[] = [CarpoolStatus.COMPLETED, CarpoolStatus.CANCELLED];
 
 export default function CarpoolScreen() {
@@ -58,12 +63,28 @@ export default function CarpoolScreen() {
   const leave = () =>
     Alert.alert('Leave carpool?', 'You can rejoin while there are open seats.', [
       { text: 'Stay', style: 'cancel' },
-      { text: 'Leave', style: 'destructive', onPress: () => void run(() => carpoolsApi.leave(carpoolId), () => router.back()) },
+      {
+        text: 'Leave',
+        style: 'destructive',
+        onPress: () =>
+          void run(
+            () => carpoolsApi.leave(carpoolId),
+            () => router.back(),
+          ),
+      },
     ]);
   const cancel = () =>
     Alert.alert('Cancel carpool?', 'This ends the carpool for everyone.', [
       { text: 'Keep it', style: 'cancel' },
-      { text: 'Cancel carpool', style: 'destructive', onPress: () => void run(() => carpoolsApi.cancel(carpoolId), () => router.back()) },
+      {
+        text: 'Cancel carpool',
+        style: 'destructive',
+        onPress: () =>
+          void run(
+            () => carpoolsApi.cancel(carpoolId),
+            () => router.back(),
+          ),
+      },
     ]);
 
   const statusLine: Record<CarpoolStatus, string> = {
@@ -77,8 +98,13 @@ export default function CarpoolScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Carpool" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-        <Text className="mt-4 font-pmedium text-sm text-subtle">CARPOOL · {cp.status.replace('_', ' ')}</Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
+        <Text className="mt-4 font-pmedium text-sm text-subtle">
+          CARPOOL · {cp.status.replace('_', ' ')}
+        </Text>
         <Text className="mt-1 font-psemibold text-lg text-white">{statusLine[cp.status]}</Text>
 
         {/* Route */}
@@ -140,7 +166,12 @@ export default function CarpoolScreen() {
         <View className="mt-8">
           {canExit ? (
             isCreator ? (
-              <KariButton label="Cancel carpool" variant="outline" onPress={cancel} loading={busy} />
+              <KariButton
+                label="Cancel carpool"
+                variant="outline"
+                onPress={cancel}
+                loading={busy}
+              />
             ) : (
               <KariButton label="Leave carpool" variant="outline" onPress={leave} loading={busy} />
             )

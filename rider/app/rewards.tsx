@@ -10,7 +10,11 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { errorMessage } from '@/lib/error';
 import { colors } from '@/theme/tokens';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const MEDAL = ['🥇', '🥈', '🥉'];
 
 export default function RewardsScreen() {
@@ -19,7 +23,10 @@ export default function RewardsScreen() {
   const [busy, setBusy] = useState(false);
 
   const { data: ref, isLoading } = useQuery({ queryKey: ['referral'], queryFn: referralsApi.me });
-  const { data: board } = useQuery({ queryKey: ['leaderboard'], queryFn: gamificationApi.leaderboard });
+  const { data: board } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: gamificationApi.leaderboard,
+  });
 
   const share = () => {
     if (!ref) return;
@@ -36,7 +43,10 @@ export default function RewardsScreen() {
       const res = await referralsApi.apply(c);
       await qc.invalidateQueries({ queryKey: ['referral'] });
       setCode('');
-      Alert.alert('Code applied', `You'll both earn ${naira(res.rewardOnFirstRide)} after your first ride.`);
+      Alert.alert(
+        'Code applied',
+        `You'll both earn ${naira(res.rewardOnFirstRide)} after your first ride.`,
+      );
     } catch (e) {
       Alert.alert('Could not apply code', errorMessage(e));
     } finally {
@@ -47,7 +57,10 @@ export default function RewardsScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Rewards" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {/* Referral */}
         <View className="mt-4 rounded-card bg-card p-5">
           <Text className="font-psemibold text-lg text-white">Invite friends</Text>
@@ -60,7 +73,9 @@ export default function RewardsScreen() {
             <>
               <View className="mt-4 items-center rounded-card border border-dashed border-brand bg-brand/10 py-4">
                 <Text className="font-sans text-xs text-muted">YOUR CODE</Text>
-                <Text className="mt-1 font-mono text-2xl tracking-[4px] text-brand">{ref?.code}</Text>
+                <Text className="mt-1 font-mono text-2xl tracking-[4px] text-brand">
+                  {ref?.code}
+                </Text>
               </View>
               <View className="mt-3 flex-row">
                 <View className="flex-1 items-center">
@@ -91,7 +106,13 @@ export default function RewardsScreen() {
                 autoCapitalize="characters"
                 placeholder="e.g. K7PQR2M"
               />
-              <KariButton label="Apply code" variant="outline" onPress={apply} loading={busy} disabled={code.trim().length < 4} />
+              <KariButton
+                label="Apply code"
+                variant="outline"
+                onPress={apply}
+                loading={busy}
+                disabled={code.trim().length < 4}
+              />
             </View>
           </View>
         ) : ref?.referredBy ? (
@@ -112,7 +133,9 @@ export default function RewardsScreen() {
                 key={e.driverId}
                 className={`flex-row items-center px-4 py-3 ${i === Math.min(board.entries.length, 10) - 1 ? '' : 'border-b border-hairline'}`}
               >
-                <Text className="w-8 font-pbold text-base text-brand">{MEDAL[e.rank - 1] ?? e.rank}</Text>
+                <Text className="w-8 font-pbold text-base text-brand">
+                  {MEDAL[e.rank - 1] ?? e.rank}
+                </Text>
                 <Text className="ml-2 flex-1 font-pmedium text-sm text-white" numberOfLines={1}>
                   {e.name}
                 </Text>

@@ -11,7 +11,12 @@ import { useRideStore } from '@/stores/ride.store';
 import { SwipeToAccept } from './SwipeToAccept';
 
 const naira = (n: number | null | undefined) =>
-  n == null ? '—' : '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  n == null
+    ? '—'
+    : '₦' +
+      Math.round(n)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 const DECIDE_WINDOW = 30; // seconds to accept/decline a fresh dispatch
 const WAIT_WINDOW = 45; // seconds to wait for the rider to take our counter-offer
@@ -69,7 +74,10 @@ export function IncomingRequest({ offer }: { offer: Ride }) {
       return;
     }
     if (amount > offer.quotedPrice) {
-      Alert.alert('Too high', `Your offer can’t exceed the standard fare of ${naira(offer.quotedPrice)}.`);
+      Alert.alert(
+        'Too high',
+        `Your offer can’t exceed the standard fare of ${naira(offer.quotedPrice)}.`,
+      );
       return;
     }
     setBusy(true);

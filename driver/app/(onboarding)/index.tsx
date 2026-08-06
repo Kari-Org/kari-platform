@@ -28,7 +28,15 @@ import { useAuthStore } from '@/stores/auth.store';
 const TOTAL = 6;
 
 const STATES: SelectOption[] = [
-  'Lagos', 'Rivers', 'FCT Abuja', 'Oyo', 'Kano', 'Anambra', 'Enugu', 'Kaduna', 'Other',
+  'Lagos',
+  'Rivers',
+  'FCT Abuja',
+  'Oyo',
+  'Kano',
+  'Anambra',
+  'Enugu',
+  'Kaduna',
+  'Other',
 ].map((s) => ({ label: s, value: s }));
 
 const CATEGORIES: SelectOption[] = [
@@ -84,7 +92,11 @@ export default function Onboarding() {
     setAnswers((prev) => prev.map((a, idx) => (idx === i ? v : a)));
 
   const canNext =
-    (step === 1 && !!firstName.trim() && !!lastName.trim() && /^\d{4}-\d{2}-\d{2}$/.test(dob) && !!origin) ||
+    (step === 1 &&
+      !!firstName.trim() &&
+      !!lastName.trim() &&
+      /^\d{4}-\d{2}-\d{2}$/.test(dob) &&
+      !!origin) ||
     step === 2 ||
     (step === 3 && !!model.trim() && !!plate.trim()) ||
     (step === 4 && /^[0-9]{11}$/.test(nin)) ||
@@ -174,7 +186,10 @@ export default function Onboarding() {
 
   return (
     <Screen className="px-5">
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1"
+      >
         <ScreenHeader title="Driver Onboarding" onBack={onBack} />
         <View className="my-3">
           <StepDots current={step} total={TOTAL} />
@@ -183,15 +198,39 @@ export default function Onboarding() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
           {step === 1 && (
             <Section title="Personal Information">
-              <InputField label="First name" value={firstName} onChangeText={setFirstName} placeholder="Ada" />
-              <InputField label="Last name" value={lastName} onChangeText={setLastName} placeholder="Okafor" />
-              <InputField label="Date of birth" value={dob} onChangeText={setDob} placeholder="YYYY-MM-DD" />
-              <Select label="State of origin" placeholder="Select state" value={origin} options={STATES} onChange={setOrigin} />
+              <InputField
+                label="First name"
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="Ada"
+              />
+              <InputField
+                label="Last name"
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Okafor"
+              />
+              <InputField
+                label="Date of birth"
+                value={dob}
+                onChangeText={setDob}
+                placeholder="YYYY-MM-DD"
+              />
+              <Select
+                label="State of origin"
+                placeholder="Select state"
+                value={origin}
+                options={STATES}
+                onChange={setOrigin}
+              />
             </Section>
           )}
 
           {step === 2 && (
-            <Section title="A quick personality check" subtitle="Helps us match you with the right riders.">
+            <Section
+              title="A quick personality check"
+              subtitle="Helps us match you with the right riders."
+            >
               {QUIZ.map((q, i) => (
                 <View key={q} className="mb-6">
                   <Text className="mb-3 font-pmedium text-sm text-white">{q}</Text>
@@ -206,7 +245,9 @@ export default function Onboarding() {
                             active ? 'border-brand bg-brand' : 'border-hairline'
                           }`}
                         >
-                          <Text className={`font-pmedium ${active ? 'text-bg' : 'text-muted'}`}>{n}</Text>
+                          <Text className={`font-pmedium ${active ? 'text-bg' : 'text-muted'}`}>
+                            {n}
+                          </Text>
                         </Pressable>
                       );
                     })}
@@ -222,17 +263,48 @@ export default function Onboarding() {
 
           {step === 3 && (
             <Section title="Vehicle details">
-              <InputField label="Brand" value={brand} onChangeText={setBrand} placeholder="Toyota" />
-              <InputField label="Model" value={model} onChangeText={setModel} placeholder="Corolla" />
-              <InputField label="Year" value={year} onChangeText={setYear} placeholder="2018" keyboardType="number-pad" maxLength={4} />
-              <InputField label="Plate number" value={plate} onChangeText={setPlate} placeholder="LAG-123-XY" autoCapitalize="characters" />
-              <InputField label="Color" value={color} onChangeText={setColor} placeholder="Silver" />
+              <InputField
+                label="Brand"
+                value={brand}
+                onChangeText={setBrand}
+                placeholder="Toyota"
+              />
+              <InputField
+                label="Model"
+                value={model}
+                onChangeText={setModel}
+                placeholder="Corolla"
+              />
+              <InputField
+                label="Year"
+                value={year}
+                onChangeText={setYear}
+                placeholder="2018"
+                keyboardType="number-pad"
+                maxLength={4}
+              />
+              <InputField
+                label="Plate number"
+                value={plate}
+                onChangeText={setPlate}
+                placeholder="LAG-123-XY"
+                autoCapitalize="characters"
+              />
+              <InputField
+                label="Color"
+                value={color}
+                onChangeText={setColor}
+                placeholder="Silver"
+              />
               <Select label="Class" value={category} options={CATEGORIES} onChange={setCategory} />
             </Section>
           )}
 
           {step === 4 && (
-            <Section title="Identity verification" subtitle="Your NIN keeps riders safe (required to drive).">
+            <Section
+              title="Identity verification"
+              subtitle="Your NIN keeps riders safe (required to drive)."
+            >
               <InputField
                 label="National Identification Number (NIN)"
                 value={nin}
@@ -245,7 +317,10 @@ export default function Onboarding() {
           )}
 
           {step === 5 && (
-            <Section title="Liveness check" subtitle="Place your face inside the circle in good light.">
+            <Section
+              title="Liveness check"
+              subtitle="Place your face inside the circle in good light."
+            >
               <View className="mt-2 items-center">
                 <View className="h-72 w-72 overflow-hidden rounded-full border-2 border-brand">
                   {permission?.granted ? (
@@ -266,7 +341,10 @@ export default function Onboarding() {
                       loading={loading}
                     />
                   ) : (
-                    <KariButton label="Grant camera access" onPress={() => void requestPermission()} />
+                    <KariButton
+                      label="Grant camera access"
+                      onPress={() => void requestPermission()}
+                    />
                   )}
                   {livenessOk ? (
                     <Text className="mt-3 text-center font-pmedium text-sm text-success">
@@ -280,12 +358,38 @@ export default function Onboarding() {
 
           {step === 6 && (
             <Section title="Payout & next of kin">
-              <InputField label="Bank account number" value={bankAccountNumber} onChangeText={setBankAcc} placeholder="0123456789" keyboardType="number-pad" />
-              <InputField label="Bank name" value={bankName} onChangeText={setBankName} placeholder="GTBank" />
-              <InputField label="Account name" value={bankAccountName} onChangeText={setBankAccName} placeholder="Ada Okafor" />
-              <InputField label="Next of kin name" value={nokName} onChangeText={setNokName} placeholder="Chidi Okafor" />
+              <InputField
+                label="Bank account number"
+                value={bankAccountNumber}
+                onChangeText={setBankAcc}
+                placeholder="0123456789"
+                keyboardType="number-pad"
+              />
+              <InputField
+                label="Bank name"
+                value={bankName}
+                onChangeText={setBankName}
+                placeholder="GTBank"
+              />
+              <InputField
+                label="Account name"
+                value={bankAccountName}
+                onChangeText={setBankAccName}
+                placeholder="Ada Okafor"
+              />
+              <InputField
+                label="Next of kin name"
+                value={nokName}
+                onChangeText={setNokName}
+                placeholder="Chidi Okafor"
+              />
               <PhoneInput label="Next of kin phone" value={nokPhone} onChangeText={setNokPhone} />
-              <InputField label="Relationship" value={nokRelationship} onChangeText={setNokRel} placeholder="Brother" />
+              <InputField
+                label="Relationship"
+                value={nokRelationship}
+                onChangeText={setNokRel}
+                placeholder="Brother"
+              />
             </Section>
           )}
         </ScrollView>
@@ -320,7 +424,11 @@ function Section({
   return (
     <View>
       <Text className="mb-1 font-pbold text-2xl text-white">{title}</Text>
-      {subtitle ? <Text className="mb-5 font-sans text-sm text-muted">{subtitle}</Text> : <View className="mb-5" />}
+      {subtitle ? (
+        <Text className="mb-5 font-sans text-sm text-muted">{subtitle}</Text>
+      ) : (
+        <View className="mb-5" />
+      )}
       {children}
     </View>
   );

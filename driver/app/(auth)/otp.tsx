@@ -54,7 +54,9 @@ export default function Otp() {
         <BrandMark />
       </View>
       <Text className="mt-8 text-center font-pbold text-3xl text-white">Verification</Text>
-      <Text className="mb-1 mt-2 text-center font-sans text-base text-muted">Enter verification code</Text>
+      <Text className="mb-1 mt-2 text-center font-sans text-base text-muted">
+        Enter verification code
+      </Text>
       <Text className="mb-8 text-center font-sans text-sm text-subtle">
         We sent a code to your {channelLabel}: {phone}
       </Text>
@@ -69,7 +71,12 @@ export default function Otp() {
         }}
       />
       <View className="mt-8">
-        <KariButton label="Verify" onPress={() => verify()} loading={loading} disabled={code.length !== 4} />
+        <KariButton
+          label="Verify"
+          onPress={() => verify()}
+          loading={loading}
+          disabled={code.length !== 4}
+        />
       </View>
       <Text onPress={resend} className="mt-4 text-center font-sans text-muted">
         Didn’t get the code? <Text className="text-brand">Click to resend</Text>

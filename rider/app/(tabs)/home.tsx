@@ -23,7 +23,7 @@ import { colors } from '@/theme/tokens';
 
 const { width } = Dimensions.get('window');
 const PAGE = 18; // horizontal page padding (Figma left-18)
-const CARD_W = width - PAGE * 2.25
+const CARD_W = width - PAGE * 2.25;
 const BLOB_RATIO = 477 / 1179; // header-blob.png aspect
 
 type Promo = {
@@ -74,7 +74,10 @@ export default function Home() {
   const headerH = Math.max(Math.round(width * BLOB_RATIO), insets.top + 112);
   const { data: profile } = useQuery({ queryKey: ['rider-me'], queryFn: ridersApi.me });
   const name = profile?.firstName ?? 'there';
-  const { data: subsData } = useQuery({ queryKey: ['subscriptions-mine'], queryFn: subscriptionsApi.mine });
+  const { data: subsData } = useQuery({
+    queryKey: ['subscriptions-mine'],
+    queryFn: subscriptionsApi.mine,
+  });
   const subs = (subsData ?? []).filter((s) => s.status === 'ACTIVE');
   const [pickup, setPickup] = useState('Locating…');
   const [temp, setTemp] = useState<number | null>(null);
@@ -167,7 +170,11 @@ export default function Home() {
                     {p.body}
                   </Text>
                 </View>
-                <Image source={p.img} resizeMode="contain" style={{ position: 'absolute', ...p.style }} />
+                <Image
+                  source={p.img}
+                  resizeMode="contain"
+                  style={{ position: 'absolute', ...p.style }}
+                />
               </View>
             ))}
           </ScrollView>
@@ -233,12 +240,20 @@ export default function Home() {
                   <View className="ml-3 flex-1">
                     <Text className="font-pmedium text-xs text-white">{s.planName}</Text>
                     <Text numberOfLines={1} className="mt-1 font-sans text-[10px] text-muted">
-                      {s.route ? `${s.route.pickup.address ?? 'Pickup'} – ${s.route.dropoff.address ?? 'Dropoff'}` : 'Plan subscription'}
+                      {s.route
+                        ? `${s.route.pickup.address ?? 'Pickup'} – ${s.route.dropoff.address ?? 'Dropoff'}`
+                        : 'Plan subscription'}
                     </Text>
                   </View>
                   <View className="ml-2 items-end">
                     <Text className="font-sans text-[10px] text-white">
-                      {Math.max(0, Math.ceil((new Date(s.currentPeriodEnd).getTime() - Date.now()) / 86_400_000))} days left
+                      {Math.max(
+                        0,
+                        Math.ceil(
+                          (new Date(s.currentPeriodEnd).getTime() - Date.now()) / 86_400_000,
+                        ),
+                      )}{' '}
+                      days left
                     </Text>
                     <Text className="mt-1 font-sans text-[10px] text-brand">Active</Text>
                   </View>

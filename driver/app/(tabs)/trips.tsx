@@ -5,10 +5,17 @@ import { RideStatus } from '@kari/types';
 import { Screen, colors } from '@kari/mobile-core';
 import { ridesApi } from '@/api/endpoints';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 export default function Trips() {
-  const { data: rides, isLoading } = useQuery({ queryKey: ['driver-trips'], queryFn: ridesApi.mine });
+  const { data: rides, isLoading } = useQuery({
+    queryKey: ['driver-trips'],
+    queryFn: ridesApi.mine,
+  });
   const completed = (rides ?? []).filter((r) => r.status === RideStatus.COMPLETED);
   const earnings = completed.reduce((sum, r) => sum + (r.agreedPrice ?? r.quotedPrice ?? 0), 0);
 
@@ -49,7 +56,9 @@ export default function Trips() {
                   {new Date(r.createdAt).toLocaleDateString()}
                 </Text>
               </View>
-              <Text className="font-psemibold text-brand">{naira(r.agreedPrice ?? r.quotedPrice)}</Text>
+              <Text className="font-psemibold text-brand">
+                {naira(r.agreedPrice ?? r.quotedPrice)}
+              </Text>
             </View>
           ))}
         </ScrollView>

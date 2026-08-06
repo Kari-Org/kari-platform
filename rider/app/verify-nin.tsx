@@ -47,7 +47,12 @@ export default function VerifyNin() {
         placeholder="e.g. 12345678901"
         maxLength={11}
       />
-      <KariButton label="Verify" onPress={submit} loading={busy} disabled={nin.trim().length < 11} />
+      <KariButton
+        label="Verify"
+        onPress={submit}
+        loading={busy}
+        disabled={nin.trim().length < 11}
+      />
     </Screen>
   );
 }

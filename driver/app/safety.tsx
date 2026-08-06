@@ -16,7 +16,10 @@ export default function SafetyScreen() {
   const [adding, setAdding] = useState(false);
   const [sos, setSos] = useState(false);
 
-  const { data: contacts, isLoading } = useQuery({ queryKey: ['safety-contacts'], queryFn: safetyApi.contacts });
+  const { data: contacts, isLoading } = useQuery({
+    queryKey: ['safety-contacts'],
+    queryFn: safetyApi.contacts,
+  });
 
   const sendSos = () =>
     Alert.alert(
@@ -37,7 +40,9 @@ export default function SafetyScreen() {
                 perm.status === 'granted' ||
                 (await Location.requestForegroundPermissionsAsync()).status === 'granted';
               if (granted) {
-                const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                const pos = await Location.getCurrentPositionAsync({
+                  accuracy: Location.Accuracy.Balanced,
+                });
                 lat = pos.coords.latitude;
                 lng = pos.coords.longitude;
               }
@@ -101,7 +106,10 @@ export default function SafetyScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Safety" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {/* SOS */}
         <Pressable
           onPress={sendSos}
@@ -126,7 +134,9 @@ export default function SafetyScreen() {
         {isLoading ? (
           <ActivityIndicator color={colors.brand} className="mt-4 self-start" />
         ) : !contacts || contacts.length === 0 ? (
-          <Text className="font-sans text-sm text-subtle">No contacts yet — add someone who should be alerted.</Text>
+          <Text className="font-sans text-sm text-subtle">
+            No contacts yet — add someone who should be alerted.
+          </Text>
         ) : (
           <View className="overflow-hidden rounded-card bg-card">
             {contacts.map((c, i) => (
@@ -152,7 +162,12 @@ export default function SafetyScreen() {
 
         {/* Add */}
         <Text className="mb-2 mt-6 font-psemibold text-base text-white">Add a contact</Text>
-        <InputField label="Name" value={name} onChangeText={setName} placeholder="e.g. Tunde Bello" />
+        <InputField
+          label="Name"
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Tunde Bello"
+        />
         <InputField
           label="Phone"
           value={phone}

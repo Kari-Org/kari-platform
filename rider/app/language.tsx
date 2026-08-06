@@ -29,7 +29,12 @@ export default function Language() {
           More languages are on the way — English is available today.
         </Text>
         {LANGUAGES.map((lang) => (
-          <OptionRow key={lang} label={lang} selected={selected === lang} onPress={() => pick(lang)} />
+          <OptionRow
+            key={lang}
+            label={lang}
+            selected={selected === lang}
+            onPress={() => pick(lang)}
+          />
         ))}
       </View>
     </Screen>

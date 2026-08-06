@@ -41,7 +41,9 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
 
   const configured = !!(
-    extra.googleWebClientId || extra.googleIosClientId || extra.googleAndroidClientId
+    extra.googleWebClientId ||
+    extra.googleIosClientId ||
+    extra.googleAndroidClientId
   );
   const [, response, promptAsync] = Google.useAuthRequest({
     iosClientId: extra.googleIosClientId || undefined,

@@ -23,7 +23,10 @@ export default function ShuttleScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Shuttle schedule" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <Text className="mt-2 font-sans text-sm text-muted">
           Upcoming fixed-route shuttle trips and their live seat occupancy.
         </Text>
@@ -34,9 +37,18 @@ export default function ShuttleScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 8, paddingVertical: 16 }}
         >
-          <FilterPill label="All routes" active={routeId === null} onPress={() => setRouteId(null)} />
+          <FilterPill
+            label="All routes"
+            active={routeId === null}
+            onPress={() => setRouteId(null)}
+          />
           {(routes ?? []).map((r) => (
-            <FilterPill key={r.id} label={r.name} active={routeId === r.id} onPress={() => setRouteId(r.id)} />
+            <FilterPill
+              key={r.id}
+              label={r.name}
+              active={routeId === r.id}
+              onPress={() => setRouteId(r.id)}
+            />
           ))}
         </ScrollView>
 
@@ -58,7 +70,15 @@ export default function ShuttleScreen() {
   );
 }
 
-function FilterPill({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+function FilterPill({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}

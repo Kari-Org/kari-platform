@@ -115,8 +115,8 @@ export default function AdditionalInfo() {
               className="rounded-input bg-card px-4 py-4 font-sans text-[13px] text-white"
             />
             <Text className="mt-1.5 font-sans text-[11px] text-muted">
-              Optional now — but your NIN and a quick selfie are required to use carpool. You can add
-              it later.
+              Optional now — but your NIN and a quick selfie are required to use carpool. You can
+              add it later.
             </Text>
           </View>
 

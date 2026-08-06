@@ -18,14 +18,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.kari.driver",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "location",
-          "fetch",
-          "location",
-          "fetch",
-          "location",
-          "fetch"
-        ],
+        "UIBackgroundModes": ["location", "fetch", "location", "fetch", "location", "fetch"],
         "ITSAppUsesNonExemptEncryption": false
       }
     },

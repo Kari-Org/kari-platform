@@ -15,7 +15,11 @@ import { useAvailabilityStore } from '@/stores/availability.store';
 import { useRideStore } from '@/stores/ride.store';
 
 const LAGOS = { latitude: 6.5244, longitude: 3.3792 };
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const ACTIVE: RideStatus[] = [
   RideStatus.ACCEPTED,
   RideStatus.DRIVER_ARRIVED,
@@ -64,7 +68,10 @@ export default function Home() {
     try {
       const ok = await requestLocationPermission();
       if (!ok) {
-        Alert.alert('Location needed', 'Enable location access to go online and receive ride requests.');
+        Alert.alert(
+          'Location needed',
+          'Enable location access to go online and receive ride requests.',
+        );
         return;
       }
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
@@ -117,10 +124,19 @@ export default function Home() {
   return (
     <View className="flex-1 bg-bg">
       <MapView style={StyleSheet.absoluteFill} region={region} showsUserLocation>
-        {here && <Marker coordinate={{ latitude: here.lat, longitude: here.lng }} pinColor={colors.brand} />}
+        {here && (
+          <Marker
+            coordinate={{ latitude: here.lat, longitude: here.lng }}
+            pinColor={colors.brand}
+          />
+        )}
       </MapView>
 
-      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, justifyContent: 'space-between' }} pointerEvents="box-none">
+      <SafeAreaView
+        edges={['top', 'bottom']}
+        style={{ flex: 1, justifyContent: 'space-between' }}
+        pointerEvents="box-none"
+      >
         {/* greeting + earnings peek */}
         <View>
           <View className="mx-4 mt-2 flex-row items-center rounded-card bg-surface/95 px-4 py-3">
@@ -132,8 +148,12 @@ export default function Home() {
               <Text className="font-psemibold text-base text-white">{name}</Text>
             </View>
             <View className="flex-row items-center rounded-pill bg-card px-3 py-1.5">
-              <View className={`mr-2 h-2 w-2 rounded-full ${online ? 'bg-success' : 'bg-subtle'}`} />
-              <Text className="font-pmedium text-xs text-white">{online ? 'Online' : 'Offline'}</Text>
+              <View
+                className={`mr-2 h-2 w-2 rounded-full ${online ? 'bg-success' : 'bg-subtle'}`}
+              />
+              <Text className="font-pmedium text-xs text-white">
+                {online ? 'Online' : 'Offline'}
+              </Text>
             </View>
           </View>
 
@@ -144,7 +164,12 @@ export default function Home() {
             <Ionicons name="wallet" size={18} color={colors.brand} />
             <Text className="ml-3 flex-1 font-pmedium text-sm text-white">Available balance</Text>
             <Text className="font-pbold text-sm text-white">{naira(wallet?.balance ?? 0)}</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.subtle} style={{ marginLeft: 6 }} />
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={colors.subtle}
+              style={{ marginLeft: 6 }}
+            />
           </Pressable>
         </View>
 
@@ -154,7 +179,9 @@ export default function Home() {
             <>
               <View className="flex-row items-center">
                 <ActivityIndicator color={colors.brand} />
-                <Text className="ml-3 font-psemibold text-base text-white">Looking for ride requests…</Text>
+                <Text className="ml-3 font-psemibold text-base text-white">
+                  Looking for ride requests…
+                </Text>
               </View>
               <Text className="mt-1 font-sans text-sm text-subtle">
                 Stay in an area with good signal — new requests appear here automatically.
@@ -178,7 +205,9 @@ export default function Home() {
                 onPress={goOnline}
                 className="mt-4 items-center rounded-pill bg-brand py-3.5"
               >
-                <Text className="font-psemibold text-bg">{busy ? 'Going online…' : 'Go online'}</Text>
+                <Text className="font-psemibold text-bg">
+                  {busy ? 'Going online…' : 'Go online'}
+                </Text>
               </Pressable>
             </>
           )}
@@ -186,11 +215,17 @@ export default function Home() {
           {/* carpool opt-in — freelance drivers only (spec 0001) */}
           {me?.driverType === DriverType.FREELANCE && (
             <View className="mt-4 flex-row items-center border-t border-hairline pt-4">
-              <Ionicons name="people" size={18} color={me.carpoolMode ? colors.brand : colors.subtle} />
+              <Ionicons
+                name="people"
+                size={18}
+                color={me.carpoolMode ? colors.brand : colors.subtle}
+              />
               <View className="ml-3 flex-1">
                 <Text className="font-pmedium text-sm text-white">Accept carpool requests</Text>
                 <Text className="font-sans text-xs text-subtle">
-                  {me.carpoolMode ? 'Shared trips can be offered to you' : 'You won’t get shared-trip offers'}
+                  {me.carpoolMode
+                    ? 'Shared trips can be offered to you'
+                    : 'You won’t get shared-trip offers'}
                 </Text>
               </View>
               <Switch

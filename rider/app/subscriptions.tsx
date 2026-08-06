@@ -12,12 +12,19 @@ import { errorMessage } from '@/lib/error';
 import { colors } from '@/theme/tokens';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 export default function SubscriptionsScreen() {
   const router = useRouter();
   const qc = useQueryClient();
-  const { data: subs } = useQuery({ queryKey: ['subscriptions-mine'], queryFn: subscriptionsApi.mine });
+  const { data: subs } = useQuery({
+    queryKey: ['subscriptions-mine'],
+    queryFn: subscriptionsApi.mine,
+  });
 
   const confirmCancel = (sub: Subscription) =>
     Alert.alert('Cancel subscription?', `End your “${sub.planName}” route subscription?`, [
@@ -39,7 +46,10 @@ export default function SubscriptionsScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Subscription Routes" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <Text className="mt-2 font-sans text-sm text-muted">
           Lock in your commute route at a fixed monthly price — rides on it cost nothing at pickup.
         </Text>
@@ -56,8 +66,12 @@ export default function SubscriptionsScreen() {
             <View key={s.id} className="mt-4 rounded-card bg-card p-5">
               <View className="flex-row items-center justify-between">
                 <Text className="font-psemibold text-base text-white">{s.planName}</Text>
-                <View className={`rounded-pill px-3 py-1 ${s.status === 'ACTIVE' ? 'bg-brand' : 'bg-card border border-hairline'}`}>
-                  <Text className={`font-pmedium text-xs ${s.status === 'ACTIVE' ? 'text-bg' : 'text-muted'}`}>
+                <View
+                  className={`rounded-pill px-3 py-1 ${s.status === 'ACTIVE' ? 'bg-brand' : 'bg-card border border-hairline'}`}
+                >
+                  <Text
+                    className={`font-pmedium text-xs ${s.status === 'ACTIVE' ? 'text-bg' : 'text-muted'}`}
+                  >
                     {s.status}
                   </Text>
                 </View>
@@ -65,9 +79,17 @@ export default function SubscriptionsScreen() {
 
               {s.route ? (
                 <View className="mt-3">
-                  <Stop icon="ellipse" tint={colors.brand} text={s.route.pickup.address ?? 'Pickup'} />
+                  <Stop
+                    icon="ellipse"
+                    tint={colors.brand}
+                    text={s.route.pickup.address ?? 'Pickup'}
+                  />
                   <View className="ml-[6px] h-3 w-px bg-hairline" />
-                  <Stop icon="location" tint={colors.danger} text={s.route.dropoff.address ?? 'Dropoff'} />
+                  <Stop
+                    icon="location"
+                    tint={colors.danger}
+                    text={s.route.dropoff.address ?? 'Dropoff'}
+                  />
                 </View>
               ) : null}
 
@@ -100,7 +122,10 @@ export default function SubscriptionsScreen() {
         )}
 
         <View className="mt-6">
-          <KariButton label="Create a subscription" onPress={() => router.push('/subscription-new')} />
+          <KariButton
+            label="Create a subscription"
+            onPress={() => router.push('/subscription-new')}
+          />
         </View>
         <Text className="mt-3 text-center font-sans text-xs text-subtle">
           Subscriptions are billed from your Kari wallet.

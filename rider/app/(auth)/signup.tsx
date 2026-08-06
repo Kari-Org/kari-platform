@@ -49,7 +49,9 @@ export default function SignUp() {
   const valid = /\S+@\S+\.\S+/.test(email) && phone.length >= 13 && password.length >= 8 && agree;
 
   const configured = !!(
-    extra.googleWebClientId || extra.googleIosClientId || extra.googleAndroidClientId
+    extra.googleWebClientId ||
+    extra.googleIosClientId ||
+    extra.googleAndroidClientId
   );
   const [, response, promptAsync] = Google.useAuthRequest({
     iosClientId: extra.googleIosClientId || undefined,
@@ -138,7 +140,10 @@ export default function SignUp() {
             <Checkbox checked={agree} onChange={setAgree} />
             <Text className="ml-3 flex-1 font-pmedium text-[10px] leading-[16px] text-white">
               By signing up, you confirm that you have read and agree to Kari&apos;s{' '}
-              <Text className="text-brand underline" onPress={() => void Linking.openURL(TERMS_URL)}>
+              <Text
+                className="text-brand underline"
+                onPress={() => void Linking.openURL(TERMS_URL)}
+              >
                 Terms of Service
               </Text>{' '}
               and{' '}

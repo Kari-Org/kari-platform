@@ -9,7 +9,11 @@ import type { Carpool } from '@/api/types';
 import { errorMessage } from '@/lib/error';
 import { useCarpoolStore } from '@/stores/carpool.store';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const TERMINAL: CarpoolStatus[] = [CarpoolStatus.COMPLETED, CarpoolStatus.CANCELLED];
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -93,7 +97,10 @@ export default function CarpoolScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Carpool" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {activeCarpoolId && active ? (
           <ActiveCarpool
             carpool={active}
@@ -109,11 +116,14 @@ export default function CarpoolScreen() {
               <View className="mt-10 items-center">
                 <Ionicons name="people-circle-outline" size={48} color={colors.subtle} />
                 <Text className="mt-3 text-center font-sans text-sm text-subtle">
-                  No carpool requests right now.{'\n'}Stay online — new ones appear here automatically.
+                  No carpool requests right now.{'\n'}Stay online — new ones appear here
+                  automatically.
                 </Text>
               </View>
             ) : (
-              offers.map((o) => <OfferCard key={o.id} carpool={o} busy={busy} onAccept={() => accept(o)} />)
+              offers.map((o) => (
+                <OfferCard key={o.id} carpool={o} busy={busy} onAccept={() => accept(o)} />
+              ))
             )}
           </>
         )}
@@ -142,7 +152,15 @@ function Route({ pickup, dropoff }: { pickup: string | null; dropoff: string | n
   );
 }
 
-function OfferCard({ carpool, busy, onAccept }: { carpool: Carpool; busy: boolean; onAccept: () => void }) {
+function OfferCard({
+  carpool,
+  busy,
+  onAccept,
+}: {
+  carpool: Carpool;
+  busy: boolean;
+  onAccept: () => void;
+}) {
   const km = (carpool.distanceMeters / 1000).toFixed(1);
   return (
     <View className="mb-3 rounded-card bg-card p-4">
@@ -220,7 +238,12 @@ function ActiveCarpool({
           <KariButton label="Back" onPress={onDone} />
         ) : (
           <View className="mt-2">
-            <KariButton label="Cancel carpool" variant="outline" onPress={onCancel} loading={busy} />
+            <KariButton
+              label="Cancel carpool"
+              variant="outline"
+              onPress={onCancel}
+              loading={busy}
+            />
           </View>
         )}
       </View>

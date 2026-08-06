@@ -42,7 +42,9 @@ export default function DriverType() {
     <Screen className="px-5">
       <ScreenHeader title="Driver Type" />
       <View className="mt-4 flex-1">
-        <Text className="mb-4 font-sans text-sm text-muted">What kind of driver do you prefer?</Text>
+        <Text className="mb-4 font-sans text-sm text-muted">
+          What kind of driver do you prefer?
+        </Text>
         {OPTIONS.map((o) => (
           <OptionRow
             key={o.value}

@@ -12,7 +12,11 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { errorMessage } from '@/lib/error';
 import { colors } from '@/theme/tokens';
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const when = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 
@@ -38,10 +42,16 @@ function StopChips({
             disabled={disabled}
             onPress={() => onPick(s.id)}
             className={`rounded-pill border px-3 py-1.5 ${
-              active ? 'border-brand bg-brand' : disabled ? 'border-hairline opacity-40' : 'border-hairline'
+              active
+                ? 'border-brand bg-brand'
+                : disabled
+                  ? 'border-hairline opacity-40'
+                  : 'border-hairline'
             }`}
           >
-            <Text className={`font-pmedium text-xs ${active ? 'text-bg' : 'text-muted'}`}>{s.name}</Text>
+            <Text className={`font-pmedium text-xs ${active ? 'text-bg' : 'text-muted'}`}>
+              {s.name}
+            </Text>
           </Pressable>
         );
       })}
@@ -59,13 +69,19 @@ export default function ShuttleScreen() {
   const [seats, setSeats] = useState(1);
   const [busy, setBusy] = useState(false);
 
-  const { data: routes, isLoading } = useQuery({ queryKey: ['shuttle-routes'], queryFn: shuttleApi.routes });
+  const { data: routes, isLoading } = useQuery({
+    queryKey: ['shuttle-routes'],
+    queryFn: shuttleApi.routes,
+  });
   const { data: trips } = useQuery({
     queryKey: ['shuttle-trips', routeId],
     queryFn: () => shuttleApi.trips(routeId!),
     enabled: !!routeId,
   });
-  const { data: bookings } = useQuery({ queryKey: ['shuttle-bookings'], queryFn: shuttleApi.myBookings });
+  const { data: bookings } = useQuery({
+    queryKey: ['shuttle-bookings'],
+    queryFn: shuttleApi.myBookings,
+  });
 
   const route = routes?.find((r) => r.id === routeId) ?? null;
   const from = route?.stops.find((s) => s.id === fromId) ?? null;
@@ -135,7 +151,10 @@ export default function ShuttleScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Shuttle" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <Text className="mb-2 mt-4 font-psemibold text-base text-white">Route</Text>
         {isLoading ? (
           <ActivityIndicator color={colors.brand} className="self-start" />
@@ -149,7 +168,9 @@ export default function ShuttleScreen() {
                   onPress={() => pickRoute(r.id)}
                   className={`rounded-pill border px-4 py-2 ${active ? 'border-brand bg-brand' : 'border-hairline'}`}
                 >
-                  <Text className={`font-pmedium text-sm ${active ? 'text-bg' : 'text-muted'}`}>{r.name}</Text>
+                  <Text className={`font-pmedium text-sm ${active ? 'text-bg' : 'text-muted'}`}>
+                    {r.name}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -159,7 +180,14 @@ export default function ShuttleScreen() {
         {route ? (
           <>
             <Text className="mb-1 mt-5 font-pmedium text-sm text-muted">Board at</Text>
-            <StopChips stops={route.stops} selected={fromId} onPick={(id) => { setFromId(id); if (toId) setToId(null); }} />
+            <StopChips
+              stops={route.stops}
+              selected={fromId}
+              onPick={(id) => {
+                setFromId(id);
+                if (toId) setToId(null);
+              }}
+            />
 
             <Text className="mb-1 mt-4 font-pmedium text-sm text-muted">Get off at</Text>
             <StopChips
@@ -184,7 +212,9 @@ export default function ShuttleScreen() {
 
             <Text className="mb-1 mt-5 font-pmedium text-sm text-muted">Departure</Text>
             {!trips || trips.length === 0 ? (
-              <Text className="font-sans text-sm text-subtle">No upcoming trips on this route.</Text>
+              <Text className="font-sans text-sm text-subtle">
+                No upcoming trips on this route.
+              </Text>
             ) : (
               trips.map((t) => {
                 const active = tripId === t.id;
@@ -197,7 +227,9 @@ export default function ShuttleScreen() {
                     }`}
                   >
                     <Text className="font-pmedium text-sm text-white">{when(t.departAt)}</Text>
-                    <Text className="font-sans text-xs text-subtle">{t.seatsAvailable} seats left</Text>
+                    <Text className="font-sans text-xs text-subtle">
+                      {t.seatsAvailable} seats left
+                    </Text>
                   </Pressable>
                 );
               })

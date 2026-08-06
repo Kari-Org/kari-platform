@@ -125,8 +125,7 @@ export const ridersApi = {
 
 export const placesApi = {
   autocomplete: (q: string, near?: { lat: number; lng: number }) => {
-    const qs =
-      `q=${encodeURIComponent(q)}` + (near ? `&lat=${near.lat}&lng=${near.lng}` : '');
+    const qs = `q=${encodeURIComponent(q)}` + (near ? `&lat=${near.lat}&lng=${near.lng}` : '');
     return apiFetch<PlaceSuggestion[]>(`/places/autocomplete?${qs}`);
   },
   reverse: (lat: number, lng: number) =>
@@ -212,11 +211,14 @@ export const carpoolsApi = {
 export const shuttleApi = {
   routes: () => apiFetch<ShuttleRoute[]>('/shuttle/routes'),
   trips: (routeId?: string) =>
-    apiFetch<ShuttleTrip[]>(`/shuttle/trips${routeId ? `?routeId=${encodeURIComponent(routeId)}` : ''}`),
+    apiFetch<ShuttleTrip[]>(
+      `/shuttle/trips${routeId ? `?routeId=${encodeURIComponent(routeId)}` : ''}`,
+    ),
   book: (tripId: string, body: { fromStopId: string; toStopId: string; seats?: number }) =>
     apiFetch<ShuttleBooking>(`/shuttle/trips/${tripId}/book`, { method: 'POST', body }),
   myBookings: () => apiFetch<ShuttleBooking[]>('/shuttle/bookings/mine'),
-  cancel: (id: string) => apiFetch<ShuttleBooking>(`/shuttle/bookings/${id}/cancel`, { method: 'POST' }),
+  cancel: (id: string) =>
+    apiFetch<ShuttleBooking>(`/shuttle/bookings/${id}/cancel`, { method: 'POST' }),
 };
 
 // ─── Safety & comms (Phase 6) ────────────────────────────────────────────────
@@ -228,8 +230,7 @@ export const safetyApi = {
     apiFetch<{ removed: boolean }>(`/safety/contacts/${id}`, { method: 'DELETE' }),
   panic: (body: { rideId?: string; lat: number; lng: number }) =>
     apiFetch<PanicEvent>('/safety/panic', { method: 'POST', body }),
-  share: (rideId: string) =>
-    apiFetch<SharedTripLink>(`/rides/${rideId}/share`, { method: 'POST' }),
+  share: (rideId: string) => apiFetch<SharedTripLink>(`/rides/${rideId}/share`, { method: 'POST' }),
   stopShare: (rideId: string) =>
     apiFetch<{ stopped: number }>(`/rides/${rideId}/share/stop`, { method: 'POST' }),
 };

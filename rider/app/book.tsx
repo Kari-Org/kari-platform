@@ -40,7 +40,11 @@ const PAYMENTS = [
   { value: PaymentMethod.WALLET, label: 'Wallet', icon: 'wallet-outline' as const },
 ];
 
-const naira = (n: number) => '₦' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const naira = (n: number) =>
+  '₦' +
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 const formatTrip = (seconds: number) => {
   const min = Math.max(1, Math.round(seconds / 60));
@@ -200,124 +204,129 @@ export default function Book() {
           {/* Standard mode: route + ride options + payment. Hidden in negotiate mode. */}
           {!negotiate ? (
             <>
-          {/* Route summary */}
-          <View className="rounded-input bg-surface p-4">
-            <View className="flex-row items-center">
-              <View className="h-2.5 w-2.5 rounded-full bg-brand" />
-              <Text numberOfLines={1} className="ml-3 flex-1 font-sans text-sm text-white">
-                {pickup.address ?? 'Current location'}
-              </Text>
-            </View>
-            <View className="my-1.5 ml-1 h-3 w-px bg-hairline" />
-            <View className="flex-row items-center">
-              <Ionicons name="location" size={13} color={colors.danger} />
-              <Text numberOfLines={1} className="ml-2 flex-1 font-sans text-sm text-white">
-                {dropoff.address}
-              </Text>
-              <Pressable onPress={() => router.back()} hitSlop={8}>
-                <Ionicons name="create-outline" size={18} color={colors.subtle} />
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Solo / Carpool */}
-          <View className="mt-3 flex-row gap-2">
-            <Toggle label="Solo" active={rideType === 'solo'} onPress={() => setRideType('solo')} />
-            <Toggle
-              label="Carpool"
-              active={rideType === 'carpool'}
-              onPress={() => setRideType('carpool')}
-            />
-          </View>
-
-          {/* Pick a ride */}
-          <View className="mb-2 mt-4 flex-row items-center justify-between">
-            <Text className="font-psemibold text-lg text-white">Pick a ride</Text>
-            {quote ? (
-              <View className="flex-row items-center">
-                <Ionicons name="time-outline" size={14} color={colors.subtle} />
-                <Text className="ml-1 font-sans text-sm text-subtle">
-                  {formatTrip(quote.durationSeconds)} trip
-                </Text>
+              {/* Route summary */}
+              <View className="rounded-input bg-surface p-4">
+                <View className="flex-row items-center">
+                  <View className="h-2.5 w-2.5 rounded-full bg-brand" />
+                  <Text numberOfLines={1} className="ml-3 flex-1 font-sans text-sm text-white">
+                    {pickup.address ?? 'Current location'}
+                  </Text>
+                </View>
+                <View className="my-1.5 ml-1 h-3 w-px bg-hairline" />
+                <View className="flex-row items-center">
+                  <Ionicons name="location" size={13} color={colors.danger} />
+                  <Text numberOfLines={1} className="ml-2 flex-1 font-sans text-sm text-white">
+                    {dropoff.address}
+                  </Text>
+                  <Pressable onPress={() => router.back()} hitSlop={8}>
+                    <Ionicons name="create-outline" size={18} color={colors.subtle} />
+                  </Pressable>
+                </View>
               </View>
-            ) : null}
-          </View>
 
-          {quoting ? (
-            <View className="items-center py-10">
-              <ActivityIndicator color={colors.brand} />
-              <Text className="mt-3 font-sans text-sm text-subtle">Getting fares…</Text>
-            </View>
-          ) : (
-            quote?.fares.map((f) => {
-              const meta = CLASS_META[f.category] ?? { label: f.category, desc: '' };
-              const active = category === f.category;
-              return (
-                <Pressable
-                  key={f.category}
-                  onPress={() => setCategory(f.category)}
-                  className={`mb-3 flex-row items-center rounded-card border px-3 py-2.5 ${
-                    active ? 'border-brand bg-brand/10' : 'border-hairline bg-surface'
-                  }`}
-                >
-                  <Image source={CAR} resizeMode="contain" style={{ width: 76, height: 48 }} />
-                  <View className="ml-3 flex-1">
-                    <Text className="font-psemibold text-base text-white">{meta.label}</Text>
-                    <Text className="font-sans text-xs text-subtle">{meta.desc}</Text>
+              {/* Solo / Carpool */}
+              <View className="mt-3 flex-row gap-2">
+                <Toggle
+                  label="Solo"
+                  active={rideType === 'solo'}
+                  onPress={() => setRideType('solo')}
+                />
+                <Toggle
+                  label="Carpool"
+                  active={rideType === 'carpool'}
+                  onPress={() => setRideType('carpool')}
+                />
+              </View>
+
+              {/* Pick a ride */}
+              <View className="mb-2 mt-4 flex-row items-center justify-between">
+                <Text className="font-psemibold text-lg text-white">Pick a ride</Text>
+                {quote ? (
+                  <View className="flex-row items-center">
+                    <Ionicons name="time-outline" size={14} color={colors.subtle} />
+                    <Text className="ml-1 font-sans text-sm text-subtle">
+                      {formatTrip(quote.durationSeconds)} trip
+                    </Text>
                   </View>
-                  <Text className="font-pbold text-base text-white">{naira(f.amount)}</Text>
-                </Pressable>
-              );
-            })
-          )}
+                ) : null}
+              </View>
 
-          {/* Payment / carpool note */}
-          {rideType === 'carpool' ? (
-            <View className="mb-1 mt-1 flex-row items-start rounded-card bg-surface p-3">
-              <Ionicons name="wallet-outline" size={16} color={colors.brand} />
-              <Text className="ml-2 flex-1 font-sans text-xs text-muted">
-                Each rider pays their share from their Kari wallet — invite friends after you start it
-                to split the fare.
-              </Text>
-            </View>
-          ) : (
-            <>
-              <Text className="mb-2 font-pmedium text-sm text-muted">Payment</Text>
-              <View className="flex-row gap-2">
-                {PAYMENTS.map((p) => {
-                  const on = payment === p.value;
+              {quoting ? (
+                <View className="items-center py-10">
+                  <ActivityIndicator color={colors.brand} />
+                  <Text className="mt-3 font-sans text-sm text-subtle">Getting fares…</Text>
+                </View>
+              ) : (
+                quote?.fares.map((f) => {
+                  const meta = CLASS_META[f.category] ?? { label: f.category, desc: '' };
+                  const active = category === f.category;
                   return (
                     <Pressable
-                      key={p.value}
-                      onPress={() => setPayment(p.value)}
-                      className={`flex-row items-center rounded-pill border px-4 py-2 ${
-                        on ? 'border-brand bg-brand' : 'border-hairline'
+                      key={f.category}
+                      onPress={() => setCategory(f.category)}
+                      className={`mb-3 flex-row items-center rounded-card border px-3 py-2.5 ${
+                        active ? 'border-brand bg-brand/10' : 'border-hairline bg-surface'
                       }`}
                     >
-                      <Ionicons name={p.icon} size={15} color={on ? colors.bg : colors.muted} />
-                      <Text
-                        className={`ml-1.5 font-pmedium text-sm ${on ? 'text-bg' : 'text-muted'}`}
-                      >
-                        {p.label}
-                      </Text>
+                      <Image source={CAR} resizeMode="contain" style={{ width: 76, height: 48 }} />
+                      <View className="ml-3 flex-1">
+                        <Text className="font-psemibold text-base text-white">{meta.label}</Text>
+                        <Text className="font-sans text-xs text-subtle">{meta.desc}</Text>
+                      </View>
+                      <Text className="font-pbold text-base text-white">{naira(f.amount)}</Text>
                     </Pressable>
                   );
-                })}
-              </View>
-              {payment === PaymentMethod.WALLET ? (
-                <View className="mt-2 flex-row items-center justify-between rounded-card bg-surface px-3 py-2">
-                  <Text className="font-sans text-xs text-muted">
-                    Wallet balance: <Text className="text-white">{naira(wallet?.balance ?? 0)}</Text>
+                })
+              )}
+
+              {/* Payment / carpool note */}
+              {rideType === 'carpool' ? (
+                <View className="mb-1 mt-1 flex-row items-start rounded-card bg-surface p-3">
+                  <Ionicons name="wallet-outline" size={16} color={colors.brand} />
+                  <Text className="ml-2 flex-1 font-sans text-xs text-muted">
+                    Each rider pays their share from their Kari wallet — invite friends after you
+                    start it to split the fare.
                   </Text>
-                  {fare && (wallet?.balance ?? 0) < fare.amount ? (
-                    <Pressable onPress={() => router.push('/wallet')} hitSlop={8}>
-                      <Text className="font-pmedium text-xs text-brand">Top up</Text>
-                    </Pressable>
-                  ) : null}
                 </View>
-              ) : null}
-            </>
-          )}
+              ) : (
+                <>
+                  <Text className="mb-2 font-pmedium text-sm text-muted">Payment</Text>
+                  <View className="flex-row gap-2">
+                    {PAYMENTS.map((p) => {
+                      const on = payment === p.value;
+                      return (
+                        <Pressable
+                          key={p.value}
+                          onPress={() => setPayment(p.value)}
+                          className={`flex-row items-center rounded-pill border px-4 py-2 ${
+                            on ? 'border-brand bg-brand' : 'border-hairline'
+                          }`}
+                        >
+                          <Ionicons name={p.icon} size={15} color={on ? colors.bg : colors.muted} />
+                          <Text
+                            className={`ml-1.5 font-pmedium text-sm ${on ? 'text-bg' : 'text-muted'}`}
+                          >
+                            {p.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                  {payment === PaymentMethod.WALLET ? (
+                    <View className="mt-2 flex-row items-center justify-between rounded-card bg-surface px-3 py-2">
+                      <Text className="font-sans text-xs text-muted">
+                        Wallet balance:{' '}
+                        <Text className="text-white">{naira(wallet?.balance ?? 0)}</Text>
+                      </Text>
+                      {fare && (wallet?.balance ?? 0) < fare.amount ? (
+                        <Pressable onPress={() => router.push('/wallet')} hitSlop={8}>
+                          <Text className="font-pmedium text-xs text-brand">Top up</Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  ) : null}
+                </>
+              )}
             </>
           ) : null}
 
@@ -390,7 +399,15 @@ export default function Book() {
   );
 }
 
-function Toggle({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+function Toggle({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -398,7 +415,9 @@ function Toggle({ label, active, onPress }: { label: string; active: boolean; on
         active ? 'border-brand bg-brand/10' : 'border-hairline bg-surface'
       }`}
     >
-      <Text className={`font-pmedium text-sm ${active ? 'text-brand' : 'text-muted'}`}>{label}</Text>
+      <Text className={`font-pmedium text-sm ${active ? 'text-brand' : 'text-muted'}`}>
+        {label}
+      </Text>
     </Pressable>
   );
 }

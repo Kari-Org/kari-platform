@@ -1,0 +1,17 @@
+# Ignore file for the mobile (rider/driver) prettier check in the Mobile CI gate.
+#
+# The ROOT .prettierignore excludes rider/ and driver/ entirely — they are owned by
+# the mobile pipeline, not root `format:check`. The mobile gate passes THIS file via
+# `--ignore-path` so it can format the mobile *source* without re-coupling it to root.
+# Keep this list to generated/vendored output only (mirrors the root generated set,
+# minus the rider/ + driver/ exclusions).
+**/node_modules
+**/dist
+**/dist-verify
+**/.next
+**/.expo
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+**/android
+**/ios

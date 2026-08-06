@@ -23,7 +23,8 @@ export default function SupportScreen() {
 
   const { data: tickets } = useQuery({ queryKey: ['my-tickets'], queryFn: ticketsApi.mine });
   const submit = useMutation({
-    mutationFn: () => ticketsApi.create({ subject: subject.trim(), message: message.trim(), category }),
+    mutationFn: () =>
+      ticketsApi.create({ subject: subject.trim(), message: message.trim(), category }),
     onSuccess: () => {
       setSubject('');
       setMessage('');
@@ -39,7 +40,10 @@ export default function SupportScreen() {
   return (
     <Screen className="px-5">
       <ScreenHeader title="Help & support" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <Text className="mb-2 mt-2 font-psemibold text-base text-white">Submit a request</Text>
         <View className="mb-3 flex-row flex-wrap gap-2">
           {CATEGORIES.map((c) => {
@@ -50,12 +54,19 @@ export default function SupportScreen() {
                 onPress={() => setCategory(c)}
                 className={`rounded-pill border px-3 py-1.5 ${active ? 'border-brand bg-brand' : 'border-hairline'}`}
               >
-                <Text className={`font-pmedium text-xs ${active ? 'text-bg' : 'text-muted'}`}>{label(c)}</Text>
+                <Text className={`font-pmedium text-xs ${active ? 'text-bg' : 'text-muted'}`}>
+                  {label(c)}
+                </Text>
               </Pressable>
             );
           })}
         </View>
-        <InputField label="Subject" value={subject} onChangeText={setSubject} placeholder="Brief summary" />
+        <InputField
+          label="Subject"
+          value={subject}
+          onChangeText={setSubject}
+          placeholder="Brief summary"
+        />
         <Text className="mb-1 font-sans text-sm text-muted">Message</Text>
         <TextInput
           value={message}
@@ -66,7 +77,12 @@ export default function SupportScreen() {
           textAlignVertical="top"
           className="mb-3 min-h-[100px] rounded-card bg-card px-4 py-3 font-sans text-white"
         />
-        <KariButton label="Submit request" onPress={() => submit.mutate()} loading={submit.isPending} disabled={!canSubmit} />
+        <KariButton
+          label="Submit request"
+          onPress={() => submit.mutate()}
+          loading={submit.isPending}
+          disabled={!canSubmit}
+        />
 
         <Text className="mb-2 mt-8 font-psemibold text-base text-white">Your requests</Text>
         {!tickets || tickets.length === 0 ? (
@@ -91,7 +107,9 @@ function TicketCard({ ticket }: { ticket: SupportTicket }) {
             className="mr-1.5 h-2 w-2 rounded-full"
             style={{ backgroundColor: STATUS_COLOR[ticket.status] ?? colors.subtle }}
           />
-          <Text className="font-pmedium text-xs text-muted">{ticket.status.replace(/_/g, ' ')}</Text>
+          <Text className="font-pmedium text-xs text-muted">
+            {ticket.status.replace(/_/g, ' ')}
+          </Text>
         </View>
       </View>
       <Text className="mt-1 font-sans text-xs text-muted" numberOfLines={3}>

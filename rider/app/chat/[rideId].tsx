@@ -32,7 +32,10 @@ export default function ChatScreen() {
   const [sending, setSending] = useState(false);
 
   const { data: me } = useQuery({ queryKey: ['auth-me'], queryFn: authApi.me });
-  const { data: ride } = useQuery({ queryKey: ['ride', rideId], queryFn: () => ridesApi.get(rideId) });
+  const { data: ride } = useQuery({
+    queryKey: ['ride', rideId],
+    queryFn: () => ridesApi.get(rideId),
+  });
   const { data: messages } = useQuery({
     queryKey: ['chat', rideId],
     queryFn: () => commsApi.messages(rideId),
@@ -74,10 +77,14 @@ export default function ChatScreen() {
   const call = async () => {
     try {
       const c = await commsApi.call(rideId);
-      Alert.alert('Connecting call', `Dial ${c.proxyNumber} to reach your driver — both numbers stay private.`, [
-        { text: 'Close', style: 'cancel' },
-        { text: 'Call', onPress: () => void Linking.openURL(`tel:${c.proxyNumber}`) },
-      ]);
+      Alert.alert(
+        'Connecting call',
+        `Dial ${c.proxyNumber} to reach your driver — both numbers stay private.`,
+        [
+          { text: 'Close', style: 'cancel' },
+          { text: 'Call', onPress: () => void Linking.openURL(`tel:${c.proxyNumber}`) },
+        ],
+      );
     } catch (e) {
       Alert.alert('Could not start call', errorMessage(e));
     }
