@@ -1,0 +1,50 @@
+name: CodeQL
+
+# Static security analysis for the JS/TS workspaces. Runs independently of `verify`,
+# so it never gates Railway deploys (Wait-for-CI keys on `verify` only). Findings land
+# in the repo Security tab; the check itself only fails on a scan error, not on alerts.
+
+on:
+  push:
+    branches: [main, production]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 1' # Mondays 03:00 UTC — catches new query updates on quiet code.
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (javascript-typescript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          config: |
+            paths-ignore:
+              - "**/node_modules"
+              - "**/dist"
+              - "**/dist-verify"
+              - "**/.next"
+              - "**/.expo"
+              - "**/coverage"
+              - graphify-out
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript-typescript'
