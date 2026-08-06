@@ -27,6 +27,55 @@ must never drift from what was decided.
 
 ## Entries
 
+### fix · infra · CI: stop cancel-in-progress from dropping main/production verify — 2026-08-06
+
+**What:** `ci.yml` concurrency was `cancel-in-progress: true` on `ci-${{ github.ref }}`, so when two
+PRs merged to `main` seconds apart the intermediate commit's `verify` got cancelled and never
+completed — twice this session (`35b1223`, `df53c0c`). Since Railway Wait-for-CI keys on each commit's
+own `verify`, a cancelled intermediate can leave that commit's deploy stuck. Now
+`cancel-in-progress: ${{ github.event_name == 'pull_request' }}` — PR runs still cancel, push runs on
+`main`/`production` always run to completion.
+**Notes:** `mobile-ci.yml` left as-is (it gates no deploy). If a lockfile-changing merge's `verify` was
+already dropped, staging may need a manual redeploy of the tip once it's green — Lane B (Railway) call.
+
+### fix · infra · Dependabot security: 15/16 flagged deps patched via pnpm overrides (#10) — 2026-08-06
+
+**What:** 50 alerts → 16 unique packages (mostly transitive DoS). Added `overrides:` in
+`pnpm-workspace.yaml` (pnpm 11 ignores package.json's `pnpm` field) forcing patched versions: tar
+(critical), undici, fast-uri, socket.io-parser, postcss, next, sharp, shell-quote, multer, form-data,
+typeorm, body-parser, plus per-major `ws@8`, `js-yaml@{3,4}`, `brace-expansion@{1,2,5}`. Verified
+locally (typecheck 8/8, tests, build 4/4) + CI verify incl. migration gate green. Lockfile consolidated
+48 duplicate versions.
+**Notes:** `uuid` deferred — advisory wants ≥11.1.1 but old transitive majors (3/7/9) can't be forced
+to 11.x without breaking their callers; needs the parent deps to update. `multer` 1→2 is safe here
+(backend is NestJS 11, already on multer 2.x). Closed the redundant Dependabot postcss PR (#8).
+
+### chore · infra · Mobile prettier gate + gate-ok made a required check on main (#9) — 2026-08-06
+
+**What:** Formatted 54 drifted rider/driver source files and added a mobile-scoped `prettier --check`
+(`.github/prettier/mobile.prettierignore` + a `format` step in the mobile-gate action) so `gate-ok`
+enforces it — without re-coupling rider/driver to root `format:check` (they stay in root
+`.prettierignore`). Also removed the workflow-level `on.pull_request.paths` filter from `mobile-ci.yml`
+so Mobile CI runs on every PR and `gate-ok` always reports, then required `verify` + `gate-ok` on `main`.
+**Notes:** Kept root `format:check` excluding rider/driver on purpose — a mobile-format drift now only
+reds `gate-ok`, never `verify` (so it can't block Railway deploys).
+
+### chore · infra · CodeQL + Dependabot security updates + .claude prettier-ignore (#7) — 2026-08-06
+
+**What:** Added `.github/workflows/codeql.yml` (JS/TS, build-mode none; PRs + push main/production +
+weekly), independent of `verify` so it never gates Railway deploys. Enabled Dependabot **security
+updates** on the repo (alerts were already on). Added `.claude/` to `.prettierignore` to stop stray
+rewrites of the tracked settings file.
+
+### chore · infra · Verified staging Tigris S3 creds (still Phase-0 no-op in app) — 2026-08-06
+
+**What:** Read-only probe (HeadBucket + ListObjectsV2 via `railway run`) confirmed the staging object
+store creds are valid: **Tigris** (`t3.storageapi.dev`, region `sjc`), isolated bucket, auth + read OK,
+0 objects.
+**Notes:** The backend still binds `STORAGE_PROVIDER` to `NoopStorageProvider` (Phase-0), so nothing in
+the app uses these creds yet — they're staged for the real S3 provider. Email is also a no-op provider,
+so staging has no working password-reset email (rotate the admin password via a direct DB update).
+
 ### chore · infra · Alpine base for all 3 images + mobile size check — 2026-08-05
 
 **What:** Switched all three service images from `node:22.13.1-slim` to `-alpine`. New sizes (all boot
