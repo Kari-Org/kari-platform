@@ -27,6 +27,26 @@ must never drift from what was decided.
 
 ## Entries
 
+### chore · context · PreToolUse hook: require a progress-log entry before commit/push — 2026-08-06
+
+**What:** Added `.claude/hooks/require-progress-log.sh` + a PreToolUse (Bash) hook in
+`.claude/settings.json` that blocks a `git commit` unless `context/progress-log.md` is staged, and a
+`git push` unless the branch adds a progress-log change over `origin/main`. Escape hatch: put
+`[skip-log]` in the command for a genuinely log-exempt change.
+**Notes:** Enforces this file's own standing instruction so entries stop getting backfilled after the
+fact. Non commit/push commands are untouched; the guard fails open on any git/parse error so it can
+never wedge all git. Merged alongside the existing graphify hook-guards (didn't replace them).
+
+### chore · infra · Ship security-dep patches to staging (redeploy all 3 services) — 2026-08-06
+
+**What:** `railway redeploy --from-source` for `@kari/backend`, `admin`, and `web` (staging) onto the
+main tip `efdde9c` — all three `SUCCESS`; backend uptime reset and the TypeORM migration chain re-ran
+clean on boot. The 15/16 security-dep patches (#10) are now live on staging.
+**Notes:** #10's merge commit (`df53c0c`) had been stranded because the CI race cancelled its `verify`,
+so its watch-triggered deploy never cleared. A manual from-source redeploy was needed because the
+follow-up main pushes (#3, #11) didn't touch any service's `watchPatterns`. Also verified staging's
+Tigris S3 creds are valid (read-only) — see the earlier S3 entry.
+
 ### fix · infra · CI: stop cancel-in-progress from dropping main/production verify — 2026-08-06
 
 **What:** `ci.yml` concurrency was `cancel-in-progress: true` on `ci-${{ github.ref }}`, so when two
