@@ -16,3 +16,29 @@ allowBuilds:
   msgpackr-extract: false
   sharp: false
   unrs-resolver: false
+
+# Security overrides — force patched versions for vulnerable (mostly transitive)
+# deps flagged by Dependabot. Each present version is a within-major bump to the
+# patched release, so consumers' APIs don't change. Packages that span majors are
+# scoped per-major (pkg@N) so an older line isn't forced onto an incompatible API.
+# Revisit as upstreams catch up. NOTE: uuid is intentionally NOT overridden — its
+# old transitive majors (3/7/9) can't be forced to 11.x without breaking callers.
+overrides:
+  tar: '^7.5.19'
+  undici: '^6.27.0'
+  fast-uri: '^3.1.5'
+  socket.io-parser: '^4.2.7'
+  postcss: '^8.5.18'
+  next: '^15.5.21'
+  sharp: '^0.35.0'
+  shell-quote: '^1.9.0'
+  multer: '^2.2.0'
+  form-data: '^4.0.6'
+  typeorm: '^0.3.31'
+  body-parser: '^2.3.0'
+  ws@8: '^8.21.0'
+  js-yaml@3: '^3.15.0'
+  js-yaml@4: '^4.3.0'
+  brace-expansion@1: '^1.1.18'
+  brace-expansion@2: '^2.1.4'
+  brace-expansion@5: '^5.0.9'
