@@ -89,7 +89,15 @@ export interface PutObjectInput {
 }
 export interface StorageProvider {
   readonly name: string;
-  putObject(input: PutObjectInput): Promise<{ url: string }>;
+  /** Write bytes to the store under a stable key. */
+  putObject(input: PutObjectInput): Promise<void>;
+  /**
+   * A short-lived signed GET link for a stored key. Never persisted; generated
+   * per read. `contentType` sets the response type so the browser renders it right.
+   */
+  getSignedUrl(key: string, ttlSeconds: number, contentType?: string | null): Promise<string>;
+  /** Remove an object (for a future data-deletion caller; no endpoint in this slice). */
+  deleteObject(key: string): Promise<void>;
 }
 
 // ─── Maps / traffic (Google) ─────────────────────────────────────────────────

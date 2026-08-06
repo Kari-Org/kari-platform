@@ -25,6 +25,7 @@ import {
   NoopWhatsAppProvider,
 } from './noop.providers';
 import { PaystackPaymentProvider } from './paystack.provider';
+import { S3StorageProvider } from './s3.provider';
 
 const log = new Logger('Providers');
 
@@ -86,7 +87,30 @@ const providers: Provider[] = [
     provide: STORAGE_PROVIDER,
     inject: [APP_CONFIG],
     useFactory: (c: AppConfig) => {
-      note('Storage', !!c.providers.aws.s3Bucket, 'AWS S3');
+      const { endpoint, s3Bucket, accessKeyId, secretAccessKey, region } = c.providers.aws;
+      if (endpoint && s3Bucket && accessKeyId && secretAccessKey) {
+        log.log('Storage: AWS S3 credentials present — using live S3 provider');
+        return new S3StorageProvider({
+          region,
+          endpoint,
+          accessKeyId,
+          secretAccessKey,
+          bucket: s3Bucket,
+        });
+      }
+      // Not all four present. If SOME are set, name what's missing so an operator
+      // isn't misled into thinking storage is live when it silently fell back.
+      const missing = [
+        !endpoint && 'endpoint',
+        !s3Bucket && 'bucket',
+        !accessKeyId && 'accessKeyId',
+        !secretAccessKey && 'secretAccessKey',
+      ].filter(Boolean);
+      if (missing.length < 4) {
+        log.warn(`Storage: partial S3 config, missing ${missing.join(', ')} — using no-op implementation`);
+      } else {
+        log.log('Storage: no credentials — using no-op implementation');
+      }
       return new NoopStorageProvider();
     },
   },

@@ -18,6 +18,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { IdentityService } from '../identity/identity.service';
 import { AdminService } from './admin.service';
 import { Audit } from './audit/audit.decorator';
 import { AuditInterceptor } from './audit/audit.interceptor';
@@ -38,7 +39,10 @@ import { VerifyDriverDto } from './dto/verify-driver.dto';
 @Roles(UserRole.ADMIN)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly admin: AdminService) {}
+  constructor(
+    private readonly admin: AdminService,
+    private readonly identity: IdentityService,
+  ) {}
 
   // ─── A1 · Read-only ops ──────────────────────────────────────────────────────
   @Get('stats')
@@ -164,6 +168,15 @@ export class AdminController {
   @ResponseMessage('Shuttle route assignment updated')
   setShuttleAssignment(@Param('id') id: string, @Body() dto: SetShuttleAssignmentDto) {
     return this.admin.setShuttleAssignment(id, dto);
+  }
+
+  @Get('users/:userId/documents')
+  @RequirePermissions('drivers:verify')
+  @Audit('kyc.documents.view')
+  @ApiOperation({ summary: "Retrieve a user's KYC documents (fresh signed links)" })
+  @ResponseMessage('Documents')
+  userDocuments(@Param('userId') userId: string) {
+    return this.identity.listDocuments(userId);
   }
 
   // ─── A6 · Financials ─────────────────────────────────────────────────────────
