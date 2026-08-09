@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { DriverModule } from '../driver/driver.module';
 import { DriverProfile } from '../driver/entities/driver-profile.entity';
+import { IdentityModule } from '../identity/identity.module';
 import { MoneyModule } from '../money/money.module';
 import { Transaction } from '../money/entities/transaction.entity';
 import { RealtimeModule } from '../realtime/realtime.module';
@@ -29,6 +30,7 @@ import { AuditLog } from './audit/entities/audit-log.entity';
     MoneyModule,
     ShuttleModule,
     TicketsModule,
+    IdentityModule,
     TypeOrmModule.forFeature([User, Ride, RiderProfile, DriverProfile, AuditLog, Transaction]),
   ],
   controllers: [AdminController],

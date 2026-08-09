@@ -19,6 +19,16 @@ next-env.d.ts
 .env.*.local
 !.env.example
 
+# signing keys / keystores (never commit — these are secrets)
+*.jks
+*.keystore
+*.p12
+*.pem
+*.mobileprovision
+# EAS / Android credentials
+credentials.json
+android/app/*.keystore
+
 # logs
 *.log
 logs/

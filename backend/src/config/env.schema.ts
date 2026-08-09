@@ -88,9 +88,19 @@ export const envSchema = z
     EMAIL_FROM: z.string().default('noreply@kari.ng'),
     EMAIL_API_KEY: z.string().optional(),
     AWS_REGION: z.string().default('us-east-1'),
+    // Railway provisions AWS_DEFAULT_REGION / AWS_S3_BUCKET_NAME; accept those as the
+    // primary names and keep AWS_REGION / S3_BUCKET as aliases (either works).
+    AWS_DEFAULT_REGION: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
+    // S3-compatible endpoint (e.g. Tigris t3.storageapi.dev). Absent ⇒ AWS S3 proper.
+    // Its presence (with a bucket + keys) is what flips storage to the real provider.
+    AWS_ENDPOINT_URL: z.string().optional(),
     S3_BUCKET: z.string().optional(),
+    AWS_S3_BUCKET_NAME: z.string().optional(),
+    // Storage (KYC document object store)
+    STORAGE_SIGNED_URL_TTL_SECONDS: z.coerce.number().int().positive().default(900), // 15 min
+    STORAGE_MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(10_485_760), // 10 MB
     GOOGLE_MAPS_API_KEY: z.string().optional(),
     // Comma-separated Google OAuth client IDs accepted as ID-token audiences
     // (iOS / web / Android). Absent ⇒ dev-only unverified decode (see GoogleAuthService).

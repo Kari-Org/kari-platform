@@ -114,9 +114,14 @@ export class NoopWhatsAppProvider implements WhatsAppProvider {
 export class NoopStorageProvider implements StorageProvider {
   readonly name = NAME;
   private readonly logger = new Logger('NoopStorageProvider');
-  async putObject(input: PutObjectInput): Promise<{ url: string }> {
+  async putObject(input: PutObjectInput): Promise<void> {
     this.logger.warn(`[noop] putObject key=${input.key}`);
-    return { url: `noop://local/${input.key}` };
+  }
+  async getSignedUrl(key: string): Promise<string> {
+    return `noop://local/${key}`;
+  }
+  async deleteObject(key: string): Promise<void> {
+    this.logger.warn(`[noop] deleteObject key=${key}`);
   }
 }
 

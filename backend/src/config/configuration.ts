@@ -58,10 +58,17 @@ export interface AppConfig {
     termii: { apiKey?: string; senderId: string };
     twilio: { accountSid?: string; authToken?: string; whatsappFrom?: string; voiceFrom?: string };
     email: { from: string; apiKey?: string };
-    aws: { region: string; accessKeyId?: string; secretAccessKey?: string; s3Bucket?: string };
+    aws: {
+      region: string;
+      endpoint?: string;
+      accessKeyId?: string;
+      secretAccessKey?: string;
+      s3Bucket?: string;
+    };
     google: { mapsApiKey?: string; oauthClientIds: string[] };
     expo: { accessToken?: string };
   };
+  storage: { signedUrlTtlSeconds: number; maxUploadBytes: number };
 }
 
 /**
@@ -149,10 +156,12 @@ export function loadConfiguration(): AppConfig {
       },
       email: { from: e.EMAIL_FROM, apiKey: e.EMAIL_API_KEY },
       aws: {
-        region: e.AWS_REGION,
+        // Provisioned names win; the older env names are accepted aliases.
+        region: e.AWS_DEFAULT_REGION ?? e.AWS_REGION,
+        endpoint: e.AWS_ENDPOINT_URL,
         accessKeyId: e.AWS_ACCESS_KEY_ID,
         secretAccessKey: e.AWS_SECRET_ACCESS_KEY,
-        s3Bucket: e.S3_BUCKET,
+        s3Bucket: e.AWS_S3_BUCKET_NAME ?? e.S3_BUCKET,
       },
       google: {
         mapsApiKey: e.GOOGLE_MAPS_API_KEY,
@@ -163,6 +172,10 @@ export function loadConfiguration(): AppConfig {
           : [],
       },
       expo: { accessToken: e.EXPO_ACCESS_TOKEN },
+    },
+    storage: {
+      signedUrlTtlSeconds: e.STORAGE_SIGNED_URL_TTL_SECONDS,
+      maxUploadBytes: e.STORAGE_MAX_UPLOAD_BYTES,
     },
   };
 }

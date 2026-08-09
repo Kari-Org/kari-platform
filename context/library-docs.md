@@ -185,6 +185,27 @@ interface PaymentProvider {
 
 ---
 
+## AWS S3 storage (Backend, behind StorageProvider — `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`)
+
+```typescript
+// Never import the S3 SDK in feature modules — depend on the StorageProvider interface (full contract in provider-docs.md)
+interface StorageProvider {
+  putObject(input: PutObjectInput): Promise<void>; // write bytes under a stable key
+  getSignedUrl(key: string, ttlSeconds: number, contentType?: string | null): Promise<string>; // short-lived GET link, never persisted
+  deleteObject(key: string): Promise<void>; // for a future data-deletion caller
+}
+```
+
+**Rules:**
+
+- S3-compatible store is **Tigris**, not AWS proper: the client MUST set `endpoint` (from `AWS_ENDPOINT_URL`) and `forcePathStyle: true`.
+- Objects are **private**: privacy comes from the private bucket (Tigris default). Do NOT send an `ACL` param on `PutObject` — Tigris rejects it.
+- Rows persist the **object key**, never a URL. A signed link is generated per read and never stored; it carries a bounded TTL (`STORAGE_SIGNED_URL_TTL_SECONDS`, default 900s).
+- Content type is validated by **sniffing the leading bytes** (`identity/mime-sniff.ts`), not the client-declared type. Allowed: JPEG, PNG, PDF. `file-type` v17+ is ESM-only, so a tiny local magic-number check is used instead.
+- Factory flips to the real `S3StorageProvider` only when endpoint + bucket + keys are all present; otherwise `NoopStorageProvider` (local/dev boot with no creds).
+
+---
+
 ## Google Maps (Backend + Mobile)
 
 ### Backend (MapsProvider — full contract in provider-docs.md)

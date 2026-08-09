@@ -27,6 +27,31 @@ must never drift from what was decided.
 
 ## Entries
 
+### feature · backend · Real S3 storage provider for KYC documents (spec 0005) — 2026-08-06
+
+**What:** Replaced `NoopStorageProvider` with a real S3-compatible provider (Tigris) behind the existing
+`StorageProvider` DI token, credential-gated exactly like Paystack. Config reconciliation added
+`AWS_ENDPOINT_URL` + `STORAGE_SIGNED_URL_TTL_SECONDS` (900) + `STORAGE_MAX_UPLOAD_BYTES` (10MB) and reads
+the provisioned `AWS_S3_BUCKET_NAME`/`AWS_DEFAULT_REGION` names (old `S3_BUCKET`/`AWS_REGION` kept as
+aliases). Migration `1786300000000-RealS3Storage` renames `documents.url`→`objectKey` and adds
+`contentType`+`sizeBytes`. `IdentityService` now stores a sanitized `{type}-{uuid}` key (no raw filename),
+sniffs content type by magic number (JPEG/PNG/PDF; no ESM `file-type`), and runs one shared mapper that
+signs a short-lived GET link + `expiresAt` per response (link never persisted). Upload validation: multer
+`fileSize` cap → 413, bad type → 415, both before the store call. New admin route
+`GET /admin/users/:userId/documents` guarded by the `drivers:verify` KYC permission, audit-logged. Deps
+`@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner` recorded in `library-docs.md`.
+**Notes:** Runtime-verified locally against a throwaway DB + the no-op path: migration applies (live
+schema), no-creds boot uses the no-op, upload stores objectKey/contentType/sizeBytes, list returns fresh
+signed url + expiresAt (900s TTL), 413/415 enforced, owner-scoping + admin deny paths (rider→403,
+no-token→401). `/check review` (Sonnet) caught one blocker — the upload error filter dropped the uniform
+`ApiResponse` envelope; fixed by extending `AllExceptionsFilter`, reverified (415/413 now uniform).
+**Still staging-pending (post-deploy, real Tigris creds):** AC-4 private/unsigned-URL-refused, AC-8
+endpoint+path-style real-provider selection, AC-7 real deleteObject — these are the spec's own Task 10
+end-to-end checks and need the code deployed with credentials. **Deferred:** AC-9 mobile refetch — no
+rider/driver document-display surface exists yet (backend half built); revisit in its own `/architect`
+round. Verify checklist saved beside the spec (`docs/specs/0005-real-s3-storage-provider.verify.md`).
+Production still needs its own bucket + creds provisioned and verified before this reaches production.
+
 ### chore · context · PreToolUse hook: require a progress-log entry before commit/push — 2026-08-06
 
 **What:** Added `.claude/hooks/require-progress-log.sh` + a PreToolUse (Bash) hook in
