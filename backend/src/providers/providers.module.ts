@@ -107,7 +107,9 @@ const providers: Provider[] = [
         !secretAccessKey && 'secretAccessKey',
       ].filter(Boolean);
       if (missing.length < 4) {
-        log.warn(`Storage: partial S3 config, missing ${missing.join(', ')} — using no-op implementation`);
+        log.warn(
+          `Storage: partial S3 config, missing ${missing.join(', ')} — using no-op implementation`,
+        );
       } else {
         log.log('Storage: no credentials — using no-op implementation');
       }

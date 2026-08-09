@@ -75,9 +75,7 @@ export class IdentityService {
     // Trust the bytes, not the client-declared multipart type (trivially spoofed).
     const contentType = sniffAllowedType(file.buffer);
     if (!contentType) {
-      throw new UnsupportedMediaTypeException(
-        'Unsupported document type; allowed: JPEG, PNG, PDF',
-      );
+      throw new UnsupportedMediaTypeException('Unsupported document type; allowed: JPEG, PNG, PDF');
     }
     // Collision-safe, sanitized key (no raw client filename): userId is a uuid and
     // type is an enum value, so nothing user-controlled enters the key path.

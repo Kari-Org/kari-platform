@@ -19,12 +19,14 @@ The forces that shape this: the documents are personal identity data, so they mu
 ## Requirements
 
 **User stories**:
+
 - As a rider or driver, I want my uploaded identity document to be stored safely so that my KYC can be reviewed.
 - As a user, I want to see the documents I have submitted so that I know my upload worked.
 - As an operator reviewing KYC, I want to open a submitted document so that I can verify identity.
 - As the platform, I want documents kept private so that personal data is not exposed by a shareable link.
 
 **Acceptance criteria** (the contract, each independently checkable):
+
 - **AC-1**: With storage credentials present, uploading a document writes the file to the object store under a stable key and persists that key (not a URL) on the `Document` row, with its content type and size.
 - **AC-2**: With storage credentials absent, the backend still boots and uploads use `NoopStorageProvider` without error (local and dev keep working).
 - **AC-3**: Listing a user's documents returns, per document, a freshly generated signed GET link built from the stored key. The link is never persisted and expires after the configured time to live.
@@ -42,9 +44,11 @@ The forces that shape this: the documents are personal identity data, so they mu
 Make `putObject` write to the store, keep returning a URL, and keep persisting that URL on the `Document` row (so the store would have to serve objects publicly).
 
 **Pros**:
+
 - Smallest change, no migration, no mobile change.
 
 **Cons**:
+
 - Public objects expose personal identity documents to anyone who gets the link, which is not acceptable for KYC data.
 - A persisted signed link is not an option either, because signed links expire, so the stored value would rot.
 
@@ -53,12 +57,14 @@ Make `putObject` write to the store, keep returning a URL, and keep persisting t
 Implement a real `S3StorageProvider` that uploads to a private bucket and stores the object key. Retrieval generates a short lived signed link per request. The factory returns the real provider when credentials exist and the no op otherwise (the same shape the Paystack provider already uses).
 
 **Pros**:
+
 - Personal data stays private; links are short lived and never stored.
 - The stored key is stable, so rows never rot.
 - Local and dev still boot with no credentials.
 - Follows the established provider pattern, so it is easy to operate and reason about.
 
 **Cons**:
+
 - Requires a small `Document` entity migration (rename the column, add two fields).
 - The mobile apps must handle a link that expires (refetch), a change from a static URL.
 - Slightly more provider surface (`getSignedUrl`, `deleteObject`).
@@ -68,9 +74,11 @@ Implement a real `S3StorageProvider` that uploads to a private bucket and stores
 The backend issues a presigned PUT and the client uploads straight to the store, bypassing the API for the file bytes.
 
 **Pros**:
+
 - Offloads upload bandwidth from the backend.
 
 **Cons**:
+
 - Bigger surface right now: a new presign endpoint plus an upload rewrite in both rider and driver.
 - Loses server side inspection of the bytes (size and type checks move to the client or to bucket policy).
 - More moving parts before there is any measured bandwidth problem.
@@ -88,6 +96,7 @@ Context makes privacy the deciding force: KYC documents are personal data, so pu
 ## Feature design
 
 **Data model sketch** (`documents` table, changes only):
+
 - Rename `url` (text) to `objectKey` (text): the stable store key, e.g. `documents/{userId}/{type}-{uuid}`.
 - Add `contentType` (varchar(128), nullable): recorded so the signed GET can set the right response type.
 - Add `sizeBytes` (bigint, nullable): recorded upload size, for audit against the size limit.
@@ -106,12 +115,14 @@ Context makes privacy the deciding force: KYC documents are personal data, so pu
 Both the upload response and the list response run the stored key through one shared mapper that signs the link and sets `expiresAt`; a signed link is never persisted. No delete endpoint is added in this slice; `deleteObject` exists on the provider for a later data deletion caller.
 
 **Key invariants**:
+
 - A `Document` row persists an object key, never a URL.
 - A signed link is never persisted, only returned in a response, and always has a bounded time to live.
 - The bucket is private; objects are not world readable.
 - Retrieval is owner scoped (or KYC reviewer), enforced in the service, not just the client.
 
 **Security model**:
+
 - Compliance scope: personal data (identity documents). Private by default is mandatory here, not optional.
 - The bucket is private (Tigris default) and blocks public access; access is only ever through a short lived signed GET link. Privacy comes from the bucket, not an `ACL` write parameter (see build task 4). A staging check confirms an unsigned raw object URL is refused.
 - Content type is validated by sniffing the file's leading bytes (its magic number), not by trusting the client declared multipart type, which is trivially spoofed on a KYC upload.
@@ -120,12 +131,14 @@ Both the upload response and the list response run the stored key through one sh
 - Encryption at rest is the store's default.
 
 **Configuration required**:
+
 - Config reconciliation (load bearing): the credentials provisioned on Railway are `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL`, `AWS_S3_BUCKET_NAME`, `AWS_DEFAULT_REGION`. But the backend config today (`env.schema.ts` and `configuration.ts`) reads `AWS_REGION` and `S3_BUCKET` and has no endpoint field at all. This slice must add `AWS_ENDPOINT_URL` to the schema and `AppConfig.providers.aws.endpoint`, and read the provisioned names (`AWS_S3_BUCKET_NAME`, `AWS_DEFAULT_REGION`), keeping `S3_BUCKET` and `AWS_REGION` as accepted aliases. Presence of the endpoint plus bucket plus keys is what flips the factory to the real provider.
 - `STORAGE_SIGNED_URL_TTL_SECONDS`: signed link lifetime, default 900 (15 minutes).
 - `STORAGE_MAX_UPLOAD_BYTES`: upload size cap, default 10485760 (10 MB).
 - Allowed content types (constant, not env): `image/jpeg`, `image/png`, `application/pdf`, checked by sniffing the file's leading bytes, not the client declared type.
 
 **Critical test scenarios** (each maps to an acceptance criterion):
+
 - Happy path: with credentials set, upload a PNG, confirm a key is stored plus content type and size, then list and open the signed link successfully. Verifies **AC-1**, **AC-3**, **AC-8**.
 - No credentials: unset credentials, confirm the backend boots and uploads use the no op with no crash. Verifies **AC-2**.
 - Privacy: take a stored key, build the raw object URL with no signature, confirm the store refuses it. Verifies **AC-4**.
@@ -151,17 +164,20 @@ Build approach: none is recorded in `AGENTS.md` or a scope header, so this uses 
 ## Consequences
 
 **Positive**:
+
 - Real, durable, private storage for identity documents.
 - Local and dev keep working with no credentials (no op fallback).
 - Follows the existing provider pattern, so it is easy to operate.
 - The staging credentials are already proven, so verification is low risk.
 
 **Negative / tradeoffs**:
+
 - Signed links expire, so any consumer must refetch; a client that caches a link will show a broken document after the time to live.
 - Uploads stream through the backend in memory (multer buffer), so a large file uses backend memory; the size cap is the mitigation.
 - A small entity migration and a new dependency to carry.
 
 **Neutral**:
+
 - The `listDocuments` response keeps its field name (`url`), but the value is now a signed, expiring link, and a new `expiresAt` field rides alongside it.
 - `deleteObject` exists before it has a caller; it is there for a future data deletion path.
 - The Railway credentials use `AWS_*` names the backend config does not read today (`AWS_S3_BUCKET_NAME`, `AWS_DEFAULT_REGION`, `AWS_ENDPOINT_URL` versus the code's `S3_BUCKET`, `AWS_REGION`, and no endpoint). Build task 1 reconciles this; it also means storage was never actually wired to the provisioned bucket before this slice, so nothing regresses.
@@ -179,19 +195,22 @@ Build approach: none is recorded in `AGENTS.md` or a scope header, so this uses 
 
 **Strategy**: credential gated (the factory itself is the flag: real provider only where credentials exist), plus a one step schema migration.
 **Phases**:
+
 1. Ship the migration (rename `url` to `objectKey`, add `contentType` and `sizeBytes`) and the provider code together. The staging bucket is empty and existing column values are no op fakes, so no data backfill is needed.
 2. Verify against staging with real credentials, then provision and verify production credentials before the production deploy.
-**Rollback**: revert the commit and rename the column back. No real object data is lost because the bucket held no real objects at cutover.
-**Risks**: a time to live set too short breaks mobile display (mitigated by a sensible default plus `expiresAt` and mobile refetch); a wrong endpoint or missing path style setting makes every call fail (caught by the staging end to end check); the config schema not exposing the endpoint or not reading the provisioned bucket name would make the factory silently fall back to the no op (caught by build task 1 and the staging check); large uploads pressure backend memory (mitigated by multer's own size limit capping bytes before buffering).
+   **Rollback**: revert the commit and rename the column back. No real object data is lost because the bucket held no real objects at cutover.
+   **Risks**: a time to live set too short breaks mobile display (mitigated by a sensible default plus `expiresAt` and mobile refetch); a wrong endpoint or missing path style setting makes every call fail (caught by the staging end to end check); the config schema not exposing the endpoint or not reading the provisioned bucket name would make the factory silently fall back to the no op (caught by build task 1 and the staging check); large uploads pressure backend memory (mitigated by multer's own size limit capping bytes before buffering).
 
 ## References
 
 **Project sources** (verifiable, in this repo):
+
 - `AGENTS.md` and `context/foundation.md` §7 #15: the provider interface plus no op first pattern.
 - `context/provider-docs.md` and `context/library-docs.md`: the Paystack provider precedent (real when credentials present, no op otherwise) and the pino logging rules.
 - `backend/src/providers/contracts.ts`, `backend/src/providers/providers.module.ts`, `backend/src/identity/identity.service.ts`: the current storage contract, factory, and upload flow this slice changes.
 
 **Practices & standards**:
+
 - Private by default for personal data; access only through short lived signed links.
 - Store a stable key, not an expiring link, so persisted rows do not rot.
 - Validate upload size and content type at the boundary, before the store call.
