@@ -18,8 +18,8 @@
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1103.0",
-    "@aws-sdk/s3-request-presigner": "^3.1103.0",
+    "@aws-sdk/client-s3": "^3.1136.0",
+    "@aws-sdk/s3-request-presigner": "^3.1136.0",
     "@kari/types": "workspace:*",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.1",
@@ -29,21 +29,21 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.0.1",
     "@nestjs/swagger": "^11.0.3",
-    "@nestjs/throttler": "^6.4.0",
+    "@nestjs/throttler": "^6.7.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.0.1",
     "@socket.io/redis-adapter": "^8.3.0",
     "bullmq": "^5.34.0",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.1",
+    "class-validator": "^0.15.1",
     "dotenv": "^16.4.7",
     "google-auth-library": "^9.15.1",
-    "helmet": "^8.0.0",
+    "helmet": "^8.3.0",
     "ioredis": "^5.4.2",
     "nestjs-pino": "^4.3.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "pg": "^8.13.1",
+    "pg": "^8.23.0",
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
     "reflect-metadata": "^0.2.2",
@@ -67,9 +67,9 @@
     "pino-pretty": "^13.0.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.70.0"
   }
 }
